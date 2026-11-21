@@ -68,7 +68,12 @@ Learn steps only get a "Show me" demo when it teaches something (no demos for "p
 ## Status
 Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + Mix + Compare box, Lesson 1 Learn and
 5 Challenge levels, codes, batch grading, autosave. See SPEC section 17 for Phases 2-4.
-Sounds: Salamander Grand (samples from `tonejs.github.io`), Felt (Salamander, softened), Rhodes (jRhodes3d, a reduced
-mp3 copy of ~0.8 MB in `public/samples/jrhodes3d/`, CC BY-NC 4.0, hosted with the app), Synth Keys (SynthLab engine).
-Dropped after testing: Splendid Grand, the smplr electric piano, Accurate-Salamander, and the paste-a-SynthLab-patch sound.
-Metronome sounds (wood block, wind-up, click) are untested by ear; adjust in `audioEngine.ts` `tick()`.
+Sounds: Accurate-Salamander (CC BY 3.0, reduced mp3 copy ~3.5 MB in `public/samples/accurate-salamander/`, 2 velocity
+layers), Salamander Grand (Tone.js version, from `tonejs.github.io`; sounded thinner in headphones), Splendid Grand (smplr,
+from `smpldsnds.github.io`, loaded lazily), Felt (Accurate-Salamander soft layer through a low-pass), Rhodes (jRhodes3d,
+reduced copy ~0.8 MB in `public/samples/jrhodes3d/`, CC BY-NC 4.0), Synth Keys (SynthLab engine; Bright was toned down).
+Sample files for Rhodes/Accurate are hosted with the app, so they need no outside host. Keep credits in the right panel.
+Dropped: the smplr electric piano and the paste-a-SynthLab-patch sound.
+Right panel controls must be defined OUTSIDE components (the Slider once lived inside RightPanel and broke click-and-drag).
+Metronome: wood block chosen by Mr. Comiskey; compact (icon button, BPM box + slider, volume knob).
+Metronome sounds are in `audioEngine.ts` `tick()`.

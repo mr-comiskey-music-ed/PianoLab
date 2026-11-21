@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AudioEngine, DEFAULT_SOUND, LoadState, MetroSound } from './audio/audioEngine';
+import { AudioEngine, DEFAULT_SOUND, LoadState } from './audio/audioEngine';
 import { useInputs } from './input/useInputs';
 import { Piano } from './components/Piano';
-import { RightPanel } from './components/RightPanel';
+import { Metro, RightPanel } from './components/RightPanel';
 import { BatchModal, CodeModal, LatencyModal } from './components/Modals';
 import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { useLearn } from './components/ModeLearn';
@@ -25,7 +25,7 @@ export default function App() {
   const [learnStep, setLearnStep] = useState(0);
   const [soundId, setSoundId] = useState(DEFAULT_SOUND);
   const [states, setStates] = useState<Record<string, LoadState>>({});
-  const [metro, setMetro] = useState<{ on: boolean; bpm: number; sound: MetroSound }>({ on: false, bpm: 80, sound: 'wood' });
+  const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 0.8 });
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
   const [modal, setModal] = useState<null | 'code' | 'latency' | 'batch'>(null);
   const [lastNote, setLastNote] = useState<number | null>(null);
@@ -65,11 +65,14 @@ export default function App() {
     if (engine.current !== id) setSoundId(engine.current);
   }, []);
 
-  const onMetro = (m: { on: boolean; bpm: number; sound: MetroSound }) => {
+  const onMetro = (m: Metro) => {
     const soundChanged = m.sound !== metro.sound;
     setMetro(m);
+    engine.setMetroVolume(m.vol);
     void engine.unlock().then(() => {
-      engine.setMetronome(m.on, m.bpm, m.sound);
+      // Only restart the beat when it is switched on/off or the sound changes. Tempo and volume change smoothly.
+      if (m.on !== metro.on || m.sound !== metro.sound) engine.setMetronome(m.on, m.bpm, m.sound);
+      else if (m.bpm !== metro.bpm) engine.setTempo(m.bpm);
       if (soundChanged && !m.on) engine.previewMetro(m.sound);
     });
   };

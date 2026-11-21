@@ -1,13 +1,39 @@
 import React, { useState } from 'react';
 import { AudioEngine, LoadState, METRO_SOUNDS, MetroSound, SOUNDS } from '../audio/audioEngine';
+import { Knob } from './Knob';
+
+export interface Metro {
+  on: boolean;
+  bpm: number;
+  sound: MetroSound;
+  /** 0 to 1 */
+  vol: number;
+}
+
+/**
+ * A labelled slider. It lives OUTSIDE RightPanel on purpose: when it was defined inside, React rebuilt it on every change,
+ * which dropped the mouse grab and made click-and-drag stop working.
+ */
+const Slider: React.FC<{ label: string; value: number; min: number; max: number; step: number; left?: string; right?: string; onChange: (v: number) => void }> = ({ label, value, min, max, step, left, right, onChange }) => (
+  <label className="block text-[13px]">
+    <span className="h text-wal3">{label}</span>
+    <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-[#b8862c]" />
+    {(left || right) && (
+      <span className="flex justify-between text-[11px] text-muted">
+        <span>{left}</span>
+        <span>{right}</span>
+      </span>
+    )}
+  </label>
+);
 
 interface Props {
   engine: AudioEngine;
   soundId: string;
   states: Record<string, LoadState>;
   onSelect: (id: string) => void;
-  metro: { on: boolean; bpm: number; sound: MetroSound };
-  onMetro: (m: { on: boolean; bpm: number; sound: MetroSound }) => void;
+  metro: Metro;
+  onMetro: (m: Metro) => void;
 }
 
 const stateText: Record<LoadState, string> = { idle: '', loading: 'loading…', ready: '', error: 'could not load' };
@@ -23,19 +49,6 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
     engine.setComp(next.comp);
     engine.setReverb(next.len, next.color, next.wet);
   };
-
-  const Slider: React.FC<{ label: string; value: number; min: number; max: number; step: number; left?: string; right?: string; onChange: (v: number) => void }> = ({ label, value, min, max, step, left, right, onChange }) => (
-    <label className="block text-[13px]">
-      <span className="h text-wal3">{label}</span>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-[#b8862c]" />
-      {(left || right) && (
-        <span className="flex justify-between text-[11px] text-muted">
-          <span>{left}</span>
-          <span>{right}</span>
-        </span>
-      )}
-    </label>
-  );
 
   return (
     <div className="flex flex-col gap-3" data-testid="right-panel">
@@ -80,17 +93,41 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
         )}
       </div>
 
-      <div className="card p-2.5">
-        <label className="flex items-center justify-between text-[14px]">
-          <span className="h text-wal3">Metronome</span>
-          <input type="checkbox" checked={metro.on} onChange={(e) => onMetro({ ...metro, on: e.target.checked })} data-testid="metro" className="h-5 w-5 accent-[#b8862c]" />
-        </label>
-        <label className="mt-1 block text-[13px]">
-          <span className="h text-wal3">Sound</span>
+      <div className="card flex flex-col gap-1.5 p-2" data-testid="metronome">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onMetro({ ...metro, on: !metro.on })}
+            data-testid="metro"
+            aria-pressed={metro.on}
+            aria-label={metro.on ? 'Metronome on. Tap to turn off' : 'Metronome off. Tap to turn on'}
+            title="Metronome on/off"
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${metro.on ? 'border-brass3 bg-brass text-brasstext' : 'border-line2 bg-panel text-wal1 hover:bg-[#fff8ea]'}`}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M8 21 10.2 4h3.6L16 21Z" />
+              <path d="M7 21h10" />
+              <path d="M12 17 15.5 7" />
+              <circle cx="14.6" cy="9.4" r="1.2" fill="currentColor" />
+            </svg>
+          </button>
+          <input
+            type="number"
+            min={40}
+            max={160}
+            value={metro.bpm}
+            onChange={(e) => onMetro({ ...metro, bpm: Math.max(40, Math.min(160, Math.round(Number(e.target.value) || 80))) })}
+            aria-label="Beats per minute"
+            data-testid="bpm"
+            className="h w-14 rounded-lg border border-line2 bg-white px-1 py-1 text-center text-[14px]"
+          />
+          <input type="range" min={40} max={160} step={1} value={metro.bpm} onChange={(e) => onMetro({ ...metro, bpm: Number(e.target.value) })} aria-label="Tempo slider" data-testid="bpm-slider" className="min-w-0 flex-1 accent-[#b8862c]" />
+        </div>
+        <div className="flex items-center gap-2">
           <select
             value={metro.sound}
             onChange={(e) => onMetro({ ...metro, sound: e.target.value as MetroSound })}
-            className="mt-0.5 w-full rounded-lg border border-line2 bg-white px-2 py-1 text-[14px]"
+            aria-label="Metronome sound"
+            className="min-w-0 flex-1 rounded-lg border border-line2 bg-white px-1.5 py-1 text-[13px]"
             data-testid="metro-sound"
           >
             {METRO_SOUNDS.map((m) => (
@@ -99,8 +136,8 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
               </option>
             ))}
           </select>
-        </label>
-        <Slider label={`${metro.bpm} BPM`} value={metro.bpm} min={40} max={160} step={1} onChange={(v) => onMetro({ ...metro, bpm: v })} />
+          <Knob value={metro.vol} onChange={(v) => onMetro({ ...metro, vol: v })} label="Metronome volume" size={30} />
+        </div>
       </div>
 
       <div className="rounded-lg border-2 border-dashed border-line2 p-2.5" data-testid="compare">

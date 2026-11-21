@@ -12,7 +12,7 @@ import { noteName } from '../utils/music';
  * The metronome goes straight to master so the Mix panel never changes its level.
  */
 
-export type SoundKind = 'salamander' | 'felt' | 'rhodes' | 'synthWarm' | 'synthBright';
+export type SoundKind = 'accurate' | 'salamander' | 'splendid' | 'felt' | 'rhodes' | 'synthWarm' | 'synthBright';
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface SoundDef {
@@ -24,9 +24,11 @@ export interface SoundDef {
 }
 
 export const SOUNDS: SoundDef[] = [
-  { id: 'salamander', kind: 'salamander', category: 'Grand Piano', label: 'Salamander Grand', note: 'Yamaha C5, CC-BY 3.0' },
+  { id: 'accurate', kind: 'accurate', category: 'Grand Piano', label: 'Accurate-Salamander', note: 'Remastered Salamander Grand, CC-BY 3.0' },
+  { id: 'salamander', kind: 'salamander', category: 'Grand Piano', label: 'Salamander Grand', note: 'Yamaha C5, CC-BY 3.0 (Tone.js version)' },
+  { id: 'splendid', kind: 'splendid', category: 'Grand Piano', label: 'Splendid Grand', note: 'Steinway, via smplr' },
   { id: 'rhodes', kind: 'rhodes', category: 'Electric Piano', label: 'Rhodes (jRhodes3d)', note: 'Rhodes Mark I, CC BY-NC 4.0' },
-  { id: 'felt', kind: 'felt', category: 'Felt Piano', label: 'Felt Piano', note: 'Salamander through a soft low-pass' },
+  { id: 'felt', kind: 'felt', category: 'Felt Piano', label: 'Felt Piano', note: 'Accurate-Salamander, soft layer, through a low-pass' },
   { id: 'synth-warm', kind: 'synthWarm', category: 'Synth Keys', label: 'Synth Keys: Warm', note: 'SynthLab engine' },
   { id: 'synth-bright', kind: 'synthBright', category: 'Synth Keys', label: 'Synth Keys: Bright', note: 'SynthLab engine' },
 ];
@@ -51,6 +53,9 @@ SALAMANDER_FILES['C6'] = 'C6.mp3';
 /** The Rhodes files live in /public/samples/jrhodes3d (a reduced copy of jRhodes3d, ~0.8 MB), so they load from our own site. */
 const RHODES_URL = `${import.meta.env.BASE_URL}samples/jrhodes3d/`;
 const RHODES_ROOTS = [40, 45, 50, 55, 59, 62, 65, 71, 76, 81, 86];
+/** Accurate-Salamander: a reduced copy (C2-C6 every minor third, 2 velocity layers, ~3.5 MB) hosted with the app. */
+const ACCURATE_URL = `${import.meta.env.BASE_URL}samples/accurate-salamander/`;
+const ACCURATE_ROOTS = [...Array.from({ length: 16 }, (_, i) => 36 + i * 3), 84];
 
 interface Voice {
   on(midi: number, velocity: number): void;
@@ -78,6 +83,8 @@ export class AudioEngine {
   private woodNoise = new Tone.NoiseSynth({ noise: { type: 'pink' }, envelope: { attack: 0.0005, decay: 0.025, sustain: 0, release: 0.01 } });
   private woodFilter = new Tone.Filter(2400, 'bandpass');
   private metroKind: MetroSound = 'wood';
+  /** Metronome volume, separate from the Mix panel. */
+  private metroGain = new Tone.Gain(0.8);
   private click = new Tone.MembraneSynth({ pitchDecay: 0.008, octaves: 2, envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.05 } });
   /** A separate click for latency calibration, so it never collides with the metronome's schedule. */
   private calClick = new Tone.MembraneSynth({ pitchDecay: 0.008, octaves: 2, envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.05 } });
@@ -100,13 +107,14 @@ export class AudioEngine {
     this.wet.connect(this.master);
     this.master.toDestination();
     this.click.volume.value = -8;
-    this.click.connect(this.master);
+    this.metroGain.connect(this.master);
+    this.click.connect(this.metroGain);
     this.calClick.volume.value = -8;
     this.calClick.connect(this.master);
     this.wood.volume.value = -4;
-    this.wood.connect(this.master);
+    this.wood.connect(this.metroGain);
     this.woodNoise.volume.value = -14;
-    this.woodNoise.chain(this.woodFilter, this.master);
+    this.woodNoise.chain(this.woodFilter, this.metroGain);
   }
 
   get current() {
@@ -158,10 +166,15 @@ export class AudioEngine {
   private async build(def: SoundDef): Promise<Voice> {
     switch (def.kind) {
       case 'salamander':
+        return this.buildSampler(false);
       case 'felt':
-        return this.buildSampler(def.kind === 'felt');
+        return this.buildFelt();
       case 'rhodes':
-        return this.buildRhodes();
+        return this.buildLayered(RHODES_URL, RHODES_ROOTS, 2, 4, 0.8, this.bus);
+      case 'accurate':
+        return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, 7, 12, 1.2, this.bus);
+      case 'splendid':
+        return this.buildSplendid();
       case 'synthWarm':
         return this.buildSynth(SYNTH_KEYS_WARM);
       case 'synthBright':
@@ -190,21 +203,22 @@ export class AudioEngine {
     });
   }
 
-  /** Rhodes: a soft and a hard velocity layer, so playing harder sounds barkier like the real thing. */
-  private async buildRhodes(): Promise<Voice> {
+  /** A sampler with a soft and a hard velocity layer (Rhodes, Accurate-Salamander). Files are `<midi>_<layer>.mp3`. */
+  private async buildLayered(url: string, roots: number[], softLayer: number, hardLayer: number, release: number, out: Tone.ToneAudioNode, softOnly = false): Promise<Voice> {
     const make = (layer: number) =>
       new Promise<Tone.Sampler>((resolve, reject) => {
         const urls: Record<string, string> = {};
-        for (const m of RHODES_ROOTS) urls[noteName(m)] = `${m}_${layer}.mp3`;
+        for (const m of roots) urls[noteName(m)] = `${m}_${layer}.mp3`;
         const sampler = new Tone.Sampler({
           urls,
-          baseUrl: RHODES_URL,
-          release: 0.8,
+          baseUrl: url,
+          release,
           onload: () => resolve(sampler),
           onerror: (e) => reject(e instanceof Error ? e : new Error('sample files did not load')),
-        }).connect(this.bus);
+        }).connect(out);
       });
-    const [soft, hard] = await Promise.all([make(2), make(4)]);
+    const soft = await make(softLayer);
+    const hard = softOnly ? soft : await make(hardLayer);
     const used = new Map<number, Tone.Sampler>();
     return {
       on: (midi, vel) => {
@@ -223,8 +237,41 @@ export class AudioEngine {
       },
       dispose: () => {
         soft.dispose();
-        hard.dispose();
+        if (hard !== soft) hard.dispose();
       },
+    };
+  }
+
+  /** Felt: Accurate-Salamander's soft layer through a low-pass, a little quieter. */
+  private buildFelt(): Promise<Voice> {
+    const lp = new Tone.Filter(1400, 'lowpass');
+    const level = new Tone.Gain(0.85);
+    lp.chain(level, this.bus);
+    return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, 7, 7, 1.4, lp, true);
+  }
+
+  /** Splendid Grand (Steinway) from smplr. smplr is loaded only when this sound is picked. */
+  private async buildSplendid(): Promise<Voice> {
+    const { SplendidGrandPiano } = await import('smplr');
+    const ctx = Tone.getContext().rawContext as unknown as BaseAudioContext;
+    const destination = (this.bus as unknown as { input: AudioNode }).input;
+    const inst = SplendidGrandPiano(ctx, { destination, notesToLoad: { notes: Array.from({ length: 61 }, (_, i) => 36 + i), velocityRange: [1, 127] } });
+    await inst.ready;
+    const stops = new Map<number, () => void>();
+    return {
+      on: (midi, vel) => {
+        stops.get(midi)?.();
+        stops.set(midi, inst.start({ note: midi, velocity: Math.max(1, Math.round(vel * 127)) }) as () => void);
+      },
+      off: (midi) => {
+        stops.get(midi)?.();
+        stops.delete(midi);
+      },
+      allOff: () => {
+        stops.forEach((x) => x());
+        stops.clear();
+      },
+      dispose: () => inst.dispose(),
     };
   }
 
@@ -317,6 +364,16 @@ export class AudioEngine {
       beat++;
     }, '4n');
     t.start();
+  }
+
+  /** Change tempo without restarting the beat. */
+  setTempo(bpm: number) {
+    Tone.getTransport().bpm.value = bpm;
+  }
+
+  /** 0 (silent) to 1 (full). */
+  setMetroVolume(v: number) {
+    this.metroGain.gain.value = Math.max(0, Math.min(1, v));
   }
 
   /** One metronome beat. Beat 0 of each bar is accented. */

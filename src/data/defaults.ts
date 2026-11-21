@@ -24,8 +24,8 @@ export const SYNTH_KEYS_WARM: SynthParams = {
 
 export const SYNTH_KEYS_BRIGHT: SynthParams = {
   ...DEFAULT_SYNTH_PARAMS,
-  vco1Waveform: 'sawtooth', vco2Waveform: 'square', vco2Level: 0.3, oscBalance: -0.2, vco2Fine: 8,
-  filterCutoff: 6500, filterResonance: 1.5, filterEnvAmount: 45, filterKeyTracking: 0.8,
+  vco1Waveform: 'sawtooth', vco2Waveform: 'triangle', vco2Level: 0.3, oscBalance: -0.2, vco2Fine: 8,
+  filterCutoff: 2600, filterResonance: 0.9, filterEnvAmount: 30, filterKeyTracking: 0.8,
   ampAttack: 0.006, ampDecay: 0.5, ampSustain: 0.5, ampRelease: 0.35,
   modAttack: 0.005, modDecay: 0.4, modSustain: 0.35, modRelease: 0.35,
 };
