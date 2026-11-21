@@ -227,11 +227,11 @@ export default function App() {
         {/* Left panel */}
         <aside className="min-h-0 overflow-auto border-r border-line bg-page p-3 order-2 lg:order-none" data-testid="left-panel">
           {parts.left}
-          <div className="mt-4 border-t border-line pt-3" data-testid="left-bottom">
+          <div className="mt-3 border-t border-line pt-2" data-testid="left-bottom">
             {parts.labelControl && (
               <>
-                <div className="h text-[11px] uppercase text-muted">Challenge Yourself</div>
-                <div className="mt-1 flex flex-col gap-1" role="radiogroup" aria-label="Challenge Yourself: note names on the keys">
+                <div className="h text-[11px] uppercase text-muted">{parts.labelControl.title ?? 'Challenge Yourself'}</div>
+                <div className="mt-1 flex flex-col gap-1" role="radiogroup" aria-label={`${parts.labelControl.title ?? 'Challenge Yourself'} note names on the keys`}>
                   {([['all', 'Show Note Names'], ['c', 'Show Cs'], ['off', 'Hide Note Names']] as const).map(([v, t]) => {
                     const ok = parts.labelControl!.allowed.includes(v);
                     return (
@@ -242,7 +242,7 @@ export default function App() {
                         disabled={!ok || parts.labelControl!.locked}
                         data-testid={`labels-${v}`}
                         onClick={() => parts.labelControl!.set(v)}
-                        className={`btn px-2 text-[14px] ${parts.labelControl!.value === v ? 'btn-brass' : ''}`}
+                        className={`btn px-2 py-1.5 text-[14px] ${parts.labelControl!.value === v ? 'btn-brass' : ''}`}
                       >
                         {t}
                       </button>

@@ -30,15 +30,16 @@ export const SYNTH_KEYS_BRIGHT: SynthParams = {
   modAttack: 0.005, modDecay: 0.4, modSustain: 0.35, modRelease: 0.35,
 };
 
-/** Pad (Mr. Comiskey's settings): slow swell, long release, dark 2-pole filter, pulse-width movement. Poly, for chords. */
+/** Pad (Mr. Comiskey's settings): gentle swell, long release, dark 2-pole filter, pulse-width movement. Poly, for chords. */
 export const SYNTH_PAD: SynthParams = {
   ...DEFAULT_SYNTH_PARAMS,
   vco1Waveform: 'square', vco1Octave: 0, vco1Level: 0.71, vco1PulseWidth: 0.22,
   vco2Waveform: 'square', vco2Octave: 1, vco2Fine: 8, vco2Level: 0.46, vco2PulseWidth: 0.5,
   noiseLevel: 0, oscBalance: 0,
   filterCutoff: 156.3, filterResonance: 0.1, filterEnvAmount: 43, filterKeyTracking: 0.5, filterRolloff: -12,
-  ampAttack: 1.36, ampDecay: 1.12, ampSustain: 0.76, ampRelease: 3.41,
-  modAttack: 0.638, modDecay: 0.718, modSustain: 0.06, modRelease: 2.01,
+  // Swell softened from his 1.36 s / 0.64 s attacks so chords speak sooner.
+  ampAttack: 0.35, ampDecay: 1.12, ampSustain: 0.76, ampRelease: 3.41,
+  modAttack: 0.25, modDecay: 0.718, modSustain: 0.06, modRelease: 2.01,
   lfoRate: 3.2, lfoWaveform: 'sine', lfoDepth: 0.16, lfoDestination: 'pwm',
   voiceMode: 'poly', glide: 0,
 };

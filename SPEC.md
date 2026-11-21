@@ -206,11 +206,11 @@ longer cap for imports, play-along (recording on top) instead of appending.
 | Category | Sounds |
 |---|---|
 | Grand Piano | Accurate-Salamander (chosen). Salamander (Tone.js) and Splendid Grand removed. |
-| Electric Piano | Rhodes (jRhodes3d, CC BY-NC, bell attack tamed) and Wurlitzer EP200 (Greg Sullivan, CC BY 3.0): still comparing. The smplr CP80 sounded like an electric grand and was dropped; the Pianet T mirror's files were damaged. |
-| Soft Piano | Grand Piano's soft layer, low-pass, dip at 550 Hz, its own reverb, very quiet tape hiss and vinyl crackle while playing |
+| Electric Piano | Rhodes (jRhodes3d, CC BY-NC, bell attack tamed), shown as "Electric Piano" (chosen over the Wurlitzer EP200 and the CP80). |
+| Soft Piano | Grand Piano's soft layer, low-pass, dip at 550 Hz, its own reverb, very quiet tape hiss (and a few faint crackles) while playing |
 | Synth Keys | Warm, Bright, Pad (SynthLab engine), plus Custom Synth (SynthLab's Modern Synth panel in a pop-up) |
 
-- The "Compare electric pianos" box is **for teacher testing only** and gets removed once one is chosen.
+- Every category is decided, so the "Compare versions" box has been removed.
 - **Mix panel** (behind a small faders icon at the top right of the Sound box, not always visible): a one-knob EQ, a one-knob compressor, and reverb with Length, Color, and Mix.
 - A compact wood-block metronome: icon on/off, BPM box and slider, volume knob (100% default, up to 200%).
 - **Licensing:** credit sample authors on an About screen. The app is educational and non-commercial. Never use samples rendered out of commercial DAW instruments.

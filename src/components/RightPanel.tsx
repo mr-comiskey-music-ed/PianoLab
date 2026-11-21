@@ -265,32 +265,11 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
         </div>
       </div>
 
-      <div className="rounded-lg border-2 border-dashed border-line2 p-2.5" data-testid="compare">
-        <div className="h text-[12px] uppercase text-muted">Compare electric pianos</div>
-        <div className="text-[11px] text-muted">For teacher testing only. This box goes away once one is chosen.</div>
-        <div className="mt-1.5 flex flex-col gap-1">
-          {SOUNDS.filter((s) => s.category === 'Electric Piano').map((s) => (
-            <button
-              key={s.id}
-              className="btn text-left text-[13px]"
-              onClick={async () => {
-                onSelect(s.id);
-                await engine.unlock();
-                // A little C major chord then a short run, so versions are easy to compare back to back.
-                window.setTimeout(() => void engine.playDemo([60, 64, 67, 72, 67, 64, 60], 260), 250);
-              }}
-            >
-              ▶ {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
       <details className="text-[12px] text-muted">
         <summary className="h cursor-pointer text-wal1">Sound credits</summary>
         <ul className="mt-1 list-disc pl-4">
           <li>Grand Piano and Soft Piano: Accurate-Salamander, from the Salamander Grand Piano by Alexander Holm (Yamaha C5), CC BY 3.0. A reduced copy is used here.</li>
-          <li>Rhodes: jRhodes3d (Rhodes Mark I) by Joshua Learman, CC BY-NC 4.0. A reduced copy is used here.</li>
-          <li>Wurlitzer: Wurlitzer EP200 by Greg Sullivan, mapped by kinwie, CC BY 3.0. Converted to mp3 here.</li>
+          <li>Electric Piano: jRhodes3d (Rhodes Mark I) by Joshua Learman, CC BY-NC 4.0. A reduced copy is used here.</li>
           <li>Synth Keys use the SynthLab synth engine.</li>
           <li>Wood: “Wood 067” from ambientCG, CC0.</li>
           <li>PianoLab is a free, non-commercial classroom app.</li>

@@ -39,7 +39,7 @@ export interface ModeParts {
   /** Which note labels the piano shows right now. */
   labels: Labels;
   /** Show the "Challenge Yourself" control. Leave out where labels aren't a choice (Learn). */
-  labelControl?: { value: Labels; allowed: Labels[]; set: (l: Labels) => void; locked?: boolean };
+  labelControl?: { value: Labels; allowed: Labels[]; set: (l: Labels) => void; locked?: boolean; /** Heading over the buttons (default "Challenge Yourself"). */ title?: string };
   lit?: Set<number>;
   /** Keys that get a label even when labels are off (the note the app is demoing). */
   forceLabel?: Set<number>;

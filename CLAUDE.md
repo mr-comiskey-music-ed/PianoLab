@@ -62,7 +62,7 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
   notes use them (keys stay plain for now). Roman numerals will use the C major scale's colours (`DEGREE_COLORS`).
 - Layout: walnut top bar with tabs Learn / Practice / Challenges / Sandbox / Jam Room (soon) / Grade Report; left panel
   (lesson, instructions, scores, Challenge Yourself); center (stage/waterfall/piano roll, readout bar, piano); right panel
-  (sounds + Mix icon, metronome, Compare versions). The piano is always the main view, except on the Grade Report page.
+  (sounds + Mix icon, metronome, credits). The piano is always the main view, except on the Grade Report page.
 - **The typing keyboard always belongs to the piano.** Only real text boxes take letter keys; sliders, knobs and buttons
   let go of focus after a mouse drag/click (`useInputs.ts`). Keep it that way for any new control.
 
@@ -76,14 +76,13 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
 ## Status
 Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + Mix + Compare box, Lesson 1 Learn and
 4 Challenge levels, codes, batch grading, autosave. See SPEC section 17 for Phases 2-4.
-Sounds (decided by Mr. Comiskey): **Grand Piano** = Accurate-Salamander only (CC BY 3.0, ~8.5 MB in
-`public/samples/accurate-salamander/`, 5 velocity layers). Salamander (Tone.js) and Splendid Grand were removed (smplr is
-no longer a dependency). **Electric Piano**: Rhodes (jRhodes3d, CC BY-NC 4.0, ~1.8 MB; bell attack tamed with a -4 dB dip at
-2.5 kHz + roll-off above 6 kHz) and Wurlitzer EP200 (Greg Sullivan, CC BY 3.0, ~1.2 MB in `public/samples/wurlitzer/`,
-mp3 + `map.json` with key ranges/tuning/4 velocity layers, played by `buildWurlitzer`); still comparing these two (Compare
-box). **Soft Piano** (id stays `felt`): Accurate soft layer, low-pass 1.4 kHz, -5 dB at 550 Hz, own reverb, and generated
-tape hiss + vinyl crackle that fades in while playing and out ~3 s after (`makeHissBuffer`). **Synth Keys**: Warm, Bright,
-Pad (his settings, `SYNTH_PAD`), Custom Synth. All sample files are hosted with the app. Credits in the right panel.
+Sounds (all decided by Mr. Comiskey; no more comparing, the Compare box is gone): **Grand Piano** = Accurate-Salamander
+(CC BY 3.0, ~8.5 MB in `public/samples/accurate-salamander/`, 5 velocity layers). **Electric Piano** (id `rhodes`) =
+jRhodes3d (CC BY-NC 4.0, ~1.8 MB; bell attack tamed with a -4 dB dip at 2.5 kHz + roll-off above 6 kHz; he likes it now).
+Removed: Salamander (Tone.js), Splendid Grand (and smplr), Wurlitzer. **Soft Piano** (id stays `felt`): Accurate soft
+layer, low-pass 1.4 kHz, -5 dB at 550 Hz, own reverb, and generated tape hiss (does most of the work) with only a few faint
+crackles, fading in while playing and out ~3 s after (`makeHissBuffer`). **Synth Keys**: Warm, Bright, Pad (his settings,
+`SYNTH_PAD`, swell softened to 0.35 s amp / 0.25 s filter attack), Custom Synth. All samples hosted with the app.
 Switching sounds: the old sound keeps playing until the new one has loaded; each note's release goes to the instrument
 that started it (`noteVoice`), so no stuck/mixed notes. Sounds still load only when picked (25 Chromebooks pulling ~12 MB
 each at the start of class would choke school Wi-Fi).
@@ -100,6 +99,8 @@ code (key `p`, name inside), link (`?perf=`, no name) or .mid; Clear. Batch view
 MIDI import (`utils/midiImport.ts`, no library): type 0/1 .mid, tempo changes respected, all tracks merged, drums
 (channel 10) left out, sustain pedal lengthens notes, leading silence trimmed, cut at the Sandbox limit (3 min / 2000
 notes). It replaces the current performance (asks first) and waits at the start ("Ready. Press Play back").
+Sandbox left panel is kept short so it fits a Chromebook screen: one-line description, length only (no note count), the
+label buttons are headed "View:" there (`labelControl.title`), "Challenge Yourself" elsewhere.
 Piano roll (Shared Piano style): its own "roll clock" runs while you play, keeps going 1.2 s after the last key is let go,
 then glides to a stop over 1.6 s (`TAIL`/`GLIDE` in `PianoRoll.tsx`); notes keep real timing for play back/MIDI.
 Scroll/drag to look back ("Back to live" returns); scrolling plays the keys the line crosses, like play back (held while
@@ -125,8 +126,7 @@ Rhodes now has all 5 velocity layers (~1.8 MB); top notes missing a layer borrow
 Metronome sounds are in `audioEngine.ts` `tick()`.
 
 ## Open items (last updated end of Phase 1 testing)
-- Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (hiss level, reverb, 550 Hz dip), Wurlitzer, tamed Rhodes, Pad.
-- Electric Piano: Rhodes (tamed) vs Wurlitzer still to choose; then remove the "Compare electric pianos" box.
+- Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (gentler crackle), Pad (softer swell).
 - MIDI import choices to confirm (see SPEC section 10): merge all tracks, drop drums, 3-minute cap, replace not append.
 - Grading confirmed: second try = half credit, 80% pass. Lesson 1 has four levels; the octave level (`l1-octave`) was removed
   before anything reached students (he doesn't care about the octave). Old saves drop results for removed levels.

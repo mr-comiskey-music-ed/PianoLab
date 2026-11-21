@@ -45,7 +45,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       if (loaded) {
         setNotes(loaded);
         t0.current = null;
-        setLoadedMsg(`Loaded a performance from a link: ${loaded.length} notes, ${formatLength(perfLength(loaded))}. Press Play back.`);
+        setLoadedMsg('Loaded from a link. Press Play back.');
       } else setLoadedMsg('That performance link is damaged or cut off.');
     });
   }, []);
@@ -241,9 +241,9 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       setAtStart(true);
       const name = got.title || file.name.replace(/\.midi?$/i, '');
       setLoadedMsg(
-        `Imported “${name}”: ${got.notes.length} notes, ${formatLength(perfLength(got.notes))}. Press Play back.` +
+        `Imported “${name}”.` +
           (got.skippedDrums ? ' Drums were left out.' : '') +
-          (got.cutOff ? ` Only the first ${formatLength(MAX_PERF_MS)} (or ${MAX_PERF_NOTES} notes) came in.` : ''),
+          (got.cutOff ? ` Only the first ${formatLength(MAX_PERF_MS)} came in.` : ''),
       );
     } catch (e) {
       setLoadedMsg(e instanceof Error ? e.message : 'That file could not be read.');
@@ -275,30 +275,27 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const length = perfLength(finished);
 
   const left = (
-    <div className="flex flex-col gap-3">
-      <div>
-        <div className="h text-[11px] uppercase text-muted">Sandbox</div>
-        <h2 className="h text-[22px] leading-tight text-wal3">Play anything</h2>
-      </div>
-      <p className="text-[15px] leading-snug text-wal1">Everything you play is recorded and shows up on the piano roll. Scroll or drag the roll to look back; Play back starts from where you are. Save it to turn it in, share it, or open it in another music app.</p>
-      <div className="card p-2.5 text-[14px]" data-testid="perf-stats">
-        <div className="h text-[11px] uppercase text-muted">Your performance</div>
-        <div className="h text-[18px] text-wal3">
-          {finished.length} notes · {formatLength(length)}
+    <div className="flex flex-col gap-2">
+      <h2 className="h text-[22px] leading-tight text-wal3">Sandbox</h2>
+      <p className="text-[14px] leading-snug text-wal1">Play anything. It records as you go. Scroll the roll to look back.</p>
+      <div className="card px-2.5 py-1.5 text-[14px]" data-testid="perf-stats">
+        <div className="flex items-baseline justify-between">
+          <span className="h text-[11px] uppercase text-muted">Your performance</span>
+          <span className="h text-[17px] text-wal3">{formatLength(length)}</span>
         </div>
-        {full && <div className="mt-1 text-[13px] text-bad">Recording is full ({formatLength(MAX_PERF_MS)} or {MAX_PERF_NOTES} notes). Save it, or Clear to start again.</div>}
-        {loadedMsg && <div className="mt-1 text-[13px] text-wal1">{loadedMsg}</div>}
+        {full && <div className="text-[12px] text-bad">Recording is full ({formatLength(MAX_PERF_MS)}). Save it, or Clear to start again.</div>}
+        {loadedMsg && <div className="text-[12px] leading-snug text-wal1">{loadedMsg}</div>}
       </div>
-      <button className="btn" onClick={toggle} disabled={!finished.length} data-testid="perf-play" title="Space bar: play / pause">
+      <button className="btn py-1.5" onClick={toggle} disabled={!finished.length} data-testid="perf-play" title="Space bar: play / pause">
         {playing ? '❚❚ Pause' : paused ? '▶ Resume' : '▶ Play back'}
       </button>
-      <button className="btn btn-brass" onClick={() => setSaveOpen(true)} disabled={!finished.length} data-testid="perf-save">
+      <button className="btn btn-brass py-1.5" onClick={() => setSaveOpen(true)} disabled={!finished.length} data-testid="perf-save">
         Save performance
       </button>
-      <button className="btn" onClick={clear} disabled={!notes.length} data-testid="perf-clear">
+      <button className="btn py-1.5" onClick={clear} disabled={!notes.length} data-testid="perf-clear">
         Clear
       </button>
-      <button className="btn" onClick={() => fileInput.current?.click()} data-testid="perf-import" title="Open a .mid file from GarageBand, Soundtrap, BandLab, MuseScore…">
+      <button className="btn py-1.5" onClick={() => fileInput.current?.click()} data-testid="perf-import" title="Open a .mid file from GarageBand, Soundtrap, BandLab, MuseScore…">
         Import MIDI…
       </button>
       <input
@@ -339,7 +336,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     left,
     stage,
     labels,
-    labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels },
+    labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels, title: 'View:' },
     lit: playLit.size ? playLit : undefined,
     overlay: saveOpen ? <SavePerformance notes={finished} onClose={() => setSaveOpen(false)} /> : undefined,
   };
@@ -378,7 +375,7 @@ const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void }> = ({
         </div>
         <div className="flex flex-col gap-4 overflow-auto p-4 text-[14px]">
           <div className="text-muted">
-            {notes.length} notes · {formatLength(perfLength(notes))}
+            Length: {formatLength(perfLength(notes))}
           </div>
           <section>
             <div className="h text-[15px] text-wal3">Turn it in (code)</div>

@@ -12,7 +12,7 @@ import { noteName } from '../utils/music';
  * The metronome goes straight to master so the Mix panel never changes its level.
  */
 
-export type SoundKind = 'accurate' | 'soft' | 'rhodes' | 'wurlitzer' | 'synthWarm' | 'synthBright' | 'synthPad' | 'synthCustom';
+export type SoundKind = 'accurate' | 'soft' | 'rhodes' | 'synthWarm' | 'synthBright' | 'synthPad' | 'synthCustom';
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface SoundDef {
@@ -26,8 +26,7 @@ export interface SoundDef {
 // Ids are saved in autosaves, so keep them (the Soft Piano's id is still 'felt').
 export const SOUNDS: SoundDef[] = [
   { id: 'accurate', kind: 'accurate', category: 'Grand Piano', label: 'Grand Piano', note: 'Accurate-Salamander (Yamaha C5), CC BY 3.0' },
-  { id: 'rhodes', kind: 'rhodes', category: 'Electric Piano', label: 'Rhodes', note: 'Rhodes Mark I (jRhodes3d), CC BY-NC 4.0' },
-  { id: 'wurlitzer', kind: 'wurlitzer', category: 'Electric Piano', label: 'Wurlitzer', note: 'Wurlitzer EP200 by Greg Sullivan, CC BY 3.0' },
+  { id: 'rhodes', kind: 'rhodes', category: 'Electric Piano', label: 'Electric Piano', note: 'Rhodes Mark I (jRhodes3d), CC BY-NC 4.0' },
   { id: 'felt', kind: 'soft', category: 'Soft Piano', label: 'Soft Piano', note: 'Grand Piano, soft and warm, with a little tape hiss and reverb' },
   { id: 'synth-warm', kind: 'synthWarm', category: 'Synth Keys', label: 'Warm', note: 'SynthLab engine' },
   { id: 'synth-bright', kind: 'synthBright', category: 'Synth Keys', label: 'Bright', note: 'SynthLab engine' },
@@ -51,15 +50,10 @@ const rhodesLayerFor = (midi: number, layer: number) =>
 const ACCURATE_URL = `${import.meta.env.BASE_URL}samples/accurate-salamander/`;
 const ACCURATE_LAYERS = [5, 7, 9, 12, 15]; // of the original 16, softest to hardest
 const ACCURATE_ROOTS = [...Array.from({ length: 16 }, (_, i) => 36 + i * 3), 84];
-/** Wurlitzer EP200 (Greg Sullivan, CC BY 3.0): 42 small mp3s hosted with the app, plus map.json (key ranges, tuning, level). */
-const WURLI_URL = `${import.meta.env.BASE_URL}samples/wurlitzer/`;
-interface SfzMap {
-  layers: { hivel: number; regions: { lo: number; hi: number; key: number; file: string; tune: number; vol: number }[] }[];
-}
 
 /**
  * Four seconds of very quiet tape hiss with a few soft vinyl crackles, made in code (no file to download). Looped under
- * the Soft Piano. Levels: hiss about -50 dB, crackles short and low.
+ * the Soft Piano. Mostly hiss (about -50 dB), with only a few faint crackles.
  */
 function makeHissBuffer(sampleRate: number): Tone.ToneAudioBuffer {
   const n = Math.round(sampleRate * 4);
@@ -68,13 +62,13 @@ function makeHissBuffer(sampleRate: number): Tone.ToneAudioBuffer {
   for (let i = 0; i < n; i++) {
     // White noise through a gentle low-pass: soft "tape" hiss rather than a sharp fizz.
     lp += 0.25 * ((Math.random() * 2 - 1) - lp);
-    data[i] = lp * 0.006;
+    data[i] = lp * 0.007;
   }
-  // About 5 crackles a second, each a tiny decaying click.
-  const crackles = Math.round(4 * 5);
+  // Mostly hiss: just a few faint crackles (about 1.5 a second), each a tiny decaying click.
+  const crackles = 6;
   for (let c = 0; c < crackles; c++) {
     const at = Math.floor(Math.random() * (n - 400));
-    const amp = (0.012 + Math.random() * 0.025) * (Math.random() < 0.5 ? -1 : 1);
+    const amp = (0.002 + Math.random() * 0.004) * (Math.random() < 0.5 ? -1 : 1);
     const len = 40 + Math.floor(Math.random() * 160);
     for (let k = 0; k < len; k++) data[at + k] += amp * Math.exp(-k / (len / 5)) * (Math.random() * 2 - 1);
   }
@@ -217,8 +211,6 @@ export class AudioEngine {
         return this.buildSoft();
       case 'rhodes':
         return this.buildRhodes();
-      case 'wurlitzer':
-        return this.buildWurlitzer();
       case 'accurate':
         return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, ACCURATE_LAYERS, 1.2, this.bus);
       case 'synthWarm':
@@ -330,62 +322,6 @@ export class AudioEngine {
       dispose: () => {
         piano.dispose();
         hiss.dispose();
-      },
-    };
-  }
-
-  /**
-   * Wurlitzer EP200: plays its own samples with the original instrument's key ranges, tuning and 4 velocity layers.
-   * One sound per key at a time (like the real thing); letting go damps the note quickly.
-   */
-  private async buildWurlitzer(): Promise<Voice> {
-    const res = await fetch(`${WURLI_URL}map.json`);
-    if (!res.ok) throw new Error('Wurlitzer map did not load');
-    const map = (await res.json()) as SfzMap;
-    const files = Array.from(new Set(map.layers.flatMap((l) => l.regions.map((r) => r.file))));
-    const buffers = await new Promise<Tone.ToneAudioBuffers>((resolve, reject) => {
-      const b = new Tone.ToneAudioBuffers({
-        urls: Object.fromEntries(files.map((f) => [f, `${f}.mp3`])),
-        baseUrl: WURLI_URL,
-        onload: () => resolve(b),
-        onerror: (e) => reject(e instanceof Error ? e : new Error('Wurlitzer samples did not load')),
-      });
-    });
-    const out = new Tone.Gain(1.4).connect(this.bus);
-    const playing = new Map<number, { src: Tone.ToneBufferSource; amp: Tone.Gain }>();
-    const stop = (midi: number, release: number) => {
-      const p = playing.get(midi);
-      if (!p) return;
-      playing.delete(midi);
-      const now = Tone.now();
-      p.amp.gain.cancelScheduledValues(now);
-      p.amp.gain.setValueAtTime(p.amp.gain.value, now);
-      p.amp.gain.linearRampToValueAtTime(0, now + release);
-      p.src.stop(now + release + 0.02);
-      window.setTimeout(() => {
-        p.src.dispose();
-        p.amp.dispose();
-      }, (release + 0.3) * 1000);
-    };
-    return {
-      on: (midi, vel) => {
-        const v127 = Math.max(1, Math.round(vel * 127));
-        const layer = map.layers.find((l) => v127 <= l.hivel) ?? map.layers[map.layers.length - 1];
-        const region =
-          layer.regions.find((r) => midi >= r.lo && midi <= r.hi) ??
-          layer.regions.reduce((a, b) => (Math.abs(b.key - midi) < Math.abs(a.key - midi) ? b : a));
-        stop(midi, 0.03);
-        const amp = new Tone.Gain(Tone.dbToGain(region.vol) * (0.35 + 0.65 * vel)).connect(out);
-        const src = new Tone.ToneBufferSource(buffers.get(region.file)).connect(amp);
-        src.playbackRate.value = Math.pow(2, (midi - region.key + region.tune / 100) / 12);
-        src.start(Tone.now());
-        playing.set(midi, { src, amp });
-      },
-      off: (midi) => stop(midi, 0.18),
-      allOff: () => Array.from(playing.keys()).forEach((m) => stop(m, 0.1)),
-      dispose: () => {
-        Array.from(playing.keys()).forEach((m) => stop(m, 0.01));
-        buffers.dispose();
       },
     };
   }
