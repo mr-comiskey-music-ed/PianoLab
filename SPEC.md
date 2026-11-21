@@ -47,7 +47,7 @@ The **piano is always the main view**, fixed along the bottom. Everything above 
 ### Modes (top-bar tabs)
 - **Learn:** short demos where the app plays and highlights things, followed right away by **"now you try" prompts**. The student plays what was just taught and gets quick feedback (right, or a hint and try again). Not graded, but the code notes whether Learn was completed, like SynthLab. Always shows the full scroll and labels. Every lesson opens with Learn.
 - **Practice:** free exploration with labels and hints on. No grading. The chord detector is on. Students can **record a practice session and save it**, like Chrome Music Lab's Shared Piano: as a **code** (paste it back in to replay it, or turn it in on Classroom) or as a **.mid export**. Recordings are capped at a few minutes so codes stay a reasonable length.
-- **Challenge:** graded levels that produce a code.
+- **Challenges** (tab name): graded levels that produce a code.
 - **Jam Room:** pick a genre track, a sound, and a progression, then play. It can be graded or ungraded (§10).
 - **Sandbox** (built in Phase 1): play anything; it records as you go onto a scrolling piano roll (bars rise out of the keys). **Save performance** makes a code (name inside, for Classroom; code key `p`), a link (`?perf=`, opens the Sandbox ready to play back, no name in it) or a .mid file. **Clear** starts over. Capped at 3 minutes or 2000 notes; long pauses are shortened. The batch view plays performances back.
 - **Grade Report** (last tab, like SynthLab/AudioPlot): the student's levels, Learn status and **Get my code**; the teacher's batch grader lives here too (no Teacher button in the top bar).

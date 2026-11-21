@@ -59,7 +59,7 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
 - Fonts: **Barlow** (body), **Barlow Semi Condensed** (headings/numbers). Nothing else.
 - Walnut wood cheeks around piano and waterfall (`.wood`, `.wood-v`); CSS-generated placeholder, swap for a CC0 walnut photo.
 - Scale-degree colors (same in every key) are in SPEC section 14; add them when chords arrive (Phase 2).
-- Layout: walnut top bar with tabs Learn / Practice / Challenge / Sandbox / Jam Room (soon) / Grade Report; left panel
+- Layout: walnut top bar with tabs Learn / Practice / Challenges / Sandbox / Jam Room (soon) / Grade Report; left panel
   (lesson, instructions, scores, Challenge Yourself); center (stage/waterfall/piano roll, readout bar, piano); right panel
   (sounds + Mix icon, metronome, Compare versions). The piano is always the main view, except on the Grade Report page.
 - **The typing keyboard always belongs to the piano.** Only real text boxes take letter keys; sliders, knobs and buttons
@@ -88,6 +88,13 @@ Mix: behind a small faders icon at the top right of the Sound box (not essential
 Grade Report tab (like SynthLab): Get my code (`CodePanel`) and the teacher's batch grader. No Teacher button in the top bar.
 Sandbox (`ModeSandbox.tsx`, `PianoRoll.tsx`, `utils/performance.ts`): records only while its tab is open; Save performance =
 code (key `p`, name inside), link (`?perf=`, no name) or .mid; Clear. Batch view can play a performance back.
+Piano roll (Shared Piano style): its own "roll clock" runs while you play and glides to a stop ~1.4 s after you stop
+(`makeRollMap`); notes keep real timing for play back/MIDI. Scroll/drag to look back, "Back to live", Play back starts
+from the scrolled-to spot, a new note jumps back to live.
+Oct -/+ buttons light up like the class MIDI keyboards: plain at home (C3-C5), green 1 octave, yellow 2, red 3, on the
+button in the direction you moved (`octColor` in App.tsx).
+Mix panel floats over the sound list (doesn't push it down).
+Learn "find another X in a different place" needs a different key; the same key again gets a hint.
 Metronome: arm swings in time with the clicks (`engine.metroPosition()`), BPM box drags up/down or double-click to type
 (40-200), volume 0-150% (squared gain so 150% sounds about half again as loud). On = brown button with brass icon.
 Lit keys: soft breathing glow + warm gradient (`.lit` in `index.css`), never a hard growing outline.

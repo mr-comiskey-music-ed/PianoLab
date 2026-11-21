@@ -195,7 +195,7 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
 
   return (
     <div className="flex flex-col gap-3" data-testid="right-panel">
-      <div>
+      <div className="relative">
         <div className="mb-1 flex items-center justify-between">
           <div className="h text-[11px] uppercase text-muted">Sound</div>
           <button
@@ -210,7 +210,8 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
           </button>
         </div>
         {mixOpen && (
-          <div className="card mb-2 flex flex-col gap-2 p-3" data-testid="mix-panel">
+          // Floats over the sound list instead of pushing it down.
+          <div className="card absolute inset-x-0 top-8 z-20 flex flex-col gap-2 p-3 shadow-lg" data-testid="mix-panel">
             <Slider label="Tone (EQ)" value={mix.eq} min={-1} max={1} step={0.05} left="Darker" right="Brighter" onChange={(v) => applyMix({ ...mix, eq: v })} />
             <Slider label="Squash (compressor)" value={mix.comp} min={0} max={1} step={0.05} left="Off" right="Squashed" onChange={(v) => applyMix({ ...mix, comp: v })} />
             <div className="h text-[12px] text-brass3">Reverb</div>

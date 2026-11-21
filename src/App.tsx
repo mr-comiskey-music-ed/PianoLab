@@ -20,6 +20,13 @@ import { DEFAULT_START, KEY_COUNT, clampStart, inView, letterOf, noteName, start
 import { WorkSnapshot, clearSaved, hasWork, loadLatency, loadSaved, writeSaved } from './utils/autosave';
 import { levelInfo } from './utils/batch';
 
+/**
+ * Like the octave lights on the class MIDI keyboards: the Oct button in the direction you moved turns green (1 octave),
+ * yellow (2), then red (3). At home both look plain.
+ */
+const octColor = (n: number) =>
+  n <= 0 ? '' : n === 1 ? 'oct-1' : n === 2 ? 'oct-2' : 'oct-3';
+
 type Mode = 'learn' | 'practice' | 'challenge' | 'sandbox' | 'report';
 const engine = AudioEngine.get();
 
@@ -127,6 +134,9 @@ export default function App() {
   }, []);
   const octave = useCallback((d: number) => setViewStart((s) => clampStart(s + d * 12)), []);
 
+  /** Octaves away from the home view (C3-C5): + is up, - is down. */
+  const octShift = Math.round((viewStart - DEFAULT_START) / 12);
+
   const midiStatus = useInputs({ noteOn: (m, v, s) => noteOn(m, v, s), noteOff: (m) => noteOff(m), octave }, viewStart);
 
   // ---- Modes ----
@@ -152,7 +162,7 @@ export default function App() {
   const tabs: { id: Mode | 'jam'; label: string }[] = [
     { id: 'learn', label: 'Learn' },
     { id: 'practice', label: 'Practice' },
-    { id: 'challenge', label: 'Challenge' },
+    { id: 'challenge', label: 'Challenges' },
     { id: 'sandbox', label: 'Sandbox' },
     { id: 'jam', label: 'Jam Room' },
     { id: 'report', label: 'Grade Report' },
@@ -246,13 +256,13 @@ export default function App() {
             </div>
           </div>
           <div className="wood flex flex-wrap items-center gap-2 px-3 py-1.5 text-panel">
-            <button className="btn btn-dark px-2" onClick={() => octave(-1)} disabled={viewStart <= 24} data-testid="oct-down" title="Octave down (Z)">
+            <button className={`btn btn-dark px-2 ${octColor(octShift < 0 ? -octShift : 0)}`} onClick={() => octave(-1)} disabled={viewStart <= 24} data-testid="oct-down" title="Octave down (Z)">
               Oct −
             </button>
             <span className="h w-20 text-center text-[14px]" data-testid="range">
               {noteName(viewStart)}–{noteName(viewStart + KEY_COUNT - 1)}
             </span>
-            <button className="btn btn-dark px-2" onClick={() => octave(1)} disabled={viewStart >= 84} data-testid="oct-up" title="Octave up (X)">
+            <button className={`btn btn-dark px-2 ${octColor(octShift > 0 ? octShift : 0)}`} onClick={() => octave(1)} disabled={viewStart >= 84} data-testid="oct-up" title="Octave up (X)">
               Oct +
             </button>
             <span className="h ml-3 text-[13px] text-line2">

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_ASSIGNMENT, encodeSubmission } from '../utils/codec';
 import { MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, downloadMidi, formatLength, packPerf, perfLength, perfLink, readPerfParam } from '../utils/performance';
 import { Labels, LABEL_ORDER, ModeCtx, ModeParts } from './modeTypes';
-import { PianoRoll } from './PianoRoll';
+import { PianoRoll, makeRollMap } from './PianoRoll';
 
 /** A pause longer than this is shortened to SHORT_GAP, so stepping away doesn't fill the recording with silence. */
 const LONG_GAP = 8000;
@@ -28,6 +28,8 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const notesRef = useRef(notes);
   notesRef.current = notes;
   const playRef = useRef<{ start: number; timers: number[] } | null>(null);
+  /** How far back the roll is scrolled (roll ms; 0 = live). Play back starts from there. */
+  const rollOffset = useRef(0);
   // Only record while the Sandbox tab is open.
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -90,18 +92,27 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   }, [ctx.engine]);
 
   const play = async () => {
-    if (!notes.length) return;
+    const done = notes.filter((n) => n.d > 0);
+    if (!done.length) return;
+    // If you scrolled back, play from the moment at the bottom of the roll; otherwise from the start.
+    let from = 0;
+    if (rollOffset.current > 0) {
+      const { rollAt } = makeRollMap(done);
+      const bottom = rollAt(restingNow(done)) - rollOffset.current;
+      const next = done.filter((n) => rollAt(n.t) >= bottom - 1);
+      from = next.length ? Math.min(...next.map((n) => n.t)) : 0;
+    }
     stop();
     await ctx.engine.unlock();
-    const done = notes.filter((n) => n.d > 0);
-    const startAt = performance.now() + 50;
+    const LEAD = 50;
     const timers: number[] = [];
     for (const n of done) {
+      if (n.t < from) continue;
       timers.push(
         window.setTimeout(() => {
           ctx.engine.noteOn(n.m, n.v / 127);
           setPlayLit((s) => new Set(s).add(n.m));
-        }, 50 + n.t),
+        }, LEAD + n.t - from),
       );
       timers.push(
         window.setTimeout(() => {
@@ -111,11 +122,12 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
             x.delete(n.m);
             return x;
           });
-        }, 50 + n.t + n.d),
+        }, LEAD + n.t + n.d - from),
       );
     }
-    timers.push(window.setTimeout(stop, 50 + perfLength(done) + 1500));
-    playRef.current = { start: startAt, timers };
+    timers.push(window.setTimeout(stop, LEAD + perfLength(done) - from + 1500));
+    // The roll's clock reads real performance time, so it scrolls the notes in as they play.
+    playRef.current = { start: performance.now() + LEAD - from, timers };
     setPlaying(true);
   };
 
@@ -131,10 +143,12 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
 
   useEffect(() => () => stop(), [stop]);
 
-  // The roll's clock: playback time while playing back, otherwise recording time.
+  // The roll's clock: playback time while playing back, recording time while recording, otherwise "after the end"
+  // (the roll has glided to a stop there).
   const now = useCallback(() => {
     if (playRef.current) return performance.now() - playRef.current.start;
-    return t0.current === null ? null : performance.now() - t0.current;
+    if (t0.current !== null) return performance.now() - t0.current;
+    return notesRef.current.length ? restingNow(notesRef.current) : null;
   }, []);
 
   const finished = notes.filter((n) => n.d > 0);
@@ -146,7 +160,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
         <div className="h text-[11px] uppercase text-muted">Sandbox</div>
         <h2 className="h text-[22px] leading-tight text-wal3">Play anything</h2>
       </div>
-      <p className="text-[15px] leading-snug text-wal1">Everything you play is recorded and shows up on the piano roll. Save it to turn it in, share it, or open it in another music app.</p>
+      <p className="text-[15px] leading-snug text-wal1">Everything you play is recorded and shows up on the piano roll. Scroll or drag the roll to look back; Play back starts from where you are. Save it to turn it in, share it, or open it in another music app.</p>
       <div className="card p-2.5 text-[14px]" data-testid="perf-stats">
         <div className="h text-[11px] uppercase text-muted">Your performance</div>
         <div className="h text-[18px] text-wal3">
@@ -171,7 +185,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     <div className="relative h-full w-full">
       {/* Matches the piano below: the stage's wood border is 10px, the piano's cheeks 12px. */}
       <div className="absolute inset-y-0 left-[2px] right-[2px]">
-        <PianoRoll notes={notes} start={ctx.viewStart} now={now} />
+        <PianoRoll notes={notes} start={ctx.viewStart} now={now} offset={rollOffset} canScroll={!playing} />
       </div>
       {!notes.length && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
@@ -190,6 +204,9 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     overlay: saveOpen ? <SavePerformance notes={finished} onClose={() => setSaveOpen(false)} /> : undefined,
   };
 }
+
+/** A moment well after the last note, when the roll has come to rest. */
+const restingNow = (notes: PerfNote[]) => perfLength(notes) + 60_000;
 
 /** Save performance: a code for Classroom, a link, or a MIDI file. */
 const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void }> = ({ notes, onClose }) => {

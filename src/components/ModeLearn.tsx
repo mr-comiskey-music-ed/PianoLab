@@ -28,6 +28,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
 
   /** Bumped on every step change, so a demo from the step you just left stops. */
   const demoRun = useRef(0);
+  /** Keys already counted in this step (each right answer must be a different key). */
+  const usedKeys = useRef(new Set<number>());
   const showMe = useCallback(async () => {
     const s = stepRef.current;
     const notes = (s.demo ?? []).map(parseNote).filter((n): n is number => n !== null);
@@ -46,6 +48,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     const next = Math.max(0, Math.min(steps.length - 1, n));
     setI(next);
     setCount(0);
+    usedKeys.current = new Set();
     setMsg(null);
     demoRun.current++;
     setDemoLit(null);
@@ -68,6 +71,12 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       }
       const letter = letterOf(midi);
       if (s.tryAnswer!.includes(letter)) {
+        // "In a different place" means a different key: playing the same key again doesn't count.
+        if (usedKeys.current.has(midi)) {
+          setMsg({ kind: 'hint', text: `That is the same ${letter} again. Find a ${letter} in a different place on the keyboard.` });
+          return;
+        }
+        usedKeys.current.add(midi);
         setCount((c) => {
           const n = c + 1;
           if (n >= s.need) {
