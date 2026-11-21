@@ -359,11 +359,11 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
 
             {/* Both displays share what's left of the panel: filter 2 parts, scope 3 (scope is the bigger of the two) */}
             <div className="flex flex-col flex-1 min-h-0 gap-1.5">
-              <div className={compact ? 'min-h-[96px]' : 'min-h-[130px]'} style={{ flex: '2 1 0%' }}>
-                <FilterVisualizer engine={engine} theme="hardware-bench" height={compact ? 96 : 130} fill onParamChange={onParamChange} />
+              <div className={compact ? 'min-h-[108px]' : 'min-h-[130px]'} style={{ flex: compact ? '3 1 0%' : '2 1 0%' }}>
+                <FilterVisualizer engine={engine} theme="hardware-bench" height={compact ? 108 : 130} fill onParamChange={onParamChange} />
               </div>
-              <div className={compact ? 'min-h-[84px]' : 'min-h-[160px]'} style={{ flex: compact ? '1 1 0%' : '3 1 0%' }}>
-                <Visualizer engine={engine} theme="hardware-bench" height={compact ? 84 : 160} fill />
+              <div className={compact ? 'min-h-[72px]' : 'min-h-[160px]'} style={{ flex: compact ? '2 1 0%' : '3 1 0%' }}>
+                <Visualizer engine={engine} theme="hardware-bench" height={compact ? 72 : 160} fill />
               </div>
             </div>
           </div>

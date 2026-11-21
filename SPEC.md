@@ -49,6 +49,8 @@ The **piano is always the main view**, fixed along the bottom. Everything above 
 - **Practice:** free exploration with labels and hints on. No grading. The chord detector is on. Students can **record a practice session and save it**, like Chrome Music Lab's Shared Piano: as a **code** (paste it back in to replay it, or turn it in on Classroom) or as a **.mid export**. Recordings are capped at a few minutes so codes stay a reasonable length.
 - **Challenge:** graded levels that produce a code.
 - **Jam Room:** pick a genre track, a sound, and a progression, then play. It can be graded or ungraded (§10).
+- **Sandbox** (built in Phase 1): play anything; it records as you go onto a scrolling piano roll (bars rise out of the keys). **Save performance** makes a code (name inside, for Classroom; code key `p`), a link (`?perf=`, opens the Sandbox ready to play back, no name in it) or a .mid file. **Clear** starts over. Capped at 3 minutes or 2000 notes; long pauses are shortened. The batch view plays performances back.
+- **Grade Report** (last tab, like SynthLab/AudioPlot): the student's levels, Learn status and **Get my code**; the teacher's batch grader lives here too (no Teacher button in the top bar).
 
 ### The lesson loop
 Every lesson follows the same three steps: **Show → Explore → Challenge.** Students learn the app once, and "do the Challenge for Lesson 2" always means the same thing.
@@ -262,7 +264,7 @@ Each phase gets its own branch and a Vercel preview, and is tested on a real Chr
 
 1. **Foundation:** the piano with all three inputs, latency calibration, the audio engine with all sound versions and the Mix panel, Lesson 1 (white-key note names) with interactive Learn, codes, batch grading with the 50% floor, autosave, and the Studio Warm v2 layout. **Design the pattern data format now**, even though it isn't used until Phase 3.
 2. **Chords:** Lessons 2–6 (white-key chords, roman numerals and function, black keys and half steps, major and minor chords anywhere, and inversions), the chord detector, Smooth Mover, and the chord strip.
-3. **Time:** the pattern engine, metronome, waterfall, hit windows, Progression Play, Speed Round, Echo, the assignment builder, and Practice recording (save as a code or .mid).
+3. **Time:** the pattern engine, metronome, waterfall, hit windows, Progression Play, Speed Round, Echo, the assignment builder, and Practice recording (the Sandbox already records and saves as a code, link or .mid).
 4. **Music:** Lesson 7 (scales and the circle of 5ths with fingering), Jam Room, backing tracks, YouTube Play Along with the mixer, MIDI import with playback speed, the 7th-chord bonus, and the optional class record backend.
 
 ## 18. Open questions

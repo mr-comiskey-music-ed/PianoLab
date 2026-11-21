@@ -46,7 +46,7 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
     if (mark === 'ok') return black ? 'bg-[#5b8a3a]' : 'bg-[#cfe3b4]';
     if (mark === 'bad') return black ? 'bg-[#a3453f]' : 'bg-[#f0c4bf]';
     if (on) return black ? 'bg-brass3' : 'bg-[#f1d58f]';
-    if (lit?.has(midi)) return (black ? 'bg-brass2' : 'bg-[#f6dea0]') + ' lit';
+    if (lit?.has(midi)) return (black ? 'bg-brass2' : 'bg-[linear-gradient(to_bottom,#fffaf0,#f6dea0)]') + ' lit';
     return black ? 'bg-ebony' : 'bg-[#fffaf0]';
   };
 

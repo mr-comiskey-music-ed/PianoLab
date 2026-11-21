@@ -30,17 +30,15 @@ export const SYNTH_KEYS_BRIGHT: SynthParams = {
   modAttack: 0.005, modDecay: 0.4, modSustain: 0.35, modRelease: 0.35,
 };
 
-/**
- * West Coast lead (Buchla-style): round triangle + a thin pulse an octave up, a gentle 2-pole filter that opens and closes
- * with each note like a low-pass gate, a little glide and vibrato. Mono, for melodies.
- */
-export const SYNTH_WEST_COAST_LEAD: SynthParams = {
+/** Pad (Mr. Comiskey's settings): slow swell, long release, dark 4-pole filter, gentle vibrato. Poly, for chords. */
+export const SYNTH_PAD: SynthParams = {
   ...DEFAULT_SYNTH_PARAMS,
-  vco1Waveform: 'triangle', vco1Level: 0.85,
-  vco2Waveform: 'square', vco2Octave: 1, vco2PulseWidth: 0.3, vco2Fine: 4, vco2Level: 0.35, oscBalance: -0.15,
-  filterCutoff: 650, filterResonance: 2.5, filterEnvAmount: 70, filterKeyTracking: 0.8, filterRolloff: -12,
-  ampAttack: 0.005, ampDecay: 0.35, ampSustain: 0.5, ampRelease: 0.25,
-  modAttack: 0.003, modDecay: 0.28, modSustain: 0.2, modRelease: 0.25,
-  lfoRate: 5.5, lfoWaveform: 'sine', lfoDepth: 0.13, lfoDestination: 'pitch',
-  voiceMode: 'mono', glide: 0.06,
+  vco1Waveform: 'sawtooth', vco1Octave: 0, vco1Level: 0.8, vco1PulseWidth: 0.5,
+  vco2Waveform: 'square', vco2Octave: 1, vco2Fine: 8, vco2Level: 0.27, vco2PulseWidth: 0.5,
+  noiseLevel: 0.1, oscBalance: 0,
+  filterCutoff: 227, filterResonance: 0.1, filterEnvAmount: 40, filterKeyTracking: 0.5, filterRolloff: -24,
+  ampAttack: 0.835, ampDecay: 0.422, ampSustain: 0.49, ampRelease: 2.86,
+  modAttack: 0.03, modDecay: 0.148, modSustain: 0.33, modRelease: 4.0,
+  lfoRate: 4.9, lfoWaveform: 'triangle', lfoDepth: 0.16, lfoDestination: 'pitch',
+  voiceMode: 'poly', glide: 0,
 };

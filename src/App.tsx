@@ -7,22 +7,25 @@ import { CustomSynthPanel } from './components/CustomSynthPanel';
 import { SYNTH_KEYS_WARM } from './data/defaults';
 import { loadCurrentPatch } from './utils/synthPresets';
 import { SynthParams } from './types';
-import { BatchModal, CodeModal, LatencyModal } from './components/Modals';
+import { BatchModal, LatencyModal } from './components/Modals';
+import { GradeReport } from './components/GradeReport';
+import { useSandbox } from './components/ModeSandbox';
 import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { useLearn } from './components/ModeLearn';
 import { usePractice } from './components/ModePractice';
 import { useChallenge } from './components/ModeChallenge';
-import { ModeCtx } from './components/modeTypes';
+import { ModeCtx, NoteEvent } from './components/modeTypes';
 import { LevelResult } from './types';
 import { DEFAULT_START, KEY_COUNT, clampStart, inView, letterOf, noteName, startFor } from './utils/music';
 import { WorkSnapshot, clearSaved, hasWork, loadLatency, loadSaved, writeSaved } from './utils/autosave';
 import { levelInfo } from './utils/batch';
 
-type Mode = 'learn' | 'practice' | 'challenge';
+type Mode = 'learn' | 'practice' | 'challenge' | 'sandbox' | 'report';
 const engine = AudioEngine.get();
 
 export default function App() {
-  const [mode, setMode] = useState<Mode>('learn');
+  // A shared performance link (?perf=...) opens straight into the Sandbox.
+  const [mode, setMode] = useState<Mode>(() => (new URLSearchParams(window.location.search).has('perf') ? 'sandbox' : 'learn'));
   const [viewStart, setViewStart] = useState(DEFAULT_START);
   const [pressed, setPressed] = useState<Set<number>>(new Set());
   const [results, setResults] = useState<LevelResult[]>([]);
@@ -32,7 +35,7 @@ export default function App() {
   const [states, setStates] = useState<Record<string, LoadState>>({});
   const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 1 });
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
-  const [modal, setModal] = useState<null | 'code' | 'latency' | 'batch'>(null);
+  const [modal, setModal] = useState<null | 'latency' | 'batch'>(null);
   const [lastNote, setLastNote] = useState<number | null>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [customParams, setCustomParams] = useState<SynthParams>(() => {
@@ -95,6 +98,11 @@ export default function App() {
     listeners.current.add(fn);
     return () => void listeners.current.delete(fn);
   }, []);
+  const noteListeners = useRef(new Set<(e: NoteEvent) => void>());
+  const subscribeNotes = useCallback((fn: (e: NoteEvent) => void) => {
+    noteListeners.current.add(fn);
+    return () => void noteListeners.current.delete(fn);
+  }, []);
   const startRef = useRef(viewStart);
   startRef.current = viewStart;
 
@@ -106,9 +114,11 @@ export default function App() {
     // A MIDI note outside the view slides the view so the key is visible (matches the controller's own octave buttons).
     if (source === 'midi' && !inView(midi, startRef.current)) setViewStart(startFor(midi));
     listeners.current.forEach((fn) => fn(midi));
+    noteListeners.current.forEach((fn) => fn({ on: true, midi, vel }));
   }, []);
   const noteOff = useCallback((midi: number) => {
     engine.noteOff(midi);
+    noteListeners.current.forEach((fn) => fn({ on: false, midi, vel: 0 }));
     setPressed((p) => {
       const n = new Set(p);
       n.delete(midi);
@@ -123,6 +133,7 @@ export default function App() {
   const ctx: ModeCtx = {
     engine,
     subscribe,
+    subscribeNotes,
     viewStart,
     results,
     setResults,
@@ -135,13 +146,16 @@ export default function App() {
   const learn = useLearn(ctx);
   const practice = usePractice(ctx);
   const challenge = useChallenge(ctx);
-  const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : challenge;
+  const sandbox = useSandbox(ctx, mode === 'sandbox');
+  const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : mode === 'sandbox' ? sandbox : challenge;
 
   const tabs: { id: Mode | 'jam'; label: string }[] = [
     { id: 'learn', label: 'Learn' },
     { id: 'practice', label: 'Practice' },
     { id: 'challenge', label: 'Challenge' },
+    { id: 'sandbox', label: 'Sandbox' },
     { id: 'jam', label: 'Jam Room' },
+    { id: 'report', label: 'Grade Report' },
   ];
 
   const midiChip = useMemo(() => {
@@ -185,12 +199,14 @@ export default function App() {
           <button className="h rounded-md border border-wal1 px-2 py-1 text-line hover:bg-white/10" onClick={() => setModal('latency')} data-testid="latency-chip">
             {latency === null ? 'Latency: not set. Tap to check' : `Latency: ${latency} ms`}
           </button>
-          <button className="h rounded-md border border-wal1 px-2 py-1 text-line2 hover:bg-white/10" onClick={() => setModal('batch')} data-testid="teacher">
-            Teacher
-          </button>
         </div>
       </header>
 
+      {mode === 'report' ? (
+        <main className="min-h-0 flex-1 overflow-auto">
+          <GradeReport results={results} learnDone={learnDone} onTeacher={() => setModal('batch')} />
+        </main>
+      ) : (
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_250px]">
         {/* Left panel */}
         <aside className="min-h-0 overflow-auto border-r border-line bg-page p-3 order-2 lg:order-none" data-testid="left-panel">
@@ -219,12 +235,6 @@ export default function App() {
                 </div>
               </>
             )}
-            {/* Only once there is something to turn in: at least one finished Challenge level. */}
-            {results.length > 0 && (
-              <button className="btn btn-dark mt-3 w-full" onClick={() => setModal('code')} data-testid="get-code">
-                Get my code
-              </button>
-            )}
           </div>
         </aside>
 
@@ -246,7 +256,7 @@ export default function App() {
               Oct +
             </button>
             <span className="h ml-3 text-[13px] text-line2">
-              {lastNote === null ? 'Play a key' : <>Last note: <b className="text-brass">{noteName(lastNote)}</b> ({letterOf(lastNote)})</>}
+              {lastNote === null ? 'Play a key' : <>Last note: <b className="text-brass">{noteName(lastNote)}</b></>}
             </span>
             <span className="ml-auto flex gap-2">
               {parts.restart && (
@@ -295,6 +305,7 @@ export default function App() {
           />
         </aside>
       </div>
+      )}
 
       {saved && !autosaveOn && (
         <RestorePrompt
@@ -320,9 +331,9 @@ export default function App() {
           onClose={() => setCustomOpen(false)}
         />
       )}
-      {modal === 'code' && <CodeModal results={results} learnDone={learnDone} onClose={() => setModal(null)} />}
+      {parts.overlay}
       {modal === 'latency' && <LatencyModal engine={engine} subscribe={subscribe} onDone={setLatency} onClose={() => setModal(null)} pauseMetro={() => onMetro({ ...metro, on: false })} />}
-      {modal === 'batch' && <BatchModal onClose={() => setModal(null)} />}
+      {modal === 'batch' && <BatchModal engine={engine} onClose={() => setModal(null)} />}
     </div>
   );
 }

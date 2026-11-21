@@ -2,13 +2,13 @@ import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AudioEngine } from '../audio/audioEngine';
 import { MinilogueView } from '../synthlab/MinilogueView';
 import { SynthParams } from '../types';
-import { DEFAULT_SYNTH_PARAMS, SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM, SYNTH_WEST_COAST_LEAD } from '../data/defaults';
+import { DEFAULT_SYNTH_PARAMS, SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM, SYNTH_PAD } from '../data/defaults';
 import { MAX_PRESETS, SavedPatch, deletePreset, listPresets, saveCurrentPatch, savePreset } from '../utils/synthPresets';
 
 const STARTERS: [string, SynthParams][] = [
   ['Warm', SYNTH_KEYS_WARM],
   ['Bright', SYNTH_KEYS_BRIGHT],
-  ['West Coast lead', SYNTH_WEST_COAST_LEAD],
+  ['Pad', SYNTH_PAD],
   ['Plain saw', DEFAULT_SYNTH_PARAMS],
 ];
 
@@ -30,7 +30,8 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
   const [presets, setPresets] = useState<SavedPatch[]>(() => listPresets());
   const [name, setName] = useState('');
   const [msg, setMsg] = useState('');
-  const boxRef = useRef<HTMLDivElement>(null);
+  const areaRef = useRef<HTMLDivElement>(null);
+  const headRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [shownH, setShownH] = useState<number | undefined>(undefined);
@@ -38,12 +39,14 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
   // Fit the synth to the box: find the biggest scale where it is not taller than the box. Narrower layouts are taller,
   // so we lay it out at (box width / scale) and shrink it back, which fills the width exactly.
   useLayoutEffect(() => {
-    const box = boxRef.current;
+    const area = areaRef.current;
+    const head = headRef.current;
     const inner = innerRef.current;
-    if (!box || !inner) return;
+    if (!area || !head || !inner) return;
     const fit = () => {
-      const W = box.clientWidth;
-      const H = box.clientHeight;
+      // The space between the top bar and the piano, minus the pop-up's own header row.
+      const W = area.clientWidth - 2;
+      const H = area.clientHeight - head.offsetHeight - 2;
       const fits = (s: number) => {
         inner.style.width = `${W / s}px`;
         return inner.offsetHeight * s <= H;
@@ -65,7 +68,7 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
     };
     fit();
     const ro = new ResizeObserver(fit);
-    ro.observe(box);
+    ro.observe(area);
     // Fonts arriving late can change the height a little.
     const t = window.setTimeout(fit, 400);
     return () => {
@@ -88,15 +91,19 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
   };
 
   return (
+    // The fixed area runs from below the top bar to just above the piano; the pop-up inside is only as tall as it needs.
     <div
-      className="fixed inset-x-2 top-1 z-40 flex flex-col overflow-hidden rounded-xl border border-wal1 bg-[#0e1014] shadow-2xl"
-      // Stop above the piano so it stays playable underneath.
+      ref={areaRef}
+      className="pointer-events-none fixed inset-x-2 top-12 z-40 flex flex-col"
       style={{ bottom: 'calc(clamp(150px, 24vh, 210px) + 14px)' }}
+    >
+    <div
+      className="pointer-events-auto flex max-h-full flex-col overflow-hidden rounded-xl border border-wal1 bg-[#0e1014] shadow-2xl"
       role="dialog"
       aria-label="Custom Synth"
       data-testid="custom-synth"
     >
-      <div className="wood flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1.5 text-panel">
+      <div ref={headRef} className="wood flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1.5 text-panel">
         <span className="h text-[17px]">Custom Synth</span>
         <span className="h ml-1 text-[12px] text-line2">Start from:</span>
         {STARTERS.map(([label, p]) => (
@@ -153,7 +160,7 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
           </button>
         </span>
       </div>
-      <div ref={boxRef} className={`relative min-h-0 flex-1 text-slate-100 ${scale <= MIN_SCALE ? 'overflow-y-auto' : 'overflow-hidden'}`} data-testid="synth-box">
+      <div className={`relative min-h-0 text-slate-100 ${scale <= MIN_SCALE ? 'overflow-y-auto' : 'overflow-hidden'}`} data-testid="synth-box">
         {/* The outer div takes the shrunk height, so scrolling (only on very small screens) matches what you see. */}
         <div style={{ height: shownH, overflow: 'hidden' }}>
           <div ref={innerRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
@@ -161,6 +168,7 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

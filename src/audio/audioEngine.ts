@@ -378,6 +378,7 @@ export class AudioEngine {
       t.clear(this.metroEvent);
       this.metroEvent = null;
     }
+    this.beats = [];
     if (!on) {
       t.stop();
       return;
@@ -386,9 +387,29 @@ export class AudioEngine {
     let beat = 0;
     this.metroEvent = t.scheduleRepeat((time) => {
       this.tick(this.metroKind, beat, time);
+      // Remember when each beat sounds, so the metronome icon can swing in time.
+      this.beats.push({ n: beat, time });
+      if (this.beats.length > 6) this.beats.shift();
       beat++;
     }, '4n');
     t.start();
+  }
+
+  /** Recent beats (audio-clock time), for metroPosition(). */
+  private beats: { n: number; time: number }[] = [];
+
+  /**
+   * Where the metronome is right now, in beats (2.5 = halfway between beats 2 and 3), or null when it is off.
+   * Uses the audio clock, so the swinging icon lines up with what you hear.
+   */
+  metroPosition(): number | null {
+    if (this.metroEvent === null) return null;
+    const now = Tone.getContext().currentTime;
+    const past = this.beats.filter((b) => b.time <= now);
+    const last = past[past.length - 1];
+    if (!last) return null;
+    const beatLen = 60 / Tone.getTransport().bpm.value;
+    return last.n + Math.min(1, (now - last.time) / beatLen);
   }
 
   /** Change tempo without restarting the beat. */
@@ -396,10 +417,13 @@ export class AudioEngine {
     Tone.getTransport().bpm.value = bpm;
   }
 
-  /** 0 (silent) to 1 (full). */
-  /** 1 = 100% (the default level), up to 2 = 200%. */
+  /**
+   * 1 = 100% (the default level), up to 1.5 = 150%. Squared so the knob feels even to the ear
+   * (150% is about 7 dB louder, which sounds roughly half again as loud).
+   */
   setMetroVolume(v: number) {
-    this.metroGain.gain.value = 0.8 * Math.max(0, Math.min(2, v));
+    const x = Math.max(0, Math.min(1.5, v));
+    this.metroGain.gain.value = 0.8 * x * x;
   }
 
   /** One metronome beat. Beat 0 of each bar is accented. */

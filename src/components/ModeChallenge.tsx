@@ -49,6 +49,11 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   const [labelPick, setLabelPick] = useState<Record<string, Labels>>({});
   const runRef = useRef<Run | null>(null);
   runRef.current = run;
+  /** Update the run AND the ref right away, so two keys arriving at the same instant (a chord) see each other's result. */
+  const setRunNow = (r: Run | null) => {
+    runRef.current = r;
+    setRun(r);
+  };
   const markTimer = useRef<number | undefined>(undefined);
 
   const flash = (midi: number, mark: KeyMark) => {
@@ -69,7 +74,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const level = levelById(id);
     setFinished(null);
     setMsg('');
-    setRun({ level, prompts: shuffle(level.prompts), idx: 0, points: 0, misses: 0 });
+    setRunNow({ level, prompts: shuffle(level.prompts), idx: 0, points: 0, misses: 0 });
   };
 
   /** Score the current prompt as right or wrong and move on. */
@@ -79,7 +84,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     if (!correct) {
       if (midi !== undefined) flash(midi, 'bad');
       setMsg('Not quite. Try again.');
-      setRun({ ...r, misses: r.misses + 1 });
+      setRunNow({ ...r, misses: r.misses + 1 });
       return;
     }
     if (midi !== undefined) flash(midi, 'ok');
@@ -88,7 +93,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const idx = r.idx + 1;
     if (idx >= r.prompts.length) {
       const raw = accuracy(points, r.prompts.length);
-      setRun(null);
+      setRunNow(null);
       const prevBest = best[r.level.id] ?? 0;
       saveBest(r.level.id, raw);
       setBest(loadBest());
@@ -99,7 +104,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         return [...rest, { levelId: r.level.id, raw, labels: effective(r.level), at: Date.now() }];
       });
       setFinished({ level: r.level, raw, best: Math.max(prevBest, raw) });
-    } else setRun({ ...r, idx, points, misses: 0 });
+    } else setRunNow({ ...r, idx, points, misses: 0 });
   };
 
   // Playing a key (Find It).
@@ -194,7 +199,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             </button>
           )}
         </div>
-        <div className="text-[13px] text-line2">Press “Get my code” on the left to turn your work in.</div>
+        <div className="text-[13px] text-line2">Turn your work in from the Grade Report tab.</div>
       </div>
     );
   } else if (run && prompt) {

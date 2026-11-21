@@ -108,6 +108,8 @@ export interface Submission {
   results: LevelResult[];
   /** Compressed MIDI take (Play Along, later phases). Reserved so v1 codes can carry it. */
   take?: string;
+  /** A Sandbox performance, packed by packPerf() in utils/performance.ts (code key `p`). */
+  perf?: number[];
 }
 
 /** SynthLab's two synth looks (only 'hardware-bench', the Modern Synth, is used here). Copied so the SynthLab panel compiles. */

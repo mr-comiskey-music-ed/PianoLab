@@ -14,6 +14,7 @@ import { LevelResult, Submission } from '../types';
  *   - Level ids (in lessons.json) are saved in codes. Never rename or remove one.
  * The student's name (key `n`) lives ONLY inside the code, like SynthLab. The app never stores it in the browser.
  * Codes made before the name was added have no `n`; they still decode.
+ * Key `p` (added later, still v1) carries a Sandbox performance; older codes simply don't have it.
  */
 export const FORMAT_VERSION = 1;
 export const DEFAULT_ASSIGNMENT = 'open';
@@ -83,6 +84,7 @@ export async function encodeSubmission(sub: Submission): Promise<string> {
   if (sub.assignment && sub.assignment !== DEFAULT_ASSIGNMENT) packed.a = sub.assignment;
   if (sub.learnDone) packed.l = 1;
   if (sub.take) packed.m = sub.take; // reserved for Play Along takes (later phase)
+  if (sub.perf?.length) packed.p = sub.perf; // a Sandbox performance (packPerf)
   const json = JSON.stringify(packed);
   return `v${FORMAT_VERSION}.${await compress(json)}.${checksum(json)}`;
 }
@@ -117,6 +119,7 @@ async function decodeV1(body: string, sum: string): Promise<Submission | null> {
       learnDone: d.l === 1,
       results,
       ...(typeof d.m === 'string' ? { take: d.m } : {}),
+      ...(Array.isArray(d.p) ? { perf: (d.p as unknown[]).map(Number).filter(Number.isFinite) } : {}),
     };
   } catch {
     return null;

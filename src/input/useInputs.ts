@@ -64,9 +64,22 @@ export function useInputs(handlers: InputHandlers, viewStart: number) {
   // ----- Computer keyboard -----
   useEffect(() => {
     const down = new Map<string, number>(); // key -> midi it started, so note-off matches even if the view moved
+    // Only real text boxes (a name, a code, a typed BPM) take the letter keys. Sliders, knobs and buttons never do:
+    // the typing keyboard always stays on the piano.
+    const NOT_TEXT = new Set(['range', 'checkbox', 'radio', 'button', 'submit', 'reset', 'color', 'file']);
     const typingTarget = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
-      return !!t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.isContentEditable);
+      if (!t) return false;
+      if (t.tagName === 'INPUT') return !NOT_TEXT.has((t as HTMLInputElement).type);
+      return t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable;
+    };
+    // After clicking or dragging a slider, knob or button with the mouse, let go of it, so arrow keys and the space bar
+    // don't keep nudging it. (Tabbing to a control with the keyboard still works as usual.)
+    const release = () => {
+      const a = document.activeElement as HTMLElement | null;
+      if (!a || a === document.body) return;
+      const isText = (a.tagName === 'INPUT' && !NOT_TEXT.has((a as HTMLInputElement).type)) || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT' || a.isContentEditable;
+      if (!isText) a.blur();
     };
     const onDown = (e: KeyboardEvent) => {
       if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || typingTarget(e)) return;
@@ -93,7 +106,9 @@ export function useInputs(handlers: InputHandlers, viewStart: number) {
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
     window.addEventListener('blur', blur);
+    window.addEventListener('pointerup', release);
     return () => {
+      window.removeEventListener('pointerup', release);
       window.removeEventListener('keydown', onDown);
       window.removeEventListener('keyup', onUp);
       window.removeEventListener('blur', blur);

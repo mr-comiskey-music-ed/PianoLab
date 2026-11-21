@@ -4,6 +4,7 @@ import { accuracy, credit, floored, passed } from './grading';
 import { parseBatch } from './batch';
 import { cleanSnapshot } from './autosave';
 import { validatePattern } from '../data/pattern';
+import { packPerf, toMidiFile, unpackPerf } from './performance';
 import example from '../data/pattern.example.json';
 import { Submission } from '../types';
 
@@ -107,5 +108,37 @@ describe('pattern format', () => {
   it('accepts the example and rejects a bad one', () => {
     expect(validatePattern(example as never)).toEqual([]);
     expect(validatePattern({ id: 'x', tempo: 5 } as never).length).toBeGreaterThan(3);
+  });
+});
+
+describe('Sandbox performances', () => {
+  const notes = [
+    { t: 0, d: 400, m: 60, v: 100 },
+    { t: 500, d: 250, m: 64, v: 80 },
+    { t: 500, d: 250, m: 67, v: 80 },
+    { t: 1203, d: 998, m: 72, v: 127 },
+  ];
+  it('pack/unpack keeps the notes (to 5 ms)', () => {
+    const back = unpackPerf(packPerf(notes));
+    expect(back.map((n) => [n.m, n.v])).toEqual(notes.map((n) => [n.m, n.v]));
+    back.forEach((n, i) => {
+      expect(Math.abs(n.t - notes[i].t)).toBeLessThanOrEqual(5);
+      expect(Math.abs(n.d - notes[i].d)).toBeLessThanOrEqual(5);
+    });
+    expect(unpackPerf('junk')).toEqual([]);
+  });
+  it('a code can carry a performance (key p) and still decode', async () => {
+    const code = await encodeSubmission({ name: 'Sam', assignment: 'open', timestamp: 0, learnDone: false, results: [], perf: packPerf(notes) });
+    const back = await decodeSubmission(code);
+    expect(back?.name).toBe('Sam');
+    expect(unpackPerf(back?.perf).length).toBe(4);
+  });
+  it('makes a valid MIDI file', () => {
+    const f = toMidiFile(notes);
+    expect(String.fromCharCode(...f.slice(0, 4))).toBe('MThd');
+    expect(String.fromCharCode(...f.slice(14, 18))).toBe('MTrk');
+    const len = (f[18] << 24) | (f[19] << 16) | (f[20] << 8) | f[21];
+    expect(len).toBe(f.length - 22);
+    expect(Array.from(f.slice(-4))).toEqual([0x00, 0xff, 0x2f, 0x00]);
   });
 });

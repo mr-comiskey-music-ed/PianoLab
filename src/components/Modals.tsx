@@ -5,6 +5,7 @@ import { encodeSubmission, DEFAULT_ASSIGNMENT } from '../utils/codec';
 import { parseBatch, BatchResult, BatchEntry, ALL_LEVELS } from '../utils/batch';
 import { floored, passed, bestByLevel } from '../utils/grading';
 import { saveLatency } from '../utils/autosave';
+import { downloadMidi, formatLength, perfLength, unpackPerf } from '../utils/performance';
 
 const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }> = ({ title, onClose, wide, children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4" role="dialog" aria-modal="true" aria-label={title}>
@@ -20,8 +21,8 @@ const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; chil
   </div>
 );
 
-// ---------------- Get my code ----------------
-export const CodeModal: React.FC<{ results: LevelResult[]; learnDone: boolean; onClose: () => void }> = ({ results, learnDone, onClose }) => {
+// ---------------- Get my code (shown on the Grade Report tab) ----------------
+export const CodePanel: React.FC<{ results: LevelResult[]; learnDone: boolean }> = ({ results, learnDone }) => {
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState(false);
   // The name is typed fresh each time and is never saved by the app. It lives only inside the code.
@@ -43,7 +44,7 @@ export const CodeModal: React.FC<{ results: LevelResult[]; learnDone: boolean; o
     setCopied(true);
   };
   return (
-    <Shell title="Get my code" onClose={onClose}>
+    <div data-testid="code-panel">
       <p className="text-[15px] text-wal1">Type your name, then copy your code and paste it into Google Classroom to turn in your work. Your name goes inside the code only. This app never saves it.</p>
       <label className="mt-3 block text-[14px]">
         <span className="h text-wal3">Your name</span>
@@ -65,7 +66,7 @@ export const CodeModal: React.FC<{ results: LevelResult[]; learnDone: boolean; o
       <button className="btn btn-brass mt-2 w-full" onClick={copy} disabled={!code}>
         {copied ? 'Copied ✓' : 'Copy code'}
       </button>
-    </Shell>
+    </div>
   );
 };
 
@@ -165,7 +166,7 @@ export const LatencyModal: React.FC<{
 };
 
 // ---------------- Teacher: batch grading ----------------
-export const BatchModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const BatchModal: React.FC<{ engine: AudioEngine; onClose: () => void }> = ({ engine, onClose }) => {
   const [text, setText] = useState('');
   const [res, setRes] = useState<BatchResult | null>(null);
   const [open, setOpen] = useState<number | null>(null);
@@ -190,7 +191,7 @@ export const BatchModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           {res.unreadable.length > 0 && <p className="mt-2 text-[14px] text-bad">Couldn’t read: {res.unreadable.join(', ')}</p>}
           <div className="mt-3 flex flex-col gap-1">
             {res.entries.map((e) => (
-              <Row key={e.id} e={e} open={open === e.id} toggle={() => setOpen(open === e.id ? null : e.id)} />
+              <Row key={e.id} e={e} engine={engine} open={open === e.id} toggle={() => setOpen(open === e.id ? null : e.id)} />
             ))}
           </div>
         </div>
@@ -199,7 +200,42 @@ export const BatchModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   );
 };
 
-const Row: React.FC<{ e: BatchEntry; open: boolean; toggle: () => void }> = ({ e, open, toggle }) => (
+/** Plays a Sandbox performance from a code. Stop cuts it off. */
+const PerfPlayer: React.FC<{ engine: AudioEngine; perf: number[] }> = ({ engine, perf }) => {
+  const notes = React.useMemo(() => unpackPerf(perf), [perf]);
+  const timers = useRef<number[]>([]);
+  const [playing, setPlaying] = useState(false);
+  const stop = () => {
+    timers.current.forEach((t) => window.clearTimeout(t));
+    timers.current = [];
+    notes.forEach((n) => engine.noteOff(n.m));
+    setPlaying(false);
+  };
+  useEffect(() => stop, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const play = async () => {
+    await engine.unlock();
+    stop();
+    for (const n of notes) {
+      timers.current.push(window.setTimeout(() => engine.noteOn(n.m, n.v / 127), n.t));
+      timers.current.push(window.setTimeout(() => engine.noteOff(n.m), n.t + n.d));
+    }
+    timers.current.push(window.setTimeout(() => setPlaying(false), perfLength(notes) + 500));
+    setPlaying(true);
+  };
+  return (
+    <span className="flex items-center gap-2 text-[13px] text-wal1" data-testid="batch-perf">
+      Sandbox performance: {notes.length} notes, {formatLength(perfLength(notes))}
+      <span role="button" tabIndex={0} className="btn px-2 py-0.5 text-[12px]" onClick={(ev) => { ev.stopPropagation(); if (playing) stop(); else void play(); }}>
+        {playing ? '■ Stop' : '▶ Play'}
+      </span>
+      <span role="button" tabIndex={0} className="btn px-2 py-0.5 text-[12px]" onClick={(ev) => { ev.stopPropagation(); downloadMidi(notes); }}>
+        .mid
+      </span>
+    </span>
+  );
+};
+
+const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle: () => void }> = ({ e, engine, open, toggle }) => (
   <div className="rounded-lg border border-line bg-panel">
     <button className="flex w-full items-center gap-3 px-3 py-2 text-left" onClick={toggle}>
       <span className="h w-40 truncate text-[14px] text-wal3">{e.label || `Student ${e.id}`}</span>
@@ -216,6 +252,11 @@ const Row: React.FC<{ e: BatchEntry; open: boolean; toggle: () => void }> = ({ e
       </span>
       <span className="h text-[15px] text-wal3">{e.headline !== null ? `${e.headline}%` : '–'}</span>
     </button>
+    {e.submission.perf?.length ? (
+      <div className="border-t border-line px-3 py-1.5">
+        <PerfPlayer engine={engine} perf={e.submission.perf} />
+      </div>
+    ) : null}
     {open && (
       <div className="border-t border-line px-3 py-2 text-[13px]">
         <div className="text-muted">Made {e.submission.timestamp ? new Date(e.submission.timestamp).toLocaleString() : 'unknown time'}. Numbers in ( ) are the raw score before the 50% floor (teacher only).</div>

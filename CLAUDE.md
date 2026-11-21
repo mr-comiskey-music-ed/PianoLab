@@ -9,7 +9,8 @@ Drills are the means; students making music is the goal.
   the code (like SynthLab); the app never stores it. Older codes with no name still work; the batch view then uses any text
   pasted next to the code.
 - Only things kept in the browser: autosave (`pianolab:v1:autosave`), latency (`pianolab:v1:latency`), personal bests
-  (`pianolab:v1:best`), Custom Synth patches (`pianolab:v1:synths`: sound settings + patch names). Never a student name. "Restore your last session?" prompt first; autosave stays off until answered.
+  (`pianolab:v1:best`), Custom Synth patches (`pianolab:v1:synths`: sound settings + patch names). Never a student name.
+  A Sandbox recording lives in memory only (gone on reload) unless saved as a code/link/.mid. "Restore your last session?" prompt first; autosave stays off until answered.
 - **Chromebooks first**: each student has a Chromebook, a **25-key USB MIDI keyboard** and headphones. Keep it light and
   fast. Sounds load only when picked. Mobile is nice-to-have only.
 - No traditional notation. MIDI-block notation, chord names, roman numerals only.
@@ -58,8 +59,11 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
 - Fonts: **Barlow** (body), **Barlow Semi Condensed** (headings/numbers). Nothing else.
 - Walnut wood cheeks around piano and waterfall (`.wood`, `.wood-v`); CSS-generated placeholder, swap for a CC0 walnut photo.
 - Scale-degree colors (same in every key) are in SPEC section 14; add them when chords arrive (Phase 2).
-- Layout: walnut top bar; left panel (lesson, instructions, scores, Get my code); center (stage/waterfall, readout bar,
-  piano); right panel (sounds, Mix, Compare versions, metronome). The piano is always the main view.
+- Layout: walnut top bar with tabs Learn / Practice / Challenge / Sandbox / Jam Room (soon) / Grade Report; left panel
+  (lesson, instructions, scores, Challenge Yourself); center (stage/waterfall/piano roll, readout bar, piano); right panel
+  (sounds + Mix icon, metronome, Compare versions). The piano is always the main view, except on the Grade Report page.
+- **The typing keyboard always belongs to the piano.** Only real text boxes take letter keys; sliders, knobs and buttons
+  let go of focus after a mouse drag/click (`useInputs.ts`). Keep it that way for any new control.
 
 ## How Mr. Comiskey works (important)
 - Very little coding knowledge. Explain in plain words, keep changes small, say what to click when something needs testing.
@@ -78,14 +82,19 @@ reduced copy ~1.8 MB in `public/samples/jrhodes3d/`, CC BY-NC 4.0), Synth Keys (
 Sample files for Rhodes/Accurate are hosted with the app, so they need no outside host. Keep credits in the right panel.
 Dropped: the smplr electric piano and the paste-a-SynthLab-patch sound.
 Right panel controls must be defined OUTSIDE components (the Slider once lived inside RightPanel and broke click-and-drag).
-Metronome: wood block only (chosen by Mr. Comiskey; no sound menu); compact (his metronome SVG icon as the on/off button,
-BPM box + slider, volume knob: 100% default, 0-200%, value bubble while dragging, double-click resets).
+Metronome: wood block only (chosen by Mr. Comiskey; no sound menu); compact (icon on/off button redrawn from his SVG so
+the arm can swing, BPM box + slider, volume knob: 100% default, value bubble while dragging, double-click resets).
 Mix: behind a small faders icon at the top right of the Sound box (not essential, so low-key).
-"Get my code" only shows once a Challenge level has been finished.
+Grade Report tab (like SynthLab): Get my code (`CodePanel`) and the teacher's batch grader. No Teacher button in the top bar.
+Sandbox (`ModeSandbox.tsx`, `PianoRoll.tsx`, `utils/performance.ts`): records only while its tab is open; Save performance =
+code (key `p`, name inside), link (`?perf=`, no name) or .mid; Clear. Batch view can play a performance back.
+Metronome: arm swings in time with the clicks (`engine.metroPosition()`), BPM box drags up/down or double-click to type
+(40-200), volume 0-150% (squared gain so 150% sounds about half again as loud). On = brown button with brass icon.
+Lit keys: soft breathing glow + warm gradient (`.lit` in `index.css`), never a hard growing outline.
 Custom Synth: SynthLab's Modern Synth panel (`src/synthlab/`, copied, see its README; its `compact` prop hides the title
-bar and Master Vol and shortens the displays) in a pop-up that stops above the piano so students keep playing. One header
-row: Start from (Warm, Bright, West Coast lead, Plain saw), My sounds, name + Save. The synth is shrunk to fit so it never
-scrolls (down to 50%). "Custom Synth" in the sound list opens it. Patches save to the browser.
+bar and Master Vol and shortens the displays; filter display 1.5x the scope) in a pop-up between the top bar and the piano
+(never covers either) so students keep playing. One header row: Start from (Warm, Bright, Pad, Plain saw; all poly,
+because the app is about chords - no mono leads), My sounds, name + Save. Shrunk to fit so it never scrolls (down to 50%). "Custom Synth" in the sound list opens it. Patches save to the browser.
 Rhodes now has all 5 velocity layers (~1.8 MB); top notes missing a layer borrow the nearest layer of the same note.
 Metronome sounds are in `audioEngine.ts` `tick()`.
 
