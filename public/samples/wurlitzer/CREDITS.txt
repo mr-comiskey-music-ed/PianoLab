@@ -1,0 +1,4 @@
+Wurlitzer EP200 Electric Piano v1.1 by Greg Sullivan (http://www.sullivang.net/), SFZ mapping by kinwie.
+Creative Commons Attribution 3.0 Unported (CC BY 3.0).
+Source: github.com/sfzinstruments/GregSullivan.E-Pianos (via the smpldsnds mirror).
+PianoLab copy: converted to mono 96 kbps mp3; map.json lists each sample's key range, root key, tuning and level.

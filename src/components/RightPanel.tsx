@@ -14,10 +14,11 @@ export interface Metro {
  * A labelled slider. It lives OUTSIDE RightPanel on purpose: when it was defined inside, React rebuilt it on every change,
  * which dropped the mouse grab and made click-and-drag stop working.
  */
-const Slider: React.FC<{ label: string; value: number; min: number; max: number; step: number; left?: string; right?: string; onChange: (v: number) => void }> = ({ label, value, min, max, step, left, right, onChange }) => (
-  <label className="block text-[13px]">
+const Slider: React.FC<{ label: string; value: number; min: number; max: number; step: number; def: number; left?: string; right?: string; onChange: (v: number) => void }> = ({ label, value, min, max, step, def, left, right, onChange }) => (
+  <label className="block text-[13px]" title="Double-click to reset">
     <span className="h text-wal3">{label}</span>
-    <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-[#b8862c]" />
+    {/* Double-click puts it back to where it started. */}
+    <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} onDoubleClick={() => onChange(def)} className="w-full accent-[#b8862c]" />
     {(left || right) && (
       <span className="flex justify-between text-[11px] text-muted">
         <span>{left}</span>
@@ -180,11 +181,12 @@ interface Props {
 }
 
 const stateText: Record<LoadState, string> = { idle: '', loading: 'loading…', ready: '', error: 'could not load' };
-const CATEGORIES = ['Grand Piano', 'Electric Piano', 'Felt Piano', 'Synth Keys'] as const;
+const CATEGORIES = ['Grand Piano', 'Electric Piano', 'Soft Piano', 'Synth Keys'] as const;
+const MIX_DEFAULT = { eq: 0, comp: 0, len: 1.8, color: 0.7, wet: 0.12 };
 
 export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect, metro, onMetro, onOpenCustom }) => {
   const [mixOpen, setMixOpen] = useState(false);
-  const [mix, setMix] = useState({ eq: 0, comp: 0, len: 1.8, color: 0.7, wet: 0.12 });
+  const [mix, setMix] = useState(MIX_DEFAULT);
 
   const applyMix = (next: typeof mix) => {
     setMix(next);
@@ -212,17 +214,20 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
         {mixOpen && (
           // Floats over the sound list instead of pushing it down.
           <div className="card absolute inset-x-0 top-8 z-20 flex flex-col gap-2 p-3 shadow-lg" data-testid="mix-panel">
-            <Slider label="Tone (EQ)" value={mix.eq} min={-1} max={1} step={0.05} left="Darker" right="Brighter" onChange={(v) => applyMix({ ...mix, eq: v })} />
-            <Slider label="Squash (compressor)" value={mix.comp} min={0} max={1} step={0.05} left="Off" right="Squashed" onChange={(v) => applyMix({ ...mix, comp: v })} />
+            <Slider label="Tone (EQ)" def={MIX_DEFAULT.eq} value={mix.eq} min={-1} max={1} step={0.05} left="Darker" right="Brighter" onChange={(v) => applyMix({ ...mix, eq: v })} />
+            <Slider label="Squash (compressor)" def={MIX_DEFAULT.comp} value={mix.comp} min={0} max={1} step={0.05} left="Off" right="Squashed" onChange={(v) => applyMix({ ...mix, comp: v })} />
             <div className="h text-[12px] text-brass3">Reverb</div>
-            <Slider label="Length" value={mix.len} min={0.3} max={6} step={0.1} onChange={(v) => applyMix({ ...mix, len: v })} />
-            <Slider label="Color" value={mix.color} min={0} max={1} step={0.05} left="Dark" right="Bright" onChange={(v) => applyMix({ ...mix, color: v })} />
-            <Slider label="Mix" value={mix.wet} min={0} max={1} step={0.02} onChange={(v) => applyMix({ ...mix, wet: v })} />
+            <Slider label="Length" def={MIX_DEFAULT.len} value={mix.len} min={0.3} max={6} step={0.1} onChange={(v) => applyMix({ ...mix, len: v })} />
+            <Slider label="Color" def={MIX_DEFAULT.color} value={mix.color} min={0} max={1} step={0.05} left="Dark" right="Bright" onChange={(v) => applyMix({ ...mix, color: v })} />
+            <Slider label="Mix" def={MIX_DEFAULT.wet} value={mix.wet} min={0} max={1} step={0.02} onChange={(v) => applyMix({ ...mix, wet: v })} />
           </div>
         )}
         {CATEGORIES.map((cat) => (
           <div key={cat} className="mb-1.5">
-            <div className="h text-[12px] text-brass3">{cat}</div>
+            {/* A category with one sound of the same name (Grand Piano, Soft Piano) doesn't need a heading. */}
+            {!(SOUNDS.filter((s) => s.category === cat).length === 1 && SOUNDS.find((s) => s.category === cat)?.label === cat) && (
+              <div className="h text-[12px] text-brass3">{cat}</div>
+            )}
             {SOUNDS.filter((s) => s.category === cat).map((s) => {
               const st = states[s.id] ?? 'idle';
               const sel = s.id === soundId;
@@ -261,10 +266,10 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
       </div>
 
       <div className="rounded-lg border-2 border-dashed border-line2 p-2.5" data-testid="compare">
-        <div className="h text-[12px] uppercase text-muted">Compare versions</div>
-        <div className="text-[11px] text-muted">For teacher testing only. This box goes away once a version is chosen for each category.</div>
+        <div className="h text-[12px] uppercase text-muted">Compare electric pianos</div>
+        <div className="text-[11px] text-muted">For teacher testing only. This box goes away once one is chosen.</div>
         <div className="mt-1.5 flex flex-col gap-1">
-          {SOUNDS.filter((s) => s.id !== 'custom').map((s) => (
+          {SOUNDS.filter((s) => s.category === 'Electric Piano').map((s) => (
             <button
               key={s.id}
               className="btn text-left text-[13px]"
@@ -283,9 +288,11 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
       <details className="text-[12px] text-muted">
         <summary className="h cursor-pointer text-wal1">Sound credits</summary>
         <ul className="mt-1 list-disc pl-4">
-          <li>Salamander Grand Piano by Alexander Holm (Yamaha C5), CC-BY 3.0.</li>
-          <li>jRhodes3d (Rhodes Mark I) by Joshua Learman, CC BY-NC 4.0. A reduced copy is used here.</li>
+          <li>Grand Piano and Soft Piano: Accurate-Salamander, from the Salamander Grand Piano by Alexander Holm (Yamaha C5), CC BY 3.0. A reduced copy is used here.</li>
+          <li>Rhodes: jRhodes3d (Rhodes Mark I) by Joshua Learman, CC BY-NC 4.0. A reduced copy is used here.</li>
+          <li>Wurlitzer: Wurlitzer EP200 by Greg Sullivan, mapped by kinwie, CC BY 3.0. Converted to mp3 here.</li>
           <li>Synth Keys use the SynthLab synth engine.</li>
+          <li>Wood: “Wood 067” from ambientCG, CC0.</li>
           <li>PianoLab is a free, non-commercial classroom app.</li>
         </ul>
       </details>

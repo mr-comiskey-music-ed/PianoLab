@@ -119,7 +119,7 @@ export default function App() {
     setPressed((p) => new Set(p).add(midi));
     setLastNote(midi);
     // A MIDI note outside the view slides the view so the key is visible (matches the controller's own octave buttons).
-    if (source === 'midi' && !inView(midi, startRef.current)) setViewStart(startFor(midi));
+    if (source === 'midi' && !inView(midi, startRef.current)) setViewStart(startFor(midi, startRef.current));
     listeners.current.forEach((fn) => fn(midi));
     noteListeners.current.forEach((fn) => fn({ on: true, midi, vel }));
   }, []);

@@ -76,12 +76,20 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
 ## Status
 Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + Mix + Compare box, Lesson 1 Learn and
 4 Challenge levels, codes, batch grading, autosave. See SPEC section 17 for Phases 2-4.
-Sounds: Accurate-Salamander (CC BY 3.0, reduced mp3 copy ~8.5 MB in `public/samples/accurate-salamander/`, 5 velocity
-layers; loads only when picked, watch load time on school Wi-Fi), Salamander Grand (Tone.js version, from `tonejs.github.io`; sounded thinner in headphones), Splendid Grand (smplr,
-from `smpldsnds.github.io`, loaded lazily), Felt (Accurate-Salamander soft layer through a low-pass), Rhodes (jRhodes3d,
-reduced copy ~1.8 MB in `public/samples/jrhodes3d/`, CC BY-NC 4.0), Synth Keys (SynthLab engine; Bright was toned down).
-Sample files for Rhodes/Accurate are hosted with the app, so they need no outside host. Keep credits in the right panel.
-Dropped: the smplr electric piano and the paste-a-SynthLab-patch sound.
+Sounds (decided by Mr. Comiskey): **Grand Piano** = Accurate-Salamander only (CC BY 3.0, ~8.5 MB in
+`public/samples/accurate-salamander/`, 5 velocity layers). Salamander (Tone.js) and Splendid Grand were removed (smplr is
+no longer a dependency). **Electric Piano**: Rhodes (jRhodes3d, CC BY-NC 4.0, ~1.8 MB; bell attack tamed with a -4 dB dip at
+2.5 kHz + roll-off above 6 kHz) and Wurlitzer EP200 (Greg Sullivan, CC BY 3.0, ~1.2 MB in `public/samples/wurlitzer/`,
+mp3 + `map.json` with key ranges/tuning/4 velocity layers, played by `buildWurlitzer`); still comparing these two (Compare
+box). **Soft Piano** (id stays `felt`): Accurate soft layer, low-pass 1.4 kHz, -5 dB at 550 Hz, own reverb, and generated
+tape hiss + vinyl crackle that fades in while playing and out ~3 s after (`makeHissBuffer`). **Synth Keys**: Warm, Bright,
+Pad (his settings, `SYNTH_PAD`), Custom Synth. All sample files are hosted with the app. Credits in the right panel.
+Switching sounds: the old sound keeps playing until the new one has loaded; each note's release goes to the instrument
+that started it (`noteVoice`), so no stuck/mixed notes. Sounds still load only when picked (25 Chromebooks pulling ~12 MB
+each at the start of class would choke school Wi-Fi).
+MIDI controllers: their octave buttons send nothing; the view follows the first out-of-view note by the fewest whole
+octaves (`startFor`), matching one press of the controller's octave button.
+Mix sliders: double-click resets to default.
 Right panel controls must be defined OUTSIDE components (the Slider once lived inside RightPanel and broke click-and-drag).
 Metronome: wood block only (chosen by Mr. Comiskey; no sound menu); compact (icon on/off button redrawn from his SVG so
 the arm can swing, BPM box + slider, volume knob: 100% default, value bubble while dragging, double-click resets).
@@ -89,6 +97,9 @@ Mix: behind a small faders icon at the top right of the Sound box (not essential
 Grade Report tab (like SynthLab): Get my code (`CodePanel`) and the teacher's batch grader. No Teacher button in the top bar.
 Sandbox (`ModeSandbox.tsx`, `PianoRoll.tsx`, `utils/performance.ts`): records only while its tab is open; Save performance =
 code (key `p`, name inside), link (`?perf=`, no name) or .mid; Clear. Batch view can play a performance back.
+MIDI import (`utils/midiImport.ts`, no library): type 0/1 .mid, tempo changes respected, all tracks merged, drums
+(channel 10) left out, sustain pedal lengthens notes, leading silence trimmed, cut at the Sandbox limit (3 min / 2000
+notes). It replaces the current performance (asks first) and waits at the start ("Ready. Press Play back").
 Piano roll (Shared Piano style): its own "roll clock" runs while you play, keeps going 1.2 s after the last key is let go,
 then glides to a stop over 1.6 s (`TAIL`/`GLIDE` in `PianoRoll.tsx`); notes keep real timing for play back/MIDI.
 Scroll/drag to look back ("Back to live" returns); scrolling plays the keys the line crosses, like play back (held while
@@ -114,10 +125,9 @@ Rhodes now has all 5 velocity layers (~1.8 MB); top notes missing a layer borrow
 Metronome sounds are in `audioEngine.ts` `tick()`.
 
 ## Open items (last updated end of Phase 1 testing)
-- Waiting on Mr. Comiskey's Chromebook test of: Accurate-Salamander (5 layers, ~8.5 MB: load time on school Wi-Fi, sound in
-  headphones), Felt (now Accurate-based), Synth Keys Bright (toned down, may need more), wood-block metronome + volume knob.
-- Pick one sound per category, then delete the others and the "Compare versions" box (SPEC section 13). He wants to hear
-  the pianos on headphones and other speakers first. Candidates to cut: Salamander (Tone.js), Splendid Grand, one Synth Keys.
+- Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (hiss level, reverb, 550 Hz dip), Wurlitzer, tamed Rhodes, Pad.
+- Electric Piano: Rhodes (tamed) vs Wurlitzer still to choose; then remove the "Compare electric pianos" box.
+- MIDI import choices to confirm (see SPEC section 10): merge all tracks, drop drums, 3-minute cap, replace not append.
 - Grading confirmed: second try = half credit, 80% pass. Lesson 1 has four levels; the octave level (`l1-octave`) was removed
   before anything reached students (he doesn't care about the octave). Old saves drop results for removed levels.
 - Teacher button should eventually assign anything (SPEC section 8, "Everything is assignable"). Today it only batch grades.

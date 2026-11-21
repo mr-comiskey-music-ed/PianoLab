@@ -23,9 +23,16 @@ export const MAX_START = 84; // C6 (a 25-key view from C6 reaches C8)
 /** Keep a view start on a C and inside the allowed range. */
 export const clampStart = (start: number) => Math.max(MIN_START, Math.min(MAX_START, Math.round(start / 12) * 12));
 
-/** Slide the view to the C below `midi` so a note that arrives outside the view becomes visible. */
-export function startFor(midi: number): number {
-  return clampStart(Math.floor(midi / 12) * 12);
+/**
+ * Slide the view so a note that arrives outside it becomes visible, by the fewest whole octaves from where it is now.
+ * That matches a 25-key controller's own octave buttons (one octave per press), which send nothing the app can see:
+ * the first note after a press tells us where the controller went.
+ */
+export function startFor(midi: number, current: number = DEFAULT_START): number {
+  let s = current;
+  if (midi >= s + KEY_COUNT) s += 12 * Math.ceil((midi - (s + KEY_COUNT - 1)) / 12);
+  else if (midi < s) s -= 12 * Math.ceil((s - midi) / 12);
+  return clampStart(s);
 }
 
 export const inView = (midi: number, start: number) => midi >= start && midi < start + KEY_COUNT;

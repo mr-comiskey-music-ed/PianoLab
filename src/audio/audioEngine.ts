@@ -1,7 +1,7 @@
 import * as Tone from 'tone';
 import { SubtractiveEngine } from './synthEngine';
 import { SynthParams } from '../types';
-import { SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM } from '../data/defaults';
+import { SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM, SYNTH_PAD } from '../data/defaults';
 import { noteName } from '../utils/music';
 
 /**
@@ -12,39 +12,32 @@ import { noteName } from '../utils/music';
  * The metronome goes straight to master so the Mix panel never changes its level.
  */
 
-export type SoundKind = 'accurate' | 'salamander' | 'splendid' | 'felt' | 'rhodes' | 'synthWarm' | 'synthBright' | 'synthCustom';
+export type SoundKind = 'accurate' | 'soft' | 'rhodes' | 'wurlitzer' | 'synthWarm' | 'synthBright' | 'synthPad' | 'synthCustom';
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface SoundDef {
   id: string;
   kind: SoundKind;
-  category: 'Grand Piano' | 'Electric Piano' | 'Felt Piano' | 'Synth Keys';
+  category: 'Grand Piano' | 'Electric Piano' | 'Soft Piano' | 'Synth Keys';
   label: string;
   note?: string;
 }
 
+// Ids are saved in autosaves, so keep them (the Soft Piano's id is still 'felt').
 export const SOUNDS: SoundDef[] = [
-  { id: 'accurate', kind: 'accurate', category: 'Grand Piano', label: 'Accurate-Salamander', note: 'Remastered Salamander Grand, CC-BY 3.0' },
-  { id: 'salamander', kind: 'salamander', category: 'Grand Piano', label: 'Salamander Grand', note: 'Yamaha C5, CC-BY 3.0 (Tone.js version)' },
-  { id: 'splendid', kind: 'splendid', category: 'Grand Piano', label: 'Splendid Grand', note: 'Steinway, via smplr' },
-  { id: 'rhodes', kind: 'rhodes', category: 'Electric Piano', label: 'Rhodes (jRhodes3d)', note: 'Rhodes Mark I, CC BY-NC 4.0' },
-  { id: 'felt', kind: 'felt', category: 'Felt Piano', label: 'Felt Piano', note: 'Accurate-Salamander, soft layer, through a low-pass' },
-  { id: 'synth-warm', kind: 'synthWarm', category: 'Synth Keys', label: 'Synth Keys: Warm', note: 'SynthLab engine' },
-  { id: 'synth-bright', kind: 'synthBright', category: 'Synth Keys', label: 'Synth Keys: Bright', note: 'SynthLab engine' },
+  { id: 'accurate', kind: 'accurate', category: 'Grand Piano', label: 'Grand Piano', note: 'Accurate-Salamander (Yamaha C5), CC BY 3.0' },
+  { id: 'rhodes', kind: 'rhodes', category: 'Electric Piano', label: 'Rhodes', note: 'Rhodes Mark I (jRhodes3d), CC BY-NC 4.0' },
+  { id: 'wurlitzer', kind: 'wurlitzer', category: 'Electric Piano', label: 'Wurlitzer', note: 'Wurlitzer EP200 by Greg Sullivan, CC BY 3.0' },
+  { id: 'felt', kind: 'soft', category: 'Soft Piano', label: 'Soft Piano', note: 'Grand Piano, soft and warm, with a little tape hiss and reverb' },
+  { id: 'synth-warm', kind: 'synthWarm', category: 'Synth Keys', label: 'Warm', note: 'SynthLab engine' },
+  { id: 'synth-bright', kind: 'synthBright', category: 'Synth Keys', label: 'Bright', note: 'SynthLab engine' },
+  { id: 'synth-pad', kind: 'synthPad', category: 'Synth Keys', label: 'Pad', note: 'SynthLab engine' },
   { id: 'custom', kind: 'synthCustom', category: 'Synth Keys', label: 'Custom Synth', note: 'Build your own sound with the Modern Synth panel' },
 ];
 
 export type MetroSound = 'wood' | 'windup' | 'click';
 
 export const DEFAULT_SOUND = 'synth-warm';
-
-const SALAMANDER_URL = 'https://tonejs.github.io/audio/salamander/';
-/** Every minor third from C2 to C6: covers a 25-key view shifted two octaves either way, with one velocity layer. */
-const SALAMANDER_FILES: Record<string, string> = {};
-for (const oct of [2, 3, 4, 5]) {
-  for (const [n, f] of [['C', 'C'], ['D#', 'Ds'], ['F#', 'Fs'], ['A', 'A']] as const) SALAMANDER_FILES[`${n}${oct}`] = `${f}${oct}.mp3`;
-}
-SALAMANDER_FILES['C6'] = 'C6.mp3';
 
 /** The Rhodes files live in /public/samples/jrhodes3d (a reduced copy of jRhodes3d, ~0.8 MB), so they load from our own site. */
 const RHODES_URL = `${import.meta.env.BASE_URL}samples/jrhodes3d/`;
@@ -58,6 +51,42 @@ const rhodesLayerFor = (midi: number, layer: number) =>
 const ACCURATE_URL = `${import.meta.env.BASE_URL}samples/accurate-salamander/`;
 const ACCURATE_LAYERS = [5, 7, 9, 12, 15]; // of the original 16, softest to hardest
 const ACCURATE_ROOTS = [...Array.from({ length: 16 }, (_, i) => 36 + i * 3), 84];
+/** Wurlitzer EP200 (Greg Sullivan, CC BY 3.0): 42 small mp3s hosted with the app, plus map.json (key ranges, tuning, level). */
+const WURLI_URL = `${import.meta.env.BASE_URL}samples/wurlitzer/`;
+interface SfzMap {
+  layers: { hivel: number; regions: { lo: number; hi: number; key: number; file: string; tune: number; vol: number }[] }[];
+}
+
+/**
+ * Four seconds of very quiet tape hiss with a few soft vinyl crackles, made in code (no file to download). Looped under
+ * the Soft Piano. Levels: hiss about -50 dB, crackles short and low.
+ */
+function makeHissBuffer(sampleRate: number): Tone.ToneAudioBuffer {
+  const n = Math.round(sampleRate * 4);
+  const data = new Float32Array(n);
+  let lp = 0;
+  for (let i = 0; i < n; i++) {
+    // White noise through a gentle low-pass: soft "tape" hiss rather than a sharp fizz.
+    lp += 0.25 * ((Math.random() * 2 - 1) - lp);
+    data[i] = lp * 0.006;
+  }
+  // About 5 crackles a second, each a tiny decaying click.
+  const crackles = Math.round(4 * 5);
+  for (let c = 0; c < crackles; c++) {
+    const at = Math.floor(Math.random() * (n - 400));
+    const amp = (0.012 + Math.random() * 0.025) * (Math.random() < 0.5 ? -1 : 1);
+    const len = 40 + Math.floor(Math.random() * 160);
+    for (let k = 0; k < len; k++) data[at + k] += amp * Math.exp(-k / (len / 5)) * (Math.random() * 2 - 1);
+  }
+  // Fade the ends together so the loop has no click.
+  const edge = Math.round(sampleRate * 0.05);
+  for (let i = 0; i < edge; i++) {
+    const g = i / edge;
+    data[i] *= g;
+    data[n - 1 - i] *= g;
+  }
+  return Tone.ToneAudioBuffer.fromArray(data);
+}
 
 interface Voice {
   on(midi: number, velocity: number): void;
@@ -97,6 +126,12 @@ export class AudioEngine {
   /** The student's Custom Synth patch (built in the Modern Synth panel). */
   private customParams: SynthParams = SYNTH_KEYS_WARM;
   private currentId = '';
+  /** The sound most recently picked (may still be loading). */
+  private wantedId = '';
+  /** Which voice started each sounding note, so its release goes to the same instrument. */
+  private noteVoice = new Map<number, Voice>();
+  /** The synth patch last applied to the shared synth engine. */
+  private appliedSynth: string | null = null;
   private metroEvent: number | null = null;
 
   onState?: (id: string, state: LoadState, message?: string) => void;
@@ -135,20 +170,29 @@ export class AudioEngine {
     this.onState?.(id, s, msg);
   }
 
-  /** Pick a sound. Loads it the first time. If it can't load (offline), falls back to Synth Keys: Warm. */
+  /**
+   * Pick a sound. Loads it the first time. The old sound keeps playing until the new one is ready, then held notes are
+   * let go and the switch happens (no stuck or mixed-up notes while loading). If it can't load (offline), it stays on
+   * the old sound (or Warm, at start-up).
+   */
   async select(id: string): Promise<void> {
-    const def = SOUNDS.find((s) => s.id === id);
-    if (!def) return;
-    this.allOff();
-    this.currentId = id;
+    const def = SOUNDS.find((s) => s.id === id) ?? SOUNDS.find((s) => s.id === DEFAULT_SOUND)!;
+    this.wantedId = def.id;
     try {
       await this.load(def);
     } catch (e) {
-      this.setState(id, 'error', e instanceof Error ? e.message : 'could not load');
-      if (id !== DEFAULT_SOUND) {
+      this.setState(def.id, 'error', e instanceof Error ? e.message : 'could not load');
+      if (!this.currentId) {
         this.currentId = DEFAULT_SOUND;
         await this.load(SOUNDS.find((s) => s.id === DEFAULT_SOUND)!);
       }
+      return;
+    }
+    // Another sound may have been picked while this one loaded; the last pick wins.
+    if (this.wantedId !== def.id) return;
+    if (this.currentId !== def.id) {
+      this.allOff();
+      this.currentId = def.id;
     }
   }
 
@@ -169,44 +213,23 @@ export class AudioEngine {
 
   private async build(def: SoundDef): Promise<Voice> {
     switch (def.kind) {
-      case 'salamander':
-        return this.buildSampler(false);
-      case 'felt':
-        return this.buildFelt();
+      case 'soft':
+        return this.buildSoft();
       case 'rhodes':
-        return this.buildLayered(RHODES_URL, RHODES_ROOTS, RHODES_LAYERS, 0.8, this.bus, rhodesLayerFor);
+        return this.buildRhodes();
+      case 'wurlitzer':
+        return this.buildWurlitzer();
       case 'accurate':
         return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, ACCURATE_LAYERS, 1.2, this.bus);
-      case 'splendid':
-        return this.buildSplendid();
       case 'synthWarm':
         return this.buildSynth(SYNTH_KEYS_WARM);
       case 'synthBright':
         return this.buildSynth(SYNTH_KEYS_BRIGHT);
+      case 'synthPad':
+        return this.buildSynth(SYNTH_PAD);
       case 'synthCustom':
         return this.buildSynth(this.customParams);
     }
-  }
-
-  private buildSampler(felt: boolean): Promise<Voice> {
-    return new Promise((resolve, reject) => {
-      const out = new Tone.Gain(felt ? 0.8 : 1);
-      let tail: Tone.ToneAudioNode = out;
-      if (felt) {
-        // A darker, softer tone: low-pass plus a little taken off the highs.
-        const lp = new Tone.Filter(1400, 'lowpass');
-        out.chain(lp, this.bus);
-        tail = lp;
-      } else out.connect(this.bus);
-      void tail;
-      const sampler = new Tone.Sampler({
-        urls: SALAMANDER_FILES,
-        baseUrl: SALAMANDER_URL,
-        release: felt ? 1.2 : 1,
-        onload: () => resolve(samplerVoice(sampler)),
-        onerror: (e) => reject(e instanceof Error ? e : new Error('sample files did not load')),
-      }).connect(out);
-    });
   }
 
   /** A sampler with several velocity layers (softest first). Files are `<midi>_<layer>.mp3`. Harder playing picks a louder layer. */
@@ -251,36 +274,119 @@ export class AudioEngine {
     };
   }
 
-  /** Felt: Accurate-Salamander's soft layer through a low-pass, a little quieter. */
-  private buildFelt(): Promise<Voice> {
-    const lp = new Tone.Filter(1400, 'lowpass');
-    const level = new Tone.Gain(0.85);
-    lp.chain(level, this.bus);
-    return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, [7], 1.4, lp);
+  /**
+   * Rhodes, slightly tamed: the bell-like attack of the tines is softened with a gentle dip around 2.5 kHz and a soft
+   * roll-off above 6 kHz.
+   */
+  private buildRhodes(): Promise<Voice> {
+    const bell = new Tone.Filter({ type: 'peaking', frequency: 2500, Q: 0.9, gain: -4 });
+    const top = new Tone.Filter({ type: 'lowpass', frequency: 6000, rolloff: -12, Q: 0.5 });
+    bell.chain(top, this.bus);
+    return this.buildLayered(RHODES_URL, RHODES_ROOTS, RHODES_LAYERS, 0.8, bell, rhodesLayerFor);
   }
 
-  /** Splendid Grand (Steinway) from smplr. smplr is loaded only when this sound is picked. */
-  private async buildSplendid(): Promise<Voice> {
-    const { SplendidGrandPiano } = await import('smplr');
-    const ctx = Tone.getContext().rawContext as unknown as BaseAudioContext;
-    const destination = (this.bus as unknown as { input: AudioNode }).input;
-    const inst = SplendidGrandPiano(ctx, { destination, notesToLoad: { notes: Array.from({ length: 61 }, (_, i) => 36 + i), velocityRange: [1, 127] } });
-    await inst.ready;
-    const stops = new Map<number, () => void>();
+  /**
+   * Soft Piano: the Grand Piano's soft layer through a low-pass, a dip at 550 Hz (less boxy), its own reverb, and a
+   * very quiet tape hiss + vinyl crackle that fades in while you play and fades out a few seconds after you stop.
+   */
+  private async buildSoft(): Promise<Voice> {
+    const lp = new Tone.Filter(1400, 'lowpass');
+    const box = new Tone.Filter({ type: 'peaking', frequency: 550, Q: 1.1, gain: -5 });
+    const level = new Tone.Gain(0.85);
+    const room = new Tone.Reverb({ decay: 2.6, preDelay: 0.02, wet: 0.32 });
+    await room.ready;
+    lp.chain(box, level, room, this.bus);
+    // Hiss and crackle: a few seconds of generated noise, looped.
+    const hiss = new Tone.Player(makeHissBuffer(Tone.getContext().sampleRate));
+    hiss.loop = true;
+    const hissGain = new Tone.Gain(0);
+    hiss.chain(hissGain, this.bus);
+    const HISS_LEVEL = 1;
+    let held = 0;
+    let fadeTimer: number | null = null;
+    const piano = await this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, [7], 1.4, lp);
     return {
       on: (midi, vel) => {
-        stops.get(midi)?.();
-        stops.set(midi, inst.start({ note: midi, velocity: Math.max(1, Math.round(vel * 127)) }) as () => void);
+        if (hiss.state !== 'started') hiss.start();
+        if (fadeTimer !== null) window.clearTimeout(fadeTimer);
+        fadeTimer = null;
+        hissGain.gain.rampTo(HISS_LEVEL, 0.4);
+        held++;
+        piano.on(midi, vel);
       },
       off: (midi) => {
-        stops.get(midi)?.();
-        stops.delete(midi);
+        piano.off(midi);
+        held = Math.max(0, held - 1);
+        if (held === 0) {
+          if (fadeTimer !== null) window.clearTimeout(fadeTimer);
+          fadeTimer = window.setTimeout(() => hissGain.gain.rampTo(0, 1.5), 3000);
+        }
       },
       allOff: () => {
-        stops.forEach((x) => x());
-        stops.clear();
+        piano.allOff();
+        held = 0;
+        hissGain.gain.rampTo(0, 0.5);
       },
-      dispose: () => inst.dispose(),
+      dispose: () => {
+        piano.dispose();
+        hiss.dispose();
+      },
+    };
+  }
+
+  /**
+   * Wurlitzer EP200: plays its own samples with the original instrument's key ranges, tuning and 4 velocity layers.
+   * One sound per key at a time (like the real thing); letting go damps the note quickly.
+   */
+  private async buildWurlitzer(): Promise<Voice> {
+    const res = await fetch(`${WURLI_URL}map.json`);
+    if (!res.ok) throw new Error('Wurlitzer map did not load');
+    const map = (await res.json()) as SfzMap;
+    const files = Array.from(new Set(map.layers.flatMap((l) => l.regions.map((r) => r.file))));
+    const buffers = await new Promise<Tone.ToneAudioBuffers>((resolve, reject) => {
+      const b = new Tone.ToneAudioBuffers({
+        urls: Object.fromEntries(files.map((f) => [f, `${f}.mp3`])),
+        baseUrl: WURLI_URL,
+        onload: () => resolve(b),
+        onerror: (e) => reject(e instanceof Error ? e : new Error('Wurlitzer samples did not load')),
+      });
+    });
+    const out = new Tone.Gain(1.4).connect(this.bus);
+    const playing = new Map<number, { src: Tone.ToneBufferSource; amp: Tone.Gain }>();
+    const stop = (midi: number, release: number) => {
+      const p = playing.get(midi);
+      if (!p) return;
+      playing.delete(midi);
+      const now = Tone.now();
+      p.amp.gain.cancelScheduledValues(now);
+      p.amp.gain.setValueAtTime(p.amp.gain.value, now);
+      p.amp.gain.linearRampToValueAtTime(0, now + release);
+      p.src.stop(now + release + 0.02);
+      window.setTimeout(() => {
+        p.src.dispose();
+        p.amp.dispose();
+      }, (release + 0.3) * 1000);
+    };
+    return {
+      on: (midi, vel) => {
+        const v127 = Math.max(1, Math.round(vel * 127));
+        const layer = map.layers.find((l) => v127 <= l.hivel) ?? map.layers[map.layers.length - 1];
+        const region =
+          layer.regions.find((r) => midi >= r.lo && midi <= r.hi) ??
+          layer.regions.reduce((a, b) => (Math.abs(b.key - midi) < Math.abs(a.key - midi) ? b : a));
+        stop(midi, 0.03);
+        const amp = new Tone.Gain(Tone.dbToGain(region.vol) * (0.35 + 0.65 * vel)).connect(out);
+        const src = new Tone.ToneBufferSource(buffers.get(region.file)).connect(amp);
+        src.playbackRate.value = Math.pow(2, (midi - region.key + region.tune / 100) / 12);
+        src.start(Tone.now());
+        playing.set(midi, { src, amp });
+      },
+      off: (midi) => stop(midi, 0.18),
+      allOff: () => Array.from(playing.keys()).forEach((m) => stop(m, 0.1)),
+      dispose: () => {
+        Array.from(playing.keys()).forEach((m) => stop(m, 0.01));
+        buffers.dispose();
+      },
     };
   }
 
@@ -288,6 +394,7 @@ export class AudioEngine {
     const eng = (this.synthEngine ??= SubtractiveEngine.getInstance(params));
     eng.setOutput(this.bus);
     eng.applyParams(params);
+    this.appliedSynth = null; // the next note applies the right patch
     return {
       on: (midi, vel) => eng.noteOn(noteName(midi), vel),
       off: (midi) => eng.noteOff(noteName(midi)),
@@ -306,31 +413,43 @@ export class AudioEngine {
   /** Update the Custom Synth patch. If it's the sound being played, you hear the change right away. */
   setCustomParams(p: SynthParams) {
     this.customParams = p;
-    if (this.currentId === 'custom') this.synthEngine?.applyParams(p);
+    if (this.currentId === 'custom') {
+      this.synthEngine?.applyParams(p);
+      this.appliedSynth = 'synthCustom';
+    } else if (this.appliedSynth === 'synthCustom') this.appliedSynth = null;
   }
 
   // ---------- Playing ----------
-  /** Synth voices share one engine; re-apply the right patch before a note if the sound changed. */
+  /** Synth voices share one engine; apply the right patch only when the synth sound changes (not on every note). */
   private prepareSynth() {
-    const kind = SOUNDS.find((s) => s.id === this.currentId)?.kind;
     if (!this.synthEngine) return;
+    const kind = SOUNDS.find((s) => s.id === this.currentId)?.kind;
+    if (!kind?.startsWith('synth') || kind === this.appliedSynth) return;
+    this.appliedSynth = kind;
     if (kind === 'synthWarm') this.synthEngine.applyParams(SYNTH_KEYS_WARM);
     else if (kind === 'synthBright') this.synthEngine.applyParams(SYNTH_KEYS_BRIGHT);
+    else if (kind === 'synthPad') this.synthEngine.applyParams(SYNTH_PAD);
     else if (kind === 'synthCustom') this.synthEngine.applyParams(this.customParams);
   }
 
   noteOn(midi: number, velocity = 0.8) {
-    const v = this.voices.get(this.currentId) ?? this.voices.get(DEFAULT_SOUND);
+    const v = this.voices.get(this.currentId);
     if (!v) return;
     this.prepareSynth();
+    // Same key again while it still sounds: let the old one go first.
+    this.noteVoice.get(midi)?.off(midi);
     v.on(midi, velocity);
+    this.noteVoice.set(midi, v);
   }
 
   noteOff(midi: number) {
-    (this.voices.get(this.currentId) ?? this.voices.get(DEFAULT_SOUND))?.off(midi);
+    const v = this.noteVoice.get(midi) ?? this.voices.get(this.currentId);
+    this.noteVoice.delete(midi);
+    v?.off(midi);
   }
 
   allOff() {
+    this.noteVoice.clear();
     this.voices.forEach((v) => v.allOff());
   }
 

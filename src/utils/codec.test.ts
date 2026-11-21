@@ -5,6 +5,7 @@ import { parseBatch } from './batch';
 import { cleanSnapshot } from './autosave';
 import { validatePattern } from '../data/pattern';
 import { packPerf, toMidiFile, unpackPerf } from './performance';
+import { readMidiFile } from './midiImport';
 import example from '../data/pattern.example.json';
 import { Submission } from '../types';
 
@@ -140,5 +141,22 @@ describe('Sandbox performances', () => {
     const len = (f[18] << 24) | (f[19] << 16) | (f[20] << 8) | f[21];
     expect(len).toBe(f.length - 22);
     expect(Array.from(f.slice(-4))).toEqual([0x00, 0xff, 0x2f, 0x00]);
+  });
+});
+
+describe('MIDI import', () => {
+  it('reads back a file PianoLab wrote', () => {
+    const notes = [
+      { t: 1000, d: 400, m: 60, v: 100 },
+      { t: 1500, d: 250, m: 64, v: 80 },
+    ];
+    const got = readMidiFile(toMidiFile(notes).buffer as ArrayBuffer);
+    expect(got.notes.map((n) => [n.m, n.v])).toEqual([[60, 100], [64, 80]]);
+    expect(got.notes[0].t).toBe(0); // leading silence trimmed
+    expect(Math.abs(got.notes[1].t - 500)).toBeLessThan(3);
+    expect(Math.abs(got.notes[0].d - 400)).toBeLessThan(3);
+  });
+  it('rejects a file that is not MIDI', () => {
+    expect(() => readMidiFile(new TextEncoder().encode('hello there, not midi').buffer as ArrayBuffer)).toThrow(/not a MIDI/);
   });
 });

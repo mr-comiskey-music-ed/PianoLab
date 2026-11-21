@@ -3,6 +3,7 @@ import { DEFAULT_ASSIGNMENT, encodeSubmission } from '../utils/codec';
 import { MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, downloadMidi, formatLength, packPerf, perfLength, perfLink, readPerfParam } from '../utils/performance';
 import { Labels, LABEL_ORDER, ModeCtx, ModeParts } from './modeTypes';
 import { PianoRoll, makeRollMap } from './PianoRoll';
+import { readMidiFile } from '../utils/midiImport';
 
 /** A pause longer than this is shortened to SHORT_GAP, so stepping away doesn't fill the recording with silence. */
 const LONG_GAP = 8000;
@@ -103,8 +104,12 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     halt();
     pausedAt.current = null;
     setPaused(false);
+    setAtStart(false);
     t0.current = null; // the next note you play continues after the recording
   }, [halt]);
+
+  /** Just imported: waiting at the start of the piece. */
+  const [atStart, setAtStart] = useState(false);
 
   const pause = useCallback(() => {
     const p = playRef.current;
@@ -129,6 +134,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     halt();
     pausedAt.current = null;
     setPaused(false);
+    setAtStart(false);
     await ctx.engine.unlock();
     const LEAD = 50;
     const timers: number[] = [];
@@ -219,6 +225,31 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     [ctx.engine, releaseScrub],
   );
 
+  // ---- MIDI import: a .mid file replaces the performance, ready to play back, scroll through, or play along with ----
+  const fileInput = useRef<HTMLInputElement>(null);
+  const importMidi = async (file: File) => {
+    try {
+      const got = readMidiFile(await file.arrayBuffer());
+      if (!got.notes.length) return setLoadedMsg('That MIDI file has no notes to show (drums are left out).');
+      if (notesRef.current.length && !window.confirm('Replace your performance with this MIDI file? Save yours first if you want to keep it.')) return;
+      stop();
+      held.current.clear();
+      setFull(false);
+      setNotes(got.notes);
+      // Wait at the very start, so Play back (or the space bar) brings the notes up out of the keys from the beginning.
+      pausedAt.current = 0;
+      setAtStart(true);
+      const name = got.title || file.name.replace(/\.midi?$/i, '');
+      setLoadedMsg(
+        `Imported “${name}”: ${got.notes.length} notes, ${formatLength(perfLength(got.notes))}. Press Play back.` +
+          (got.skippedDrums ? ' Drums were left out.' : '') +
+          (got.cutOff ? ` Only the first ${formatLength(MAX_PERF_MS)} (or ${MAX_PERF_NOTES} notes) came in.` : ''),
+      );
+    } catch (e) {
+      setLoadedMsg(e instanceof Error ? e.message : 'That file could not be read.');
+    }
+  };
+
   const clear = () => {
     if (notes.length && !window.confirm('Clear your performance? Save it first if you want to keep it.')) return;
     stop();
@@ -267,6 +298,21 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       <button className="btn" onClick={clear} disabled={!notes.length} data-testid="perf-clear">
         Clear
       </button>
+      <button className="btn" onClick={() => fileInput.current?.click()} data-testid="perf-import" title="Open a .mid file from GarageBand, Soundtrap, BandLab, MuseScore…">
+        Import MIDI…
+      </button>
+      <input
+        ref={fileInput}
+        type="file"
+        accept=".mid,.midi,audio/midi,audio/x-midi"
+        className="hidden"
+        data-testid="perf-import-file"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = '';
+          if (f) void importMidi(f);
+        }}
+      />
     </div>
   );
 
@@ -276,6 +322,11 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       <div className="absolute inset-y-0 left-[2px] right-[2px]">
         <PianoRoll notes={notes} start={ctx.viewStart} now={now} offset={rollOffset} canScroll={!playing} onScrub={onScrub} />
       </div>
+      {atStart && !playing && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
+          <div className="h text-[22px] text-line2/80">Ready. Press Play back or the space bar.</div>
+        </div>
+      )}
       {!notes.length && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
           <div className="h text-[24px] text-line2/80">Play something. It records as you go.</div>

@@ -165,6 +165,11 @@ A teacher-only page that builds a **link** to paste into Google Classroom. All s
 - Gradeable as an assessment, up to 45 seconds.
 
 ### MIDI import (practice)
+**Built in the Sandbox (Phase 1):** Import MIDI reads a type 0/1 .mid with its tempo changes, merges every track, leaves
+out drums (channel 10), applies the sustain pedal, trims leading silence, and keeps the first 3 minutes / 2000 notes. It
+replaces the current performance and waits at the start. Choices to confirm: track picking for multi-track songs, a
+longer cap for imports, play-along (recording on top) instead of appending.
+
 - Students (or the teacher) can **import a .mid file** and practice playing along with it in the waterfall.
 - **Playback speed** control (for example 50%–100%), with the waterfall and audio slowing together.
 - Students choose which track of the file to show, and can mute it to play the part themselves or hear it to follow along.
@@ -198,15 +203,14 @@ A teacher-only page that builds a **link** to paste into Google Classroom. All s
 - Each sound loads **only when it's picked**, and only the needed range and a reduced set of velocity layers, so the app stays light on Chromebooks.
 - **Sounds:** wire up every option to start, so Mr. Comiskey can choose one per category. The others get removed later.
 
-| Category | Versions to compare |
+| Category | Sounds |
 |---|---|
-| Grand Piano | Accurate-Salamander (5 velocity layers, hosted with the app), Salamander Grand (Tone.js copy) and Splendid Grand (smplr). All three still in, to compare on headphones and speakers. |
-| Electric Piano | jRhodes3d (Rhodes Mark I, CC BY-NC), a reduced copy hosted with the app. The smplr electric piano sounded like an electric grand and was dropped. |
-| Felt Piano | Accurate-Salamander's soft layer through a low-pass "felt" filter |
-| Synth Keys | Built-in PianoLab synth presets (warm and bright), sharing SynthLab's synth engine, plus **Custom Synth**: SynthLab's Modern Synth panel in a pop-up (starters: Warm, Bright, West Coast lead, Plain saw), patches saved in the browser |
-| SynthLab patch | Dropped after Phase 1 (not needed). |
+| Grand Piano | Accurate-Salamander (chosen). Salamander (Tone.js) and Splendid Grand removed. |
+| Electric Piano | Rhodes (jRhodes3d, CC BY-NC, bell attack tamed) and Wurlitzer EP200 (Greg Sullivan, CC BY 3.0): still comparing. The smplr CP80 sounded like an electric grand and was dropped; the Pianet T mirror's files were damaged. |
+| Soft Piano | Grand Piano's soft layer, low-pass, dip at 550 Hz, its own reverb, very quiet tape hiss and vinyl crackle while playing |
+| Synth Keys | Warm, Bright, Pad (SynthLab engine), plus Custom Synth (SynthLab's Modern Synth panel in a pop-up) |
 
-- The "Compare versions" box is **for teacher testing only** and gets removed once a version is chosen for each category.
+- The "Compare electric pianos" box is **for teacher testing only** and gets removed once one is chosen.
 - **Mix panel** (behind a small faders icon at the top right of the Sound box, not always visible): a one-knob EQ, a one-knob compressor, and reverb with Length, Color, and Mix.
 - A compact wood-block metronome: icon on/off, BPM box and slider, volume knob (100% default, up to 200%).
 - **Licensing:** credit sample authors on an About screen. The app is educational and non-commercial. Never use samples rendered out of commercial DAW instruments.
