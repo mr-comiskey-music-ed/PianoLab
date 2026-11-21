@@ -10,10 +10,6 @@
           "section": "Find F and C",
           "title": "Look at the black keys",
           "say": "Black keys come in groups of 2 and groups of 3. Those groups are your map. C sits just LEFT of the group of 2. F sits just LEFT of the group of 3.",
-          "show": [
-            "C",
-            "F"
-          ],
           "demo": [
             "C3",
             "F3",
@@ -32,9 +28,6 @@
           "section": "Find F and C",
           "title": "Now F",
           "say": "F is just left of the group of 3 black keys.",
-          "show": [
-            "F"
-          ],
           "demo": [
             "F3",
             "F4"
@@ -51,24 +44,6 @@
           "section": "The musical alphabet",
           "title": "Going up",
           "say": "Music uses only 7 letters: A B C D E F G. Moving to the RIGHT, the letters go up in order.",
-          "show": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
-          ],
-          "demo": [
-            "A3",
-            "B3",
-            "C4",
-            "D4",
-            "E4",
-            "F4",
-            "G4"
-          ],
           "tryText": "Play any E.",
           "tryAnswer": [
             "E"
@@ -81,24 +56,6 @@
           "section": "The musical alphabet",
           "title": "Going down",
           "say": "Moving to the LEFT, the letters go backward: G F E D C B A.",
-          "show": [
-            "G",
-            "F",
-            "E",
-            "D",
-            "C",
-            "B",
-            "A"
-          ],
-          "demo": [
-            "G4",
-            "F4",
-            "E4",
-            "D4",
-            "C4",
-            "B3",
-            "A3"
-          ],
           "tryText": "Play any B.",
           "tryAnswer": [
             "B"
@@ -111,10 +68,6 @@
           "section": "The musical alphabet",
           "title": "G wraps back to A",
           "say": "After G, the alphabet starts over at A. The keys repeat, so the same letters show up again higher up.",
-          "show": [
-            "G",
-            "A"
-          ],
           "demo": [
             "F4",
             "G4",
@@ -133,24 +86,6 @@
           "section": "Every white key",
           "title": "All seven names",
           "say": "Every white key has one of those seven names. The pattern of black keys repeats, so the names repeat too.",
-          "show": [
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "A",
-            "B"
-          ],
-          "demo": [
-            "C4",
-            "D4",
-            "E4",
-            "F4",
-            "G4",
-            "A4",
-            "B4"
-          ],
           "tryText": "Play any D.",
           "tryAnswer": [
             "D"
@@ -163,13 +98,6 @@
           "section": "Every white key",
           "title": "One more",
           "say": "Use the map: groups of 2 and 3 tell you where you are.",
-          "show": [
-            "G"
-          ],
-          "demo": [
-            "G3",
-            "G4"
-          ],
           "tryText": "Play any G.",
           "tryAnswer": [
             "G"
@@ -235,7 +163,8 @@
                 "C"
               ]
             }
-          ]
+          ],
+          "labels": "all"
         },
         {
           "id": "l1-name-fc",
@@ -305,7 +234,8 @@
               ],
               "show": "F"
             }
-          ]
+          ],
+          "labels": "off"
         },
         {
           "id": "l1-find-all",
@@ -399,7 +329,8 @@
                 "B"
               ]
             }
-          ]
+          ],
+          "labels": "c"
         },
         {
           "id": "l1-name-all",
@@ -507,7 +438,8 @@
               ],
               "show": "D"
             }
-          ]
+          ],
+          "labels": "off"
         },
         {
           "id": "l1-octave",
@@ -587,7 +519,8 @@
               ],
               "exact": "A4"
             }
-          ]
+          ],
+          "labels": "c"
         }
       ]
     }

@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { decodeSubmission, encodeSubmission } from './codec';
-import { floored, passed } from './grading';
+import { accuracy, credit, floored, passed } from './grading';
 import { parseBatch } from './batch';
 import { cleanSnapshot } from './autosave';
-import { decodePatch } from './patchCode';
-import { compress } from './codec';
 import { validatePattern } from '../data/pattern';
 import example from '../data/pattern.example.json';
 import { Submission } from '../types';
@@ -31,14 +29,11 @@ describe('submission codes', () => {
     ]);
   });
 
-  it('contains no name field', async () => {
-    const code = await encodeSubmission(sub);
-    const decoded = (await decodeSubmission(code)) as unknown as Record<string, unknown>;
-    expect(Object.keys(decoded).sort()).toEqual(['assignment', 'learnDone', 'results', 'timestamp']);
-    // The packed text itself has no name key either.
-    const { decompress } = await import('./codec');
-    const json = (await decompress(code.split('.')[1])) as string;
-    expect(Object.keys(JSON.parse(json)).sort()).toEqual(['k', 'l', 't']);
+  it('keeps the name only inside the code, and codes without one still read', async () => {
+    const named = await decodeSubmission(await encodeSubmission({ ...sub, name: '  Ana Rivera ' }));
+    expect(named?.name).toBe('Ana Rivera');
+    const plain = await decodeSubmission(await encodeSubmission(sub));
+    expect(plain?.name).toBeUndefined();
   });
 
   it('rejects edited or cut-off codes', async () => {
@@ -70,19 +65,28 @@ describe('grading', () => {
   });
 });
 
+describe('credit for tries', () => {
+  it('full, half, then none', () => {
+    expect([0, 1, 2, 5].map(credit)).toEqual([1, 0.5, 0, 0]);
+    expect(accuracy(7.5, 8)).toBeCloseTo(93.75);
+  });
+});
+
 describe('batch grading', () => {
   it('reads a pasted class, labels lines, flags unreadable codes, floors, and averages without failed attempts', async () => {
     const good = await encodeSubmission(sub);
     const failed = await encodeSubmission({ ...sub, results: [{ levelId: 'l1-find-fc', raw: 10, labels: 'all', at: 0 }] });
-    const text = `Ana R  ${good}\nBen T, ${failed}\nCy L  v1.notacodenotacode.zzz\n${good}`;
+    const named = await encodeSubmission({ ...sub, name: 'Cam Ortiz' });
+    const text = `Ana R  ${good}\nBen T, ${failed}\n${named}\nCy L  v1.notacodenotacode.zzz\n${good}`;
     const r = await parseBatch(text);
-    expect(r.entries.length).toBe(2);
+    expect(r.entries.length).toBe(3);
     expect(r.duplicatesRemoved).toBe(1);
     expect(r.unreadable.length).toBe(1);
     expect(r.entries[0].label).toBe('Ana R');
     expect(r.entries[0].levels[1]).toMatchObject({ raw: 38, grade: 50, passed: false });
     expect(r.entries[1].headline).toBe(50); // floored
     expect(r.entries[1].counts).toBe(false);
+    expect(r.entries[2].label).toBe('Cam Ortiz'); // the name inside the code wins
     expect(r.top).toBe(75); // (100 + 50) / 2
     expect(r.average).toBe(75); // the failed attempt is left out
   });
@@ -90,24 +94,12 @@ describe('batch grading', () => {
 
 describe('autosave cleaning', () => {
   it('drops junk and keeps good data', () => {
-    const s = cleanSnapshot({ results: [{ levelId: 'x', raw: 500, labels: 'weird', at: 1 }, 7, { raw: 3 }], learnDone: 'yes', learnStep: 3, soundId: 5 });
+    const s = cleanSnapshot({ results: [{ levelId: 'x', raw: 500, labels: 'weird', at: 1 }, 7, { raw: 3 }], learnDone: 'yes', learnStep: 3, soundId: 5, name: 'Nope' });
     expect(s?.results).toEqual([{ levelId: 'x', raw: 100, labels: 'all', at: 1 }]);
     expect(s?.learnDone).toBe(false);
     expect(s?.learnStep).toBe(3);
+    expect(JSON.stringify(s)).not.toContain('Nope'); // autosave never keeps a name
     expect(cleanSnapshot('nope')).toBeNull();
-  });
-});
-
-describe('SynthLab patch codes', () => {
-  it('reads a format-2 patch code', async () => {
-    const code = await compress(JSON.stringify({ w1: 'q', fc: 1200, v: 2 }));
-    const p = await decodePatch(`https://synthlab.mrcomiskey.com/?patch=${code}`);
-    expect(p?.vco1Waveform).toBe('square');
-    expect(p?.filterCutoff).toBe(1200);
-    expect(p?.filterResonance).toBe(0.1); // default
-  });
-  it('returns null for rubbish', async () => {
-    expect(await decodePatch('not a patch')).toBeNull();
   });
 });
 

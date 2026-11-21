@@ -16,7 +16,7 @@ The class's real aim is creative: students expressing themselves, writing songs,
 
 ## 2. Hard constraints
 
-- **No student data, ever.** No names, no accounts, and no backend that stores student work. Student work leaves the app only as a **base64 code** pasted into Google Classroom. (The one exception is the optional numbers-only class record in §11, which has no text fields at all.)
+- **No student data, ever.** No accounts, and no backend that stores student work. The student's name is typed when making a code and lives only inside that code; the app never saves it. Student work leaves the app only as a **base64 code** pasted into Google Classroom. (The one exception is the optional numbers-only class record in §11, which has no text fields at all.)
 - **Chromebooks first.** Every student has their own Chromebook, a **25-key USB MIDI keyboard**, and headphones. The app must be lightweight and fast on a Chromebook. Mobile is a nice-to-have, not a goal.
 - **Browser-local storage is fine** for per-device things: autosave and restore, the latency setting, and personal bests. It never holds a name.
 - Students reach the app through Google Classroom links.
@@ -195,11 +195,11 @@ A teacher-only page that builds a **link** to paste into Google Classroom. All s
 
 | Category | Versions to compare |
 |---|---|
-| Grand Piano | Salamander Grand (Yamaha C5, CC-BY 3.0), Splendid Grand (Steinway, via smplr), Accurate-Salamander (remastered) |
-| Electric Piano | jRhodes3d (Rhodes Mark I, CC-BY-NC), smplr electric piano |
+| Grand Piano | Salamander Grand (Yamaha C5, CC-BY 3.0). Splendid Grand and Accurate-Salamander dropped after Phase 1 testing. |
+| Electric Piano | jRhodes3d (Rhodes Mark I, CC BY-NC), a reduced copy hosted with the app. The smplr electric piano sounded like an electric grand and was dropped. |
 | Felt Piano | The softest Salamander layers (or the "Moonlight" soft bank) with a darker EQ, or the grand with a low-pass "felt" filter |
 | Synth Keys | Built-in PianoLab synth presets (warm and bright), sharing SynthLab's synth engine with a cleaner UI |
-| SynthLab patch | Paste a SynthLab patch code to play your own sound |
+| SynthLab patch | Dropped after Phase 1 (not needed). |
 
 - The "Compare versions" box is **for teacher testing only** and gets removed once a version is chosen for each category.
 - **Mix panel** (behind the Mix button, not always visible): a one-knob EQ, a one-knob compressor, and reverb with Length, Color, and Mix.

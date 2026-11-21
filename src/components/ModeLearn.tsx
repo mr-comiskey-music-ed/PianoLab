@@ -41,7 +41,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     setCount(0);
     setMsg(null);
     ctx.setLearnStep(next);
-    if (demo) window.setTimeout(() => void showMe(), 350);
+    if (demo && steps[next].demo?.length) window.setTimeout(() => void showMe(), 350);
   };
 
   useEffect(() => {
@@ -154,10 +154,11 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   return {
     left,
     stage,
+    // Nothing is lit or labelled while the student is working it out. Only the note the app is playing shows.
+    labels: 'off',
     lit: demoLit !== null ? new Set([demoLit]) : undefined,
-    litLetters: step.show,
-    forceLabels: 'all',
-    start: { label: demoing ? 'Playing…' : 'Show me', onClick: () => void showMe(), disabled: demoing || !step.demo?.length },
+    forceLabel: demoLit !== null ? new Set([demoLit]) : undefined,
+    start: step.demo?.length ? { label: demoing ? 'Playing…' : 'Show me', onClick: () => void showMe(), disabled: demoing } : undefined,
     restart: { label: 'Restart step', onClick: () => goStep(i, false), disabled: demoing },
   };
 }

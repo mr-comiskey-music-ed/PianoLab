@@ -17,7 +17,10 @@ export function bestByLevel(results: LevelResult[]): Record<string, LevelResult>
   return out;
 }
 
-/** First-try accuracy: right on the first press counts 1, a retry counts 0. */
-export function accuracy(firstTryCorrect: number, total: number): number {
-  return total > 0 ? (firstTryCorrect / total) * 100 : 0;
+/** Credit for one prompt: right first try = 1, right on the second try = half, after that = 0. */
+export const credit = (misses: number) => (misses === 0 ? 1 : misses === 1 ? 0.5 : 0);
+
+/** Accuracy percent from the credit earned over the number of prompts. */
+export function accuracy(points: number, total: number): number {
+  return total > 0 ? (points / total) * 100 : 0;
 }

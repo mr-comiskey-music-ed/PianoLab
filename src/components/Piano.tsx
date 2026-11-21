@@ -8,8 +8,8 @@ interface Props {
   pressed: Set<number>;
   /** Keys that glow brass (a prompt, or a demo note). */
   lit?: Set<number>;
-  /** Letters that glow softly everywhere in view (e.g. all the Cs). */
-  litLetters?: string[];
+  /** Keys that show their label even when labels are off (a note the app is demoing). */
+  forceLabel?: Set<number>;
   marks?: Map<number, KeyMark>;
   labels: 'off' | 'c' | 'all';
   onDown: (midi: number) => void;
@@ -17,7 +17,7 @@ interface Props {
 }
 
 /** 25 keys, C to C. Mouse and multitouch both work: each finger is tracked by its own pointer id. */
-export const Piano: React.FC<Props> = ({ start, pressed, lit, litLetters, marks, labels, onDown, onUp }) => {
+export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks, labels, onDown, onUp }) => {
   const held = useRef(new Map<number, number>()); // pointerId -> midi
   const keys = Array.from({ length: KEY_COUNT }, (_, i) => start + i);
   const whites = keys.filter((m) => !isBlack(m));
@@ -42,20 +42,19 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, litLetters, marks,
 
   const cls = (midi: number, black: boolean) => {
     const mark = marks?.get(midi);
-    const isLit = lit?.has(midi) || (litLetters?.includes(letterOf(midi)) ?? false);
     const on = pressed.has(midi);
     if (mark === 'ok') return black ? 'bg-[#5b8a3a]' : 'bg-[#cfe3b4]';
     if (mark === 'bad') return black ? 'bg-[#a3453f]' : 'bg-[#f0c4bf]';
     if (on) return black ? 'bg-brass3' : 'bg-[#f1d58f]';
     if (lit?.has(midi)) return (black ? 'bg-brass2' : 'bg-[#f6dea0]') + ' lit';
-    if (isLit) return black ? 'bg-wal1' : 'bg-[#fbeecb]';
     return black ? 'bg-ebony' : 'bg-[#fffaf0]';
   };
 
   const label = (midi: number) => {
-    if (labels === 'off' || isBlack(midi)) return null;
+    if (isBlack(midi)) return null;
     const isC = letterOf(midi) === 'C';
-    if (labels === 'c' && !isC) return null;
+    const forced = forceLabel?.has(midi) ?? false;
+    if (!forced && (labels === 'off' || (labels === 'c' && !isC))) return null;
     return isC ? `C${octaveOf(midi)}` : letterOf(midi);
   };
 

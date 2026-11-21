@@ -5,12 +5,14 @@ import { KeyMark } from './Piano';
 
 export type Labels = 'off' | 'c' | 'all';
 
+/** Easiest to hardest. */
+export const LABEL_ORDER: Labels[] = ['all', 'c', 'off'];
+
 /** What App gives every mode. */
 export interface ModeCtx {
   engine: AudioEngine;
   /** Hear every note the student plays (from MIDI, keyboard or touch). Returns an unsubscribe. */
   subscribe: (fn: (midi: number) => void) => () => void;
-  labels: Labels;
   viewStart: number;
   results: LevelResult[];
   setResults: (fn: (prev: LevelResult[]) => LevelResult[]) => void;
@@ -25,11 +27,14 @@ export interface ModeCtx {
 export interface ModeParts {
   left: ReactNode;
   stage: ReactNode;
+  /** Which note labels the piano shows right now. */
+  labels: Labels;
+  /** Show the "easier or harder" control. Leave out where labels aren't a choice (Learn). */
+  labelControl?: { value: Labels; allowed: Labels[]; set: (l: Labels) => void; locked?: boolean; note?: string };
   lit?: Set<number>;
-  litLetters?: string[];
+  /** Keys that get a label even when labels are off (the note the app is demoing). */
+  forceLabel?: Set<number>;
   marks?: Map<number, KeyMark>;
-  /** Show every label no matter what the student picked (Learn). */
-  forceLabels?: Labels;
   start?: { label: string; onClick: () => void; disabled?: boolean };
   restart?: { label: string; onClick: () => void; disabled?: boolean };
 }

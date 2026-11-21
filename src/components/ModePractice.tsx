@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { LABEL_ORDER, Labels } from './modeTypes';
 import { letterOf, noteName } from '../utils/music';
 import { ModeCtx, ModeParts } from './modeTypes';
 
 /** Practice: free exploration with labels on. No grading. (Recording and the chord detector arrive in later phases.) */
 export function usePractice(ctx: ModeCtx): ModeParts {
   const [last, setLast] = useState<number | null>(null);
+  const [labels, setLabels] = useState<Labels>('all');
   useEffect(() => ctx.subscribe((m) => setLast(m)), [ctx]);
   const left = (
     <div className="flex flex-col gap-3">
@@ -15,7 +17,7 @@ export function usePractice(ctx: ModeCtx): ModeParts {
       <p className="text-[15px] leading-snug text-wal1">
         Play anything you like. Notice the pattern of 2 and 3 black keys. Try to find every C, then every F, without looking at the labels.
       </p>
-      <p className="text-[13px] text-muted">Nothing here is graded. Use “Make it easier or harder” below to hide the labels.</p>
+      <p className="text-[13px] text-muted">Nothing here is graded. Use “Make it easier or harder” below to hide the note names.</p>
     </div>
   );
   const stage = (
@@ -27,5 +29,5 @@ export function usePractice(ctx: ModeCtx): ModeParts {
       <div className="text-[15px] text-line2">{last === null ? 'Press a key on your keyboard.' : `That is the note ${letterOf(last)}.`}</div>
     </div>
   );
-  return { left, stage };
+  return { left, stage, labels, labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels } };
 }

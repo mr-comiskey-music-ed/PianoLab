@@ -12,7 +12,6 @@ export interface WorkSnapshot {
   /** How far through Learn: index of the next step. */
   learnStep: number;
   soundId: string;
-  labels: 'off' | 'c' | 'all';
 }
 
 const KEY = 'pianolab:v1:autosave';
@@ -39,7 +38,6 @@ export function cleanSnapshot(raw: unknown): WorkSnapshot | null {
     learnDone: raw.learnDone === true,
     learnStep: Math.round(num(raw.learnStep, 0, 200, 0)),
     soundId: typeof raw.soundId === 'string' ? raw.soundId.slice(0, 40) : '',
-    labels: raw.labels === 'off' || raw.labels === 'c' || raw.labels === 'all' ? raw.labels : 'all',
   };
 }
 

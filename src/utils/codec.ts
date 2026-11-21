@@ -12,7 +12,8 @@ import { LevelResult, Submission } from '../types';
  *   - Never change what an existing key means. Add new keys instead, and bump the version only when unavoidable.
  *   - decodeSubmission() must keep a branch for every version ever shipped.
  *   - Level ids (in lessons.json) are saved in codes. Never rename or remove one.
- * There is NO name in a code. The teacher sees who it belongs to from the Classroom page it was pasted from.
+ * The student's name (key `n`) lives ONLY inside the code, like SynthLab. The app never stores it in the browser.
+ * Codes made before the name was added have no `n`; they still decode.
  */
 export const FORMAT_VERSION = 1;
 export const DEFAULT_ASSIGNMENT = 'open';
@@ -78,6 +79,7 @@ export async function encodeSubmission(sub: Submission): Promise<string> {
     t: Math.floor(sub.timestamp / 1000),
     k,
   };
+  if (sub.name?.trim()) packed.n = sub.name.trim().slice(0, 60);
   if (sub.assignment && sub.assignment !== DEFAULT_ASSIGNMENT) packed.a = sub.assignment;
   if (sub.learnDone) packed.l = 1;
   if (sub.take) packed.m = sub.take; // reserved for Play Along takes (later phase)
@@ -109,6 +111,7 @@ async function decodeV1(body: string, sum: string): Promise<Submission | null> {
       return [{ levelId, raw: rawScore, labels, at }];
     });
     return {
+      ...(typeof d.n === 'string' && d.n.trim() ? { name: d.n.trim().slice(0, 60) } : {}),
       assignment: typeof d.a === 'string' ? d.a : DEFAULT_ASSIGNMENT,
       timestamp: at,
       learnDone: d.l === 1,

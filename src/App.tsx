@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AudioEngine, DEFAULT_SOUND, LoadState } from './audio/audioEngine';
+import { AudioEngine, DEFAULT_SOUND, LoadState, MetroSound } from './audio/audioEngine';
 import { useInputs } from './input/useInputs';
 import { Piano } from './components/Piano';
 import { RightPanel } from './components/RightPanel';
@@ -8,7 +8,7 @@ import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { useLearn } from './components/ModeLearn';
 import { usePractice } from './components/ModePractice';
 import { useChallenge } from './components/ModeChallenge';
-import { Labels, ModeCtx } from './components/modeTypes';
+import { ModeCtx } from './components/modeTypes';
 import { LevelResult } from './types';
 import { DEFAULT_START, KEY_COUNT, clampStart, inView, letterOf, noteName, startFor } from './utils/music';
 import { WorkSnapshot, clearSaved, hasWork, loadLatency, loadSaved, writeSaved } from './utils/autosave';
@@ -20,13 +20,12 @@ export default function App() {
   const [mode, setMode] = useState<Mode>('learn');
   const [viewStart, setViewStart] = useState(DEFAULT_START);
   const [pressed, setPressed] = useState<Set<number>>(new Set());
-  const [labels, setLabels] = useState<Labels>('all');
   const [results, setResults] = useState<LevelResult[]>([]);
   const [learnDone, setLearnDone] = useState(false);
   const [learnStep, setLearnStep] = useState(0);
   const [soundId, setSoundId] = useState(DEFAULT_SOUND);
   const [states, setStates] = useState<Record<string, LoadState>>({});
-  const [metro, setMetro] = useState({ on: false, bpm: 80 });
+  const [metro, setMetro] = useState<{ on: boolean; bpm: number; sound: MetroSound }>({ on: false, bpm: 80, sound: 'wood' });
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
   const [modal, setModal] = useState<null | 'code' | 'latency' | 'batch'>(null);
   const [lastNote, setLastNote] = useState<number | null>(null);
@@ -41,18 +40,17 @@ export default function App() {
     setResults(snap.results);
     setLearnDone(snap.learnDone);
     setLearnStep(snap.learnStep);
-    setLabels(snap.labels);
     if (snap.soundId) void pickSound(snap.soundId);
   };
 
   useEffect(() => {
     if (!autosaveOn) return;
-    const snap: WorkSnapshot = { results, learnDone, learnStep, soundId, labels };
+    const snap: WorkSnapshot = { results, learnDone, learnStep, soundId };
     if (!hasWork(snap)) return;
     const ok = writeSaved(snap);
     setSaveStatus(ok ? 'saved' : 'failed');
     if (ok) setSavedAt(Date.now());
-  }, [autosaveOn, results, learnDone, learnStep, soundId, labels]);
+  }, [autosaveOn, results, learnDone, learnStep, soundId]);
 
   // ---- Sounds ----
   useEffect(() => {
@@ -67,9 +65,13 @@ export default function App() {
     if (engine.current !== id) setSoundId(engine.current);
   }, []);
 
-  const onMetro = (m: { on: boolean; bpm: number }) => {
+  const onMetro = (m: { on: boolean; bpm: number; sound: MetroSound }) => {
+    const soundChanged = m.sound !== metro.sound;
     setMetro(m);
-    void engine.unlock().then(() => engine.setMetronome(m.on, m.bpm));
+    void engine.unlock().then(() => {
+      engine.setMetronome(m.on, m.bpm, m.sound);
+      if (soundChanged && !m.on) engine.previewMetro(m.sound);
+    });
   };
 
   // ---- Notes ----
@@ -106,7 +108,6 @@ export default function App() {
   const ctx: ModeCtx = {
     engine,
     subscribe,
-    labels,
     viewStart,
     results,
     setResults,
@@ -120,7 +121,6 @@ export default function App() {
   const practice = usePractice(ctx);
   const challenge = useChallenge(ctx);
   const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : challenge;
-  const shownLabels = parts.forceLabels ?? labels;
 
   const tabs: { id: Mode | 'jam'; label: string }[] = [
     { id: 'learn', label: 'Learn' },
@@ -180,25 +180,32 @@ export default function App() {
         {/* Left panel */}
         <aside className="min-h-0 overflow-auto border-r border-line bg-page p-3 order-2 lg:order-none" data-testid="left-panel">
           {parts.left}
-          <div className="mt-4 border-t border-line pt-3">
-            <div className="h text-[11px] uppercase text-muted">Make it easier or harder</div>
-            <div className="mt-1 text-[13px] text-wal1">Note labels on the keys</div>
-            <div className="mt-1 flex gap-1" role="radiogroup" aria-label="Note labels">
-              {([['all', 'All names'], ['c', 'C only'], ['off', 'Off']] as const).map(([v, t]) => (
-                <button
-                  key={v}
-                  role="radio"
-                  aria-checked={shownLabels === v}
-                  disabled={!!parts.forceLabels}
-                  data-testid={`labels-${v}`}
-                  onClick={() => setLabels(v)}
-                  className={`btn flex-1 px-1 text-[13px] ${shownLabels === v ? 'btn-brass' : ''}`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-            {parts.forceLabels && <div className="mt-1 text-[11px] text-muted">Learn always shows every label.</div>}
+          <div className="mt-4 border-t border-line pt-3" data-testid="left-bottom">
+            {parts.labelControl && (
+              <>
+                <div className="h text-[11px] uppercase text-muted">Make it easier or harder</div>
+                <div className="mt-1 text-[13px] text-wal1">Note names on the keys</div>
+                <div className="mt-1 flex gap-1" role="radiogroup" aria-label="Note names on the keys">
+                  {([['all', 'All names'], ['c', 'C only'], ['off', 'Off']] as const).map(([v, t]) => {
+                    const ok = parts.labelControl!.allowed.includes(v);
+                    return (
+                      <button
+                        key={v}
+                        role="radio"
+                        aria-checked={parts.labelControl!.value === v}
+                        disabled={!ok || parts.labelControl!.locked}
+                        data-testid={`labels-${v}`}
+                        onClick={() => parts.labelControl!.set(v)}
+                        className={`btn flex-1 px-1 text-[13px] ${parts.labelControl!.value === v ? 'btn-brass' : ''}`}
+                      >
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-1 text-[11px] text-muted">{parts.labelControl.note ?? 'You can make a level harder, but not easier than it starts.'}</div>
+              </>
+            )}
             <button className="btn btn-dark mt-3 w-full" onClick={() => setModal('code')} data-testid="get-code">
               Get my code
             </button>
@@ -245,9 +252,9 @@ export default function App() {
                 start={viewStart}
                 pressed={pressed}
                 lit={parts.lit}
-                litLetters={parts.litLetters}
+                forceLabel={parts.forceLabel}
                 marks={parts.marks}
-                labels={shownLabels}
+                labels={parts.labels}
                 onDown={(m) => noteOn(m, 0.8, 'touch')}
                 onUp={noteOff}
               />

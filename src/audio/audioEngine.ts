@@ -1,7 +1,7 @@
 import * as Tone from 'tone';
 import { SubtractiveEngine } from './synthEngine';
 import { SynthParams } from '../types';
-import { DEFAULT_SYNTH_PARAMS, SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM } from '../data/defaults';
+import { SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM } from '../data/defaults';
 import { noteName } from '../utils/music';
 
 /**
@@ -12,33 +12,30 @@ import { noteName } from '../utils/music';
  * The metronome goes straight to master so the Mix panel never changes its level.
  */
 
-export type SoundKind = 'salamander' | 'felt' | 'splendid' | 'smplrEP' | 'synthWarm' | 'synthBright' | 'synthlab';
+export type SoundKind = 'salamander' | 'felt' | 'rhodes' | 'synthWarm' | 'synthBright';
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface SoundDef {
   id: string;
   kind: SoundKind;
-  category: 'Grand Piano' | 'Electric Piano' | 'Felt Piano' | 'Synth Keys' | 'SynthLab patch';
+  category: 'Grand Piano' | 'Electric Piano' | 'Felt Piano' | 'Synth Keys';
   label: string;
   note?: string;
-  /** Shown only in the teacher "Compare versions" box. */
-  compareOnly?: boolean;
 }
 
 export const SOUNDS: SoundDef[] = [
   { id: 'salamander', kind: 'salamander', category: 'Grand Piano', label: 'Salamander Grand', note: 'Yamaha C5, CC-BY 3.0' },
-  { id: 'splendid', kind: 'splendid', category: 'Grand Piano', label: 'Splendid Grand', note: 'Steinway, via smplr' },
-  { id: 'smplr-ep', kind: 'smplrEP', category: 'Electric Piano', label: 'Electric Piano (smplr)', note: 'Rhodes-style, via smplr' },
+  { id: 'rhodes', kind: 'rhodes', category: 'Electric Piano', label: 'Rhodes (jRhodes3d)', note: 'Rhodes Mark I, CC BY-NC 4.0' },
   { id: 'felt', kind: 'felt', category: 'Felt Piano', label: 'Felt Piano', note: 'Salamander through a soft low-pass' },
   { id: 'synth-warm', kind: 'synthWarm', category: 'Synth Keys', label: 'Synth Keys: Warm', note: 'SynthLab engine' },
   { id: 'synth-bright', kind: 'synthBright', category: 'Synth Keys', label: 'Synth Keys: Bright', note: 'SynthLab engine' },
-  { id: 'synthlab', kind: 'synthlab', category: 'SynthLab patch', label: 'My SynthLab patch', note: 'Paste a patch code' },
 ];
 
-/** Versions in the SPEC that are not wired up yet because they need sample files hosted somewhere. */
-export const NOT_WIRED_YET = [
-  { label: 'Accurate-Salamander (remastered)', why: 'needs the remastered samples hosted' },
-  { label: 'jRhodes3d (Rhodes Mark I, CC-BY-NC)', why: 'needs the samples hosted' },
+export type MetroSound = 'wood' | 'windup' | 'click';
+export const METRO_SOUNDS: { id: MetroSound; label: string }[] = [
+  { id: 'wood', label: 'Wood block' },
+  { id: 'windup', label: 'Wind-up (tick-tock)' },
+  { id: 'click', label: 'Plain click' },
 ];
 
 export const DEFAULT_SOUND = 'synth-warm';
@@ -50,6 +47,10 @@ for (const oct of [2, 3, 4, 5]) {
   for (const [n, f] of [['C', 'C'], ['D#', 'Ds'], ['F#', 'Fs'], ['A', 'A']] as const) SALAMANDER_FILES[`${n}${oct}`] = `${f}${oct}.mp3`;
 }
 SALAMANDER_FILES['C6'] = 'C6.mp3';
+
+/** The Rhodes files live in /public/samples/jrhodes3d (a reduced copy of jRhodes3d, ~0.8 MB), so they load from our own site. */
+const RHODES_URL = `${import.meta.env.BASE_URL}samples/jrhodes3d/`;
+const RHODES_ROOTS = [40, 45, 50, 55, 59, 62, 65, 71, 76, 81, 86];
 
 interface Voice {
   on(midi: number, velocity: number): void;
@@ -72,6 +73,11 @@ export class AudioEngine {
   private dry = new Tone.Gain(1);
   private wet = new Tone.Gain(0);
   private master = new Tone.Gain(0.9);
+  // Wood-block style metronome: a short pitched "tok" plus a tiny filtered noise tick.
+  private wood = new Tone.MembraneSynth({ pitchDecay: 0.004, octaves: 1.2, envelope: { attack: 0.0005, decay: 0.07, sustain: 0, release: 0.02 } });
+  private woodNoise = new Tone.NoiseSynth({ noise: { type: 'pink' }, envelope: { attack: 0.0005, decay: 0.025, sustain: 0, release: 0.01 } });
+  private woodFilter = new Tone.Filter(2400, 'bandpass');
+  private metroKind: MetroSound = 'wood';
   private click = new Tone.MembraneSynth({ pitchDecay: 0.008, octaves: 2, envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.05 } });
   /** A separate click for latency calibration, so it never collides with the metronome's schedule. */
   private calClick = new Tone.MembraneSynth({ pitchDecay: 0.008, octaves: 2, envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.05 } });
@@ -79,7 +85,6 @@ export class AudioEngine {
   private voices = new Map<string, Voice>();
   private loading = new Map<string, Promise<void>>();
   private synthEngine: SubtractiveEngine | null = null;
-  private synthlabParams: SynthParams | null = null;
   private currentId = '';
   private metroEvent: number | null = null;
 
@@ -98,6 +103,10 @@ export class AudioEngine {
     this.click.connect(this.master);
     this.calClick.volume.value = -8;
     this.calClick.connect(this.master);
+    this.wood.volume.value = -4;
+    this.wood.connect(this.master);
+    this.woodNoise.volume.value = -14;
+    this.woodNoise.chain(this.woodFilter, this.master);
   }
 
   get current() {
@@ -151,15 +160,12 @@ export class AudioEngine {
       case 'salamander':
       case 'felt':
         return this.buildSampler(def.kind === 'felt');
-      case 'splendid':
-      case 'smplrEP':
-        return this.buildSmplr(def.kind);
+      case 'rhodes':
+        return this.buildRhodes();
       case 'synthWarm':
         return this.buildSynth(SYNTH_KEYS_WARM);
       case 'synthBright':
         return this.buildSynth(SYNTH_KEYS_BRIGHT);
-      case 'synthlab':
-        return this.buildSynth(this.synthlabParams ?? DEFAULT_SYNTH_PARAMS);
     }
   }
 
@@ -184,31 +190,41 @@ export class AudioEngine {
     });
   }
 
-  private async buildSmplr(kind: 'splendid' | 'smplrEP'): Promise<Voice> {
-    // smplr is loaded only when one of its sounds is picked, so it never slows the first page load.
-    const { SplendidGrandPiano, ElectricPiano } = await import('smplr');
-    const ctx = Tone.getContext().rawContext as unknown as BaseAudioContext;
-    const destination = (this.bus as unknown as { input: AudioNode }).input;
-    const inst =
-      kind === 'splendid'
-        ? SplendidGrandPiano(ctx, { destination, notesToLoad: { notes: Array.from({ length: 61 }, (_, i) => 36 + i), velocityRange: [1, 127] } })
-        : ElectricPiano(ctx, { instrument: 'CP80', destination });
-    await inst.ready;
-    const stops = new Map<number, () => void>();
+  /** Rhodes: a soft and a hard velocity layer, so playing harder sounds barkier like the real thing. */
+  private async buildRhodes(): Promise<Voice> {
+    const make = (layer: number) =>
+      new Promise<Tone.Sampler>((resolve, reject) => {
+        const urls: Record<string, string> = {};
+        for (const m of RHODES_ROOTS) urls[noteName(m)] = `${m}_${layer}.mp3`;
+        const sampler = new Tone.Sampler({
+          urls,
+          baseUrl: RHODES_URL,
+          release: 0.8,
+          onload: () => resolve(sampler),
+          onerror: (e) => reject(e instanceof Error ? e : new Error('sample files did not load')),
+        }).connect(this.bus);
+      });
+    const [soft, hard] = await Promise.all([make(2), make(4)]);
+    const used = new Map<number, Tone.Sampler>();
     return {
       on: (midi, vel) => {
-        stops.get(midi)?.();
-        stops.set(midi, inst.start({ note: midi, velocity: Math.max(1, Math.round(vel * 127)) }) as () => void);
+        const s = vel < 0.62 ? soft : hard;
+        used.set(midi, s);
+        s.triggerAttack(noteName(midi), Tone.now(), vel);
       },
       off: (midi) => {
-        stops.get(midi)?.();
-        stops.delete(midi);
+        used.get(midi)?.triggerRelease(noteName(midi), Tone.now());
+        used.delete(midi);
       },
       allOff: () => {
-        stops.forEach((s) => s());
-        stops.clear();
+        soft.releaseAll();
+        hard.releaseAll();
+        used.clear();
       },
-      dispose: () => inst.dispose(),
+      dispose: () => {
+        soft.dispose();
+        hard.dispose();
+      },
     };
   }
 
@@ -224,13 +240,6 @@ export class AudioEngine {
     };
   }
 
-  /** Load a SynthLab patch and make it the current sound. */
-  async useSynthlabPatch(params: SynthParams) {
-    this.synthlabParams = params;
-    this.voices.delete('synthlab');
-    await this.select('synthlab');
-  }
-
   // ---------- Playing ----------
   /** Synth voices share one engine; re-apply the right patch before a note if the sound changed. */
   private prepareSynth() {
@@ -238,7 +247,6 @@ export class AudioEngine {
     if (!this.synthEngine) return;
     if (kind === 'synthWarm') this.synthEngine.applyParams(SYNTH_KEYS_WARM);
     else if (kind === 'synthBright') this.synthEngine.applyParams(SYNTH_KEYS_BRIGHT);
-    else if (kind === 'synthlab') this.synthEngine.applyParams(this.synthlabParams ?? DEFAULT_SYNTH_PARAMS);
   }
 
   noteOn(midi: number, velocity = 0.8) {
@@ -291,7 +299,8 @@ export class AudioEngine {
   }
 
   // ---------- Metronome ----------
-  setMetronome(on: boolean, bpm = 80) {
+  setMetronome(on: boolean, bpm = 80, kind: MetroSound = this.metroKind) {
+    this.metroKind = kind;
     const t = Tone.getTransport();
     if (this.metroEvent !== null) {
       t.clear(this.metroEvent);
@@ -304,10 +313,33 @@ export class AudioEngine {
     t.bpm.value = bpm;
     let beat = 0;
     this.metroEvent = t.scheduleRepeat((time) => {
-      this.click.triggerAttackRelease(beat % 4 === 0 ? 'G5' : 'C5', '32n', time);
+      this.tick(this.metroKind, beat, time);
       beat++;
     }, '4n');
     t.start();
+  }
+
+  /** One metronome beat. Beat 0 of each bar is accented. */
+  private tick(kind: MetroSound, beat: number, time: number) {
+    try {
+      if (kind === 'click') {
+        this.click.triggerAttackRelease(beat % 4 === 0 ? 'G5' : 'C5', '32n', time);
+        return;
+      }
+      const accent = beat % 4 === 0;
+      if (kind === 'wood') this.wood.triggerAttackRelease(accent ? 1500 : 1050, '64n', time, accent ? 1 : 0.7);
+      else this.wood.triggerAttackRelease(beat % 2 === 0 ? 880 : 600, '32n', time, 0.9); // wind-up: high "tick", lower "tock"
+      this.woodNoise.triggerAttackRelease('64n', time, accent ? 0.9 : 0.5);
+    } catch {
+      /* a preview and the running metronome can overlap for a moment; skip that one tick */
+    }
+  }
+
+  /** Let the student hear a metronome sound without starting the metronome. */
+  previewMetro(kind: MetroSound) {
+    const now = Tone.now();
+    this.tick(kind, 0, now + 0.02);
+    this.tick(kind, 1, now + 0.42);
   }
 
   /** Schedule clicks for latency calibration. Returns the audio-clock time of each click. */

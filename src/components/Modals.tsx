@@ -24,10 +24,14 @@ const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; chil
 export const CodeModal: React.FC<{ results: LevelResult[]; learnDone: boolean; onClose: () => void }> = ({ results, learnDone, onClose }) => {
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState(false);
+  // The name is typed fresh each time and is never saved by the app. It lives only inside the code.
+  const [name, setName] = useState('');
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
-    void encodeSubmission({ assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone, results }).then(setCode);
-  }, [results, learnDone]);
+    if (!name.trim()) return setCode('');
+    setCopied(false);
+    void encodeSubmission({ name, assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone, results }).then(setCode);
+  }, [results, learnDone, name]);
   const best = bestByLevel(results);
   const copy = async () => {
     try {
@@ -40,7 +44,11 @@ export const CodeModal: React.FC<{ results: LevelResult[]; learnDone: boolean; o
   };
   return (
     <Shell title="Get my code" onClose={onClose}>
-      <p className="text-[15px] text-wal1">Copy this code and paste it into Google Classroom to turn in your work. It has no name in it. Classroom already knows who you are.</p>
+      <p className="text-[15px] text-wal1">Type your name, then copy your code and paste it into Google Classroom to turn in your work. Your name goes inside the code only. This app never saves it.</p>
+      <label className="mt-3 block text-[14px]">
+        <span className="h text-wal3">Your name</span>
+        <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="off" data-testid="name" placeholder="First and last name" className="mt-0.5 w-full rounded-lg border border-line2 bg-white px-2 py-1.5 text-[15px]" />
+      </label>
       <div className="mt-3 rounded-lg border border-line bg-page p-2 text-[14px]">
         <div>Learn: {learnDone ? '✓ finished' : 'not finished yet'}</div>
         {ALL_LEVELS.map((l) => {
@@ -53,7 +61,7 @@ export const CodeModal: React.FC<{ results: LevelResult[]; learnDone: boolean; o
           );
         })}
       </div>
-      <textarea ref={ref} readOnly value={code} rows={4} data-testid="code" className="mt-3 w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px] break-all" onFocus={(e) => e.currentTarget.select()} />
+      <textarea ref={ref} readOnly value={code} rows={4} placeholder="Your code shows up here once you type your name." data-testid="code" className="mt-3 w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px] break-all" onFocus={(e) => e.currentTarget.select()} />
       <button className="btn btn-brass mt-2 w-full" onClick={copy} disabled={!code}>
         {copied ? 'Copied ✓' : 'Copy code'}
       </button>

@@ -20,7 +20,7 @@ export interface LevelLine {
 
 export interface BatchEntry {
   id: number;
-  /** What the teacher pasted next to the code (usually a name from Classroom). Never stored. */
+  /** The name inside the code; if there is none (older codes), whatever was pasted next to it. Never stored. */
   label: string;
   submission: Submission;
   levels: LevelLine[];
@@ -91,7 +91,7 @@ export async function parseBatch(text: string): Promise<BatchResult> {
       unreadable.push(jobs[i].label || `${jobs[i].token.slice(0, 14)}...`);
       return;
     }
-    entries.push({ id: entries.length + 1, label: jobs[i].label, submission: sub, ...summarize(sub) });
+    entries.push({ id: entries.length + 1, label: sub.name || jobs[i].label, submission: sub, ...summarize(sub) });
   });
 
   const counted = entries.filter((e) => e.counts && e.headline !== null).map((e) => e.headline as number);

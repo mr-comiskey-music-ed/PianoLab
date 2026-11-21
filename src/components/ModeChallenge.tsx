@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import lessons from '../data/lessons.json';
 import { Level, Lesson, Prompt } from '../types';
 import { KEY_COUNT, isBlack, letterOf, parseNote } from '../utils/music';
-import { accuracy, floored, passed } from '../utils/grading';
+import { accuracy, credit, floored, passed } from '../utils/grading';
 import { loadBest, saveBest } from '../utils/autosave';
 import { KeyMark } from './Piano';
-import { ModeCtx, ModeParts } from './modeTypes';
+import { LABEL_ORDER, Labels, ModeCtx, ModeParts } from './modeTypes';
 
 const LESSON = (lessons.lessons as unknown as Lesson[])[0];
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -23,8 +23,9 @@ interface Run {
   level: Level;
   prompts: Prompt[];
   idx: number;
-  firstTry: number;
-  missed: boolean;
+  /** Credit earned so far (1 for a first-try answer, 0.5 for a second try). */
+  points: number;
+  misses: number;
 }
 interface Finished {
   level: Level;
@@ -33,8 +34,9 @@ interface Finished {
 }
 
 /**
- * Challenge: graded levels that produce a code. A prompt scores when it is right on the FIRST try; a wrong
- * answer just lets the student try again (and that prompt no longer counts). Grade = first-try percent.
+ * Challenge: graded levels that produce a code. A prompt earns full credit when it is right on the first try and half
+ * credit on the second; a wrong answer just lets the student try again. Grade = credit earned as a percent.
+ * Note labels: each level has an easiest setting (the starting one). Students can go harder, never easier.
  */
 export function useChallenge(ctx: ModeCtx): ModeParts {
   const levels = LESSON.levels;
@@ -44,6 +46,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   const [msg, setMsg] = useState<string>('');
   const [marks, setMarks] = useState<Map<number, KeyMark>>(new Map());
   const [best, setBest] = useState<Record<string, number>>(() => loadBest());
+  const [labelPick, setLabelPick] = useState<Record<string, Labels>>({});
   const runRef = useRef<Run | null>(null);
   runRef.current = run;
   const markTimer = useRef<number | undefined>(undefined);
@@ -54,6 +57,11 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     markTimer.current = window.setTimeout(() => setMarks(new Map()), 450);
   };
 
+  /** Labels for a level: the student's pick, but never easier than the level allows. */
+  const effective = (level: Level): Labels => {
+    const pick = labelPick[level.id] ?? level.labels;
+    return LABEL_ORDER.indexOf(pick) >= LABEL_ORDER.indexOf(level.labels) ? pick : level.labels;
+  };
   const levelById = (id: string) => levels.find((l) => l.id === id)!;
   const bestResult = (id: string) => ctx.results.find((r) => r.levelId === id);
 
@@ -61,7 +69,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const level = levelById(id);
     setFinished(null);
     setMsg('');
-    setRun({ level, prompts: shuffle(level.prompts), idx: 0, firstTry: 0, missed: false });
+    setRun({ level, prompts: shuffle(level.prompts), idx: 0, points: 0, misses: 0 });
   };
 
   /** Score the current prompt as right or wrong and move on. */
@@ -71,15 +79,15 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     if (!correct) {
       if (midi !== undefined) flash(midi, 'bad');
       setMsg('Not quite. Try again.');
-      setRun({ ...r, missed: true });
+      setRun({ ...r, misses: r.misses + 1 });
       return;
     }
     if (midi !== undefined) flash(midi, 'ok');
     setMsg('');
-    const firstTry = r.firstTry + (r.missed ? 0 : 1);
+    const points = r.points + credit(r.misses);
     const idx = r.idx + 1;
     if (idx >= r.prompts.length) {
-      const raw = accuracy(firstTry, r.prompts.length);
+      const raw = accuracy(points, r.prompts.length);
       setRun(null);
       const prevBest = best[r.level.id] ?? 0;
       saveBest(r.level.id, raw);
@@ -88,10 +96,10 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         const old = prev.find((x) => x.levelId === r.level.id);
         if (old && old.raw >= raw) return prev;
         const rest = prev.filter((x) => x.levelId !== r.level.id);
-        return [...rest, { levelId: r.level.id, raw, labels: ctx.labels, at: Date.now() }];
+        return [...rest, { levelId: r.level.id, raw, labels: effective(r.level), at: Date.now() }];
       });
       setFinished({ level: r.level, raw, best: Math.max(prevBest, raw) });
-    } else setRun({ ...r, idx, firstTry, missed: false });
+    } else setRun({ ...r, idx, points, misses: 0 });
   };
 
   // Playing a key (Find It).
@@ -219,7 +227,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         <div className="h text-[12px] uppercase tracking-wider text-brass">Level: {selLevel.title}</div>
         <div className="h text-[30px] text-panel">{selLevel.blurb}</div>
         <div className="text-[15px] text-line2">
-          {selLevel.prompts.length} questions · {selLevel.pass}% to pass · right on the first try counts
+          {selLevel.prompts.length} questions · {selLevel.pass}% to pass · first try counts full, second try counts half
         </div>
         <button className="btn btn-brass mt-2 text-[18px]" data-testid="start" onClick={() => start(selected)}>
           Start
@@ -233,6 +241,14 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     stage,
     lit,
     marks,
+    labels: effective(selLevel),
+    labelControl: {
+      value: effective(selLevel),
+      allowed: LABEL_ORDER.filter((l) => LABEL_ORDER.indexOf(l) >= LABEL_ORDER.indexOf(selLevel.labels)),
+      set: (l) => setLabelPick((p) => ({ ...p, [selLevel.id]: l })),
+      locked: !!run,
+      note: selLevel.type === 'nameIt' ? 'Names stay hidden here, since naming the key is the question.' : undefined,
+    },
     start: { label: 'Start', onClick: () => start(selected), disabled: !!run },
     restart: { label: 'Restart', onClick: () => start(selected), disabled: !run },
   };

@@ -27,6 +27,8 @@ export interface SynthParams {
 }
 
 /** Where a piece of work came from, for the Lesson levels. */
+export type NoteLabels = 'off' | 'c' | 'all';
+
 export type AssessmentType = 'findIt' | 'nameIt';
 
 export interface Prompt {
@@ -49,6 +51,8 @@ export interface Level {
   octave: 'any' | 'exact';
   /** Percent needed to pass. */
   pass: number;
+  /** Easiest note-label setting allowed, and the starting one. Students can go harder, not easier. */
+  labels: 'all' | 'c' | 'off';
   /** Name It: letters offered as answers (default: all seven). */
   choices?: string[];
   prompts: Prompt[];
@@ -61,9 +65,7 @@ export interface LearnStep {
   title: string;
   /** What the app says. */
   say: string;
-  /** Keys the app highlights while demoing. */
-  show: string[];
-  /** Notes (with octave) the app plays as the demo. */
+  /** Notes (with octave) the app plays as a demo. Leave out when a demo would not teach anything. */
   demo?: string[];
   /** "Now you try" prompt. */
   tryText: string;
@@ -94,6 +96,8 @@ export interface LevelResult {
 }
 
 export interface Submission {
+  /** The student's name. It lives ONLY inside the code; the app never saves it. */
+  name?: string;
   assignment: string;
   timestamp: number;
   learnDone: boolean;
