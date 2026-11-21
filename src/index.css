@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* Studio Warm v2: the AudioPlot palette + Barlow type (same two families as SynthLab). */
+@theme {
+  --font-sans: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+  --font-head: 'Barlow Semi Condensed', 'Barlow', ui-sans-serif, system-ui, sans-serif;
+
+  --color-panel: #f7f1e6;
+  --color-page: #efe6d8;
+  --color-line: #ddd0bc;
+  --color-line2: #c4b49b;
+  --color-muted: #66584a;
+  --color-wal1: #4d3f31;
+  --color-wal2: #3a2f24;
+  --color-wal3: #2a2118;
+  --color-fall: #1e1710;
+  --color-ebony: #140f0a;
+  --color-brass: #d9a441;
+  --color-brasstext: #2a1e08;
+  --color-brass2: #b8862c;
+  --color-brass3: #8f6620;
+  --color-good: #46632a;
+  --color-bad: #8a2f2a;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-page);
+  color: var(--color-wal2);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+button { font-family: inherit; cursor: pointer; }
+button:disabled { cursor: default; opacity: 0.45; }
+:focus-visible { outline: 2px solid var(--color-brass2); outline-offset: 2px; }
+textarea, input { user-select: text; -webkit-user-select: text; }
+
+/* Walnut wood. Placeholder generated with CSS; swap for a CC0 walnut photo in the real build (SPEC section 14). */
+.wood {
+  background:
+    repeating-linear-gradient(92deg, rgba(0,0,0,0) 0 7px, rgba(0,0,0,0.10) 7px 8px, rgba(255,255,255,0.03) 8px 14px, rgba(0,0,0,0.05) 14px 15px),
+    linear-gradient(180deg, #4d3f31, #3a2f24 55%, #2a2118);
+}
+.wood-v {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 7px, rgba(0,0,0,0.12) 7px 8px, rgba(255,255,255,0.03) 8px 14px),
+    linear-gradient(90deg, #2a2118, #4d3f31 45%, #3a2f24);
+}
+
+/* Waterfall stage: dark with faint key-boundary guides and a brass hit line along the bottom. */
+.stage {
+  background:
+    linear-gradient(0deg, rgba(217,164,65,0.9) 0 3px, rgba(217,164,65,0) 3px),
+    repeating-linear-gradient(90deg, rgba(247,241,230,0.05) 0 1px, rgba(0,0,0,0) 1px calc(100% / 15)),
+    var(--color-fall);
+}
+
+@keyframes pop { 0% { transform: scale(0.96); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
+.pop { animation: pop 0.14s ease-out; }
+@keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 0 rgba(217,164,65,0.0) } 50% { box-shadow: 0 0 0 6px rgba(217,164,65,0.45) } }
+.lit { animation: pulse-ring 1.1s ease-in-out infinite; }
+
+.btn {
+  border-radius: 8px; padding: 7px 12px; font-family: var(--font-head); font-weight: 600; font-size: 14px;
+  border: 1px solid var(--color-line2); background: var(--color-panel); color: var(--color-wal2);
+}
+.btn:hover:not(:disabled) { background: #fff8ea; }
+.btn-brass { background: var(--color-brass); color: var(--color-brasstext); border-color: var(--color-brass2); }
+.btn-brass:hover:not(:disabled) { background: #e3b155; }
+.btn-dark { background: var(--color-wal3); color: #f7f1e6; border-color: var(--color-ebony); }
+.btn-dark:hover:not(:disabled) { background: var(--color-wal1); }
+.card { background: var(--color-panel); border: 1px solid var(--color-line); border-radius: 12px; }
+.h { font-family: var(--font-head); font-weight: 700; letter-spacing: 0.02em; }

@@ -1,0 +1,12 @@
+{
+  "_note": "Pattern data format (SPEC section 6). Designed in Phase 1, used from Phase 3. Progressions are roman numerals plus a key, so transposing is just a change of key.",
+  "id": "lesson3-level3-four-chord-loop",
+  "key": "C",
+  "mode": "major",
+  "progression": ["I", "V", "vi", "IV"],
+  "texture": "block",
+  "rhythm": "quarter",
+  "voicing": "root",
+  "tempo": 80,
+  "bars": 8
+}

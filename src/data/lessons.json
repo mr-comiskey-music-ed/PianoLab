@@ -1,0 +1,595 @@
+{
+  "lessons": [
+    {
+      "id": "lesson-1",
+      "number": 1,
+      "title": "White-key note names",
+      "learn": [
+        {
+          "id": "fc-intro",
+          "section": "Find F and C",
+          "title": "Look at the black keys",
+          "say": "Black keys come in groups of 2 and groups of 3. Those groups are your map. C sits just LEFT of the group of 2. F sits just LEFT of the group of 3.",
+          "show": [
+            "C",
+            "F"
+          ],
+          "demo": [
+            "C3",
+            "F3",
+            "C4",
+            "F4"
+          ],
+          "tryText": "Find a C. Play any C.",
+          "tryAnswer": [
+            "C"
+          ],
+          "need": 2,
+          "hint": "Look for a group of 2 black keys. C is the white key just to its left."
+        },
+        {
+          "id": "fc-f",
+          "section": "Find F and C",
+          "title": "Now F",
+          "say": "F is just left of the group of 3 black keys.",
+          "show": [
+            "F"
+          ],
+          "demo": [
+            "F3",
+            "F4"
+          ],
+          "tryText": "Play any F.",
+          "tryAnswer": [
+            "F"
+          ],
+          "need": 2,
+          "hint": "Find a group of 3 black keys. F is the white key just to its left."
+        },
+        {
+          "id": "alpha-up",
+          "section": "The musical alphabet",
+          "title": "Going up",
+          "say": "Music uses only 7 letters: A B C D E F G. Moving to the RIGHT, the letters go up in order.",
+          "show": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G"
+          ],
+          "demo": [
+            "A3",
+            "B3",
+            "C4",
+            "D4",
+            "E4",
+            "F4",
+            "G4"
+          ],
+          "tryText": "Play any E.",
+          "tryAnswer": [
+            "E"
+          ],
+          "need": 2,
+          "hint": "Start at C, then count right: C, D, E."
+        },
+        {
+          "id": "alpha-down",
+          "section": "The musical alphabet",
+          "title": "Going down",
+          "say": "Moving to the LEFT, the letters go backward: G F E D C B A.",
+          "show": [
+            "G",
+            "F",
+            "E",
+            "D",
+            "C",
+            "B",
+            "A"
+          ],
+          "demo": [
+            "G4",
+            "F4",
+            "E4",
+            "D4",
+            "C4",
+            "B3",
+            "A3"
+          ],
+          "tryText": "Play any B.",
+          "tryAnswer": [
+            "B"
+          ],
+          "need": 2,
+          "hint": "B is the white key just to the left of C."
+        },
+        {
+          "id": "alpha-wrap",
+          "section": "The musical alphabet",
+          "title": "G wraps back to A",
+          "say": "After G, the alphabet starts over at A. The keys repeat, so the same letters show up again higher up.",
+          "show": [
+            "G",
+            "A"
+          ],
+          "demo": [
+            "F4",
+            "G4",
+            "A4",
+            "B4"
+          ],
+          "tryText": "Play any A.",
+          "tryAnswer": [
+            "A"
+          ],
+          "need": 2,
+          "hint": "A is the white key just right of G. Look between the 2-group and the 3-group of black keys."
+        },
+        {
+          "id": "all-white",
+          "section": "Every white key",
+          "title": "All seven names",
+          "say": "Every white key has one of those seven names. The pattern of black keys repeats, so the names repeat too.",
+          "show": [
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "A",
+            "B"
+          ],
+          "demo": [
+            "C4",
+            "D4",
+            "E4",
+            "F4",
+            "G4",
+            "A4",
+            "B4"
+          ],
+          "tryText": "Play any D.",
+          "tryAnswer": [
+            "D"
+          ],
+          "need": 2,
+          "hint": "D sits between the two black keys of the group of 2."
+        },
+        {
+          "id": "all-white-2",
+          "section": "Every white key",
+          "title": "One more",
+          "say": "Use the map: groups of 2 and 3 tell you where you are.",
+          "show": [
+            "G"
+          ],
+          "demo": [
+            "G3",
+            "G4"
+          ],
+          "tryText": "Play any G.",
+          "tryAnswer": [
+            "G"
+          ],
+          "need": 2,
+          "hint": "Count from F: F, then G is the next white key to the right."
+        }
+      ],
+      "levels": [
+        {
+          "id": "l1-find-fc",
+          "title": "Find F and C",
+          "blurb": "Play the note you are asked for. Any octave counts.",
+          "type": "findIt",
+          "octave": "any",
+          "pass": 80,
+          "prompts": [
+            {
+              "text": "Play an F.",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Play a C.",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Play a C.",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Play an F.",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Play an F.",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Play a C.",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Play an F.",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Play a C.",
+              "answer": [
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "l1-name-fc",
+          "title": "Name F and C",
+          "blurb": "A key lights up. Is it C or F?",
+          "type": "nameIt",
+          "octave": "any",
+          "pass": 80,
+          "choices": [
+            "C",
+            "F"
+          ],
+          "prompts": [
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "F"
+              ],
+              "show": "F"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "C"
+              ],
+              "show": "C"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "C"
+              ],
+              "show": "C"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "F"
+              ],
+              "show": "F"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "C"
+              ],
+              "show": "C"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "C"
+              ],
+              "show": "C"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "F"
+              ],
+              "show": "F"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "F"
+              ],
+              "show": "F"
+            }
+          ]
+        },
+        {
+          "id": "l1-find-all",
+          "title": "Find every white key",
+          "blurb": "Play the note you are asked for. Any octave counts.",
+          "type": "findIt",
+          "octave": "any",
+          "pass": 80,
+          "prompts": [
+            {
+              "text": "Play a B.",
+              "answer": [
+                "B"
+              ]
+            },
+            {
+              "text": "Play an A.",
+              "answer": [
+                "A"
+              ]
+            },
+            {
+              "text": "Play a G.",
+              "answer": [
+                "G"
+              ]
+            },
+            {
+              "text": "Play an E.",
+              "answer": [
+                "E"
+              ]
+            },
+            {
+              "text": "Play a C.",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Play an E.",
+              "answer": [
+                "E"
+              ]
+            },
+            {
+              "text": "Play a G.",
+              "answer": [
+                "G"
+              ]
+            },
+            {
+              "text": "Play an A.",
+              "answer": [
+                "A"
+              ]
+            },
+            {
+              "text": "Play an F.",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Play an F.",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Play a C.",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Play a D.",
+              "answer": [
+                "D"
+              ]
+            },
+            {
+              "text": "Play a D.",
+              "answer": [
+                "D"
+              ]
+            },
+            {
+              "text": "Play a B.",
+              "answer": [
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "l1-name-all",
+          "title": "Name every white key",
+          "blurb": "A key lights up. Pick its name.",
+          "type": "nameIt",
+          "octave": "any",
+          "pass": 80,
+          "prompts": [
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "E"
+              ],
+              "show": "E"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "B"
+              ],
+              "show": "B"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "G"
+              ],
+              "show": "G"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "B"
+              ],
+              "show": "B"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "E"
+              ],
+              "show": "E"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "A"
+              ],
+              "show": "A"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "A"
+              ],
+              "show": "A"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "D"
+              ],
+              "show": "D"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "C"
+              ],
+              "show": "C"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "C"
+              ],
+              "show": "C"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "G"
+              ],
+              "show": "G"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "F"
+              ],
+              "show": "F"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "F"
+              ],
+              "show": "F"
+            },
+            {
+              "text": "What is the name of the lit key?",
+              "answer": [
+                "D"
+              ],
+              "show": "D"
+            }
+          ]
+        },
+        {
+          "id": "l1-octave",
+          "title": "Right note, right octave",
+          "blurb": "This time the octave matters. Middle C is C4.",
+          "type": "findIt",
+          "octave": "exact",
+          "pass": 80,
+          "prompts": [
+            {
+              "text": "Play F4.",
+              "answer": [
+                "F"
+              ],
+              "exact": "F4"
+            },
+            {
+              "text": "Play A3.",
+              "answer": [
+                "A"
+              ],
+              "exact": "A3"
+            },
+            {
+              "text": "Play C3.",
+              "answer": [
+                "C"
+              ],
+              "exact": "C3"
+            },
+            {
+              "text": "Play D3.",
+              "answer": [
+                "D"
+              ],
+              "exact": "D3"
+            },
+            {
+              "text": "Play E4.",
+              "answer": [
+                "E"
+              ],
+              "exact": "E4"
+            },
+            {
+              "text": "Play G3.",
+              "answer": [
+                "G"
+              ],
+              "exact": "G3"
+            },
+            {
+              "text": "Play B3.",
+              "answer": [
+                "B"
+              ],
+              "exact": "B3"
+            },
+            {
+              "text": "Play E3.",
+              "answer": [
+                "E"
+              ],
+              "exact": "E3"
+            },
+            {
+              "text": "Play F3.",
+              "answer": [
+                "F"
+              ],
+              "exact": "F3"
+            },
+            {
+              "text": "Play A4.",
+              "answer": [
+                "A"
+              ],
+              "exact": "A4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
