@@ -12,7 +12,7 @@ PianoLab is a piano learning app for Mr. Comiskey's classes. It reinforces the p
 
 By the end of the course, a student can **find, name, build, voice, and play chords in time, in a key, and talk about them by function** (roman numerals, plus Home, Away, and Tension).
 
-The class's real aim is creative: students expressing themselves. PianoLab's drills are the means, not the end. Jam Room and Play Along are where the drills turn into music.
+The class's real aim is creative: students expressing themselves, writing songs, making beats, etc. PianoLab's drills are the means, not the end. Jam Room and Play Along are where the drills turn into music.
 
 ## 2. Hard constraints
 
@@ -22,48 +22,47 @@ The class's real aim is creative: students expressing themselves. PianoLab's dri
 - Students reach the app through Google Classroom links.
 - **No traditional notation.** Use MIDI block notation (the waterfall and piano roll), chord names, and roman numerals only.
 
-## 3. Curriculum (unit sequence)
+## 3. Curriculum (lesson sequence)
 
-The app follows the order Mr. Comiskey teaches in. Each unit has levels.
+The app follows the order Mr. Comiskey teaches in. Each lesson has levels.
 
-| Unit | Topic | Notes |
+| Lesson | Topic | Notes |
 |---|---|---|
-| 1 | Finding F and C | Use the black-key groups: C sits left of the 2-group, and F sits left of the 3-group. Labels are hidden. |
-| 2 | The musical alphabet, A–G | Going up and down, and wrapping from G back to A. |
-| 3 | All white-key names | Early levels accept any octave. Later levels require a specific octave. |
-| 4 | Thirds | Skip one white key. This prepares for chord building. |
-| 5 | White-key chords in C major and A minor | All seven diatonic chords, with roman numerals and degree colors. |
-| 6 | Black-key names | Sharps and flats, including two names for one key. |
-| 7 | Major and minor chords by half steps | Major = 4 + 3 half steps. Minor = 3 + 4 half steps. |
-| 8 | Inversions | Show-and-tell plus lots of repetition. Smooth Mover lives here. |
-| 9 | Scales around the circle of 5ths | Start with C, G, F, and D, and keep going as far as the class gets. Includes fingering hints. |
-| Bonus | 7th chords | A bonus level, not a full unit. |
+| 1 | White-key note names | One lesson that Mr. Comiskey covers in about 10 minutes live. Its Learn section walks through three touch points: **finding F and C** (C sits left of the 2-black-key group, and F sits left of the 3-group), **the musical alphabet A–G** (up, down, and wrapping from G back to A), and then **every white key**. Early levels accept any octave, and later levels require a specific octave. |
+| 2 | White-key chords in C major and A minor | Chords as a concept: stacking **thirds** by skipping a white key (a quick moment, with no major/minor 3rds yet). Chord names and degree colors only, **no roman numerals yet**. |
+| 3 | Roman numerals and function | Once chords make sense, introduce numerals, then Home, Away, and Tension. Same white-key chords, new language. |
+| 4 | Black-key names and half steps | Sharps and flats, two names for one key, and the **half step** (any key to its nearest neighbor, black or white). |
+| 5 | Major and minor chords anywhere | The real work on **major and minor 3rds**: counting half steps. Major = 4 + 3, and minor = 3 + 4. Build major and minor chords on any root, black keys included. |
+| 6 | Inversions | Show-and-tell plus lots of repetition. Smooth Mover lives here. |
+| 7 | Scales around the circle of 5ths | Start with C, G, F, and D, and keep going as far as the class gets. Includes fingering hints. |
+| Bonus | 7th chords | A bonus level, not a full lesson. |
 
-Root position versus inversion ear training is **not** a beginner skill. It appears only in Unit 8 and later.
+- Root position versus inversion ear training is **not** for beginners. It appears only in Lesson 6 and later.
+- **Roman numerals and function labels stay hidden** in Lessons 1–2: the chord strip, waterfall, and chord readout show chord names only. From Lesson 3 on they appear. In Practice and Jam Room they're a toggle.
 
 ## 4. App structure
 
 The **piano is always the main view**, fixed along the bottom. Everything above it changes by mode.
 
 ### Modes (top-bar tabs)
-- **Learn:** short demos where the app plays and highlights things while the student watches. Always shows the full scroll and labels. Every unit opens with Learn.
-- **Practice:** free exploration with labels and hints on. No grading. The chord detector is on.
+- **Learn:** short demos where the app plays and highlights things, followed right away by **"now you try" prompts**. The student plays what was just taught and gets quick feedback (right, or a hint and try again). Not graded, but the code notes whether Learn was completed, like SynthLab. Always shows the full scroll and labels. Every lesson opens with Learn.
+- **Practice:** free exploration with labels and hints on. No grading. The chord detector is on. Students can **record a practice session and save it**, like Chrome Music Lab's Shared Piano: as a **code** (paste it back in to replay it, or turn it in on Classroom) or as a **.mid export**. Recordings are capped at a few minutes so codes stay a reasonable length.
 - **Challenge:** graded levels that produce a code.
 - **Jam Room:** pick a genre track, a sound, and a progression, then play. It can be graded or ungraded (§10).
 
-### The unit loop
-Every unit follows the same three steps: **Show → Explore → Challenge.** Students learn the app once, and "do the Challenge for Unit 5" always means the same thing.
+### The lesson loop
+Every lesson follows the same three steps: **Show → Explore → Challenge.** Students learn the app once, and "do the Challenge for Lesson 2" always means the same thing.
 
 ## 5. Assessment types
 
 ### Identify (no playing)
 - **Name It:** keys light up, and the student picks the note or chord name.
-- **Ear Check:** the app plays something, and the student identifies it. Start with major versus minor. Root position versus inversion comes later (Unit 8 and up).
+- **Ear Check:** the app plays something, and the student identifies it. Start with major versus minor. Root position versus inversion comes later (Lesson 6 and up).
 
 ### Build (play one thing at a time, no timing)
 - **Find It:** "Play every F" or "Play an E."
 - **Build It:** "Play D minor" or "Play the IV chord in G."
-- **Numeral Translator:** given a key and a numeral, play the chord.
+- **Numeral Translator:** given a key and a numeral, play the chord. Lesson 3 and later.
 - **Echo:** the app plays a pattern, and the student plays it back. It has a scaffold setting:
   - *Watch & Play:* keys light up as the pattern plays.
   - *Hint:* only the first note lights up.
@@ -74,10 +73,7 @@ Every unit follows the same three steps: **Show → Explore → Challenge.** Stu
 - **Smooth Mover:** given chord A and then chord B, the student plays the voicing of B that moves the fewest half steps from A. A ghost of the previous chord stays visible. The score counts total half steps moved.
 - **Speed Round:** as many Build It prompts as possible in 60 seconds. This one is the most game-like.
 - **Song Play-Along:** a backing track or YouTube video plus a part (§10). The graded portion is **45 seconds at most**.
-
-### Cut
-- *Spot the Wrong Note:* it doesn't match a real musical situation.
-- *Missing Chord:* there's no single right answer in real music.
+- **Chord chart toggle (all Perform types):** an optional small chord diagram, a mini keyboard showing which keys to press, for the chord being prompted and the next one coming up. It follows the current voicing and inversion. Students can turn it on or off. In the assignment builder, the teacher can allow it, hide it, or let students choose, and the code records whether it was on.
 
 ### Rules for every assessment
 - **The chord detector is turned off** in all Identify and Build assessments.
@@ -103,7 +99,7 @@ Example pattern data:
 
 ```json
 {
-  "id": "u5-l3-four-chord-loop",
+  "id": "lesson3-level3-four-chord-loop",
   "key": "C",
   "mode": "major",
   "progression": ["I", "V", "vi", "IV"],
@@ -123,17 +119,19 @@ Example pattern data:
 - **Timing:** rhythm-game hit windows (starting values, adjustable later): Perfect ±50 ms, Good ±100 ms, Miss beyond that. These roll up to a timing percentage.
 - **Pitch:** an accuracy percentage. Early levels grade by note name (any octave). Later levels can require a specific octave.
 - **Pass mark:** set per level (80% by default).
+- **50% grade floor:** a completed attempt never records a grade below 50%, because raw percentages are brutal at first. The student sees the floored grade. The batch view shows the floored grade plus the raw score, for the teacher only. The floor never changes whether a level is passed.
 - **Hands:** MIDI can't tell which hand pressed a key, so "left hand" means notes below a **split point**. Fingering is shown as hints only and is never graded.
 
 ## 8. Teacher assignment builder
 
 A teacher-only page that builds a **link** to paste into Google Classroom. All settings live in the URL, so the app stays stateless. Settings:
 
-- Unit, level, and assessment type
+- Lesson, level, and assessment type
 - Pattern (key, progression, texture, rhythm, voicing), or a custom progression the teacher types in (e.g. a song the class is covering)
 - Minimum tempo and other minimum-difficulty settings
 - **Notes on screen:** Off, Chord names only, or Full scroll, or "student chooses"
 - **Key lock** on or off (§10)
+- **Chord chart:** allowed, hidden, or student chooses (§5)
 - Echo scaffold level (Watch & Play, Hint, or Ear Only)
 - Backing track or YouTube video, for Play Along
 - An optional "Class record: N" number to display (§11)
@@ -161,8 +159,16 @@ A teacher-only page that builds a **link** to paste into Google Classroom. All s
 - The teacher's part is usually just the **chord progression**. An optional piano scroll can guide students, and its visibility follows the assignment's Notes on screen setting.
 - Gradeable as an assessment, up to 45 seconds.
 
+### MIDI import (practice)
+- Students (or the teacher) can **import a .mid file** and practice playing along with it in the waterfall.
+- **Playback speed** control (for example 50%–100%), with the waterfall and audio slowing together.
+- Students choose which track of the file to show, and can mute it to play the part themselves or hear it to follow along.
+- Notes outside the current 25-key range are flagged so students know when to shift octaves.
+- Ungraded practice.
+
 ### Jam Room
-- Choose a genre or track, choose a sound, see the progression, and play.
+- Choose a genre or track from a dropdown, choose a sound, see the progression, and play.
+- Students can also **paste their own YouTube link**. In that case no progression appears, and the jam is ungraded. Students can pick a key themselves so Melody mode and Key lock still work.
 - **Melody mode** highlights the notes of the key.
 - **Key lock** greys out notes outside the key and makes them silent. The teacher sets it in the builder, and students can toggle it in Jam Room.
 - Ungraded by default. When graded, only chord accuracy counts, and the melody stays free.
@@ -204,7 +210,7 @@ A teacher-only page that builds a **link** to paste into Google Classroom. All s
 
 ### Layout (see the Studio Warm v2 mockup)
 - **Top bar (walnut wood):** the logo, mode tabs, MIDI status, and latency status.
-- **Left panel:** the unit and level, instructions, level progress, the "Make it easier or harder" controls, scores, and **Get my code**.
+- **Left panel:** the lesson and level, instructions, level progress, the "Make it easier or harder" controls, scores, and **Get my code**.
 - **Center:** the chord strip (the key's seven chords), the waterfall, the chord readout bar (octave buttons, chord, numeral, inversion, function, Restart, and Start), and the piano. Walnut **wood cheeks** frame the piano and waterfall.
 - **Right panel:** the sound list, the Mix button, the Compare versions box (temporary), and the metronome.
 
@@ -233,32 +239,33 @@ A teacher-only page that builds a **link** to paste into Google Classroom. All s
 - **Barlow** for body text and **Barlow Semi Condensed** for headings and numbers, matching SynthLab.
 
 ### Waterfall
-- Falling blocks in degree colors land on a brass hit line. Faint guide lines show key boundaries, with stronger lines at each C. Each bar is labeled with its chord and numeral.
+- Falling blocks in degree colors land on a brass hit line. Faint guide lines show key boundaries, with stronger lines at each C. Each bar is labeled with its chord, plus its numeral from Lesson 3 on.
 
 ## 15. Other features
 
 - **Chord detector ("What am I playing?"):** live chord name, inversion, numeral in the current key, and function. Mr. Comiskey can use it on the projector while teaching. It's on in Practice, Learn, and Jam Room, and off in Identify and Build assessments.
 - **Fingering hints**, especially for scales: numbers over the keys, with the thumb-under spot highlighted.
-- **MIDI export:** download a performance as a `.mid` file, for example to bring into Soundtrap.
+- **MIDI export:** download a performance or a recorded Practice session as a `.mid` file, for example to bring into Soundtrap.
+- **MIDI import:** see §10.
 
 ## 16. Content as data
 
-- Units, levels, patterns, backing tracks, and YouTube songs live in **data files** (JSON), separate from the app code.
+- Lessons, levels, patterns, backing tracks, and YouTube songs live in **data files** (JSON), separate from the app code.
 - Adding a level, a progression, or a song means editing a list, which Mr. Comiskey can do from his phone.
 
 ## 17. Build phases
 
 Each phase gets its own branch and a Vercel preview, and is tested on a real Chromebook with a 25-key keyboard. Merges to `main` happen **after class**, never while students are working.
 
-1. **Foundation:** the piano with all three inputs, latency calibration, the audio engine with all sound versions and the Mix panel, Units 1–3 (note finding), codes, batch grading, autosave, and the Studio Warm v2 layout. **Design the pattern data format now**, even though it isn't used until Phase 3.
-2. **Chords:** Units 4–8, the chord detector, inversions, Smooth Mover, roman numerals, the chord strip, and function labels.
-3. **Time:** the pattern engine, metronome, waterfall, hit windows, Progression Play, Speed Round, Echo, and the assignment builder.
-4. **Music:** scales and the circle of 5ths with fingering, Jam Room, backing tracks, YouTube Play Along with the mixer, MIDI export, the 7th-chord bonus, and the optional class record backend.
+1. **Foundation:** the piano with all three inputs, latency calibration, the audio engine with all sound versions and the Mix panel, Lesson 1 (white-key note names) with interactive Learn, codes, batch grading with the 50% floor, autosave, and the Studio Warm v2 layout. **Design the pattern data format now**, even though it isn't used until Phase 3.
+2. **Chords:** Lessons 2–6 (white-key chords, roman numerals and function, black keys and half steps, major and minor chords anywhere, and inversions), the chord detector, Smooth Mover, and the chord strip.
+3. **Time:** the pattern engine, metronome, waterfall, hit windows, Progression Play, Speed Round, Echo, the assignment builder, and Practice recording (save as a code or .mid).
+4. **Music:** Lesson 7 (scales and the circle of 5ths with fingering), Jam Room, backing tracks, YouTube Play Along with the mixer, MIDI import with playback speed, the 7th-chord bonus, and the optional class record backend.
 
 ## 18. Open questions
 
 - Confirm the subdomain: `pianolab.mrcomiskey.com`?
 - Which sound version wins in each category (decided after Phase 1 testing).
-- The specific levels in each unit, and the pass mark for each.
+- The specific levels in each lesson, and the pass mark for each.
 - The first set of backing tracks and YouTube songs.
 - The exact syncopated rhythm presets.
