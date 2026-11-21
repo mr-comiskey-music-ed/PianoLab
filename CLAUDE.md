@@ -68,8 +68,8 @@ Learn steps only get a "Show me" demo when it teaches something (no demos for "p
 ## Status
 Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + Mix + Compare box, Lesson 1 Learn and
 5 Challenge levels, codes, batch grading, autosave. See SPEC section 17 for Phases 2-4.
-Sounds: Accurate-Salamander (CC BY 3.0, reduced mp3 copy ~3.5 MB in `public/samples/accurate-salamander/`, 2 velocity
-layers), Salamander Grand (Tone.js version, from `tonejs.github.io`; sounded thinner in headphones), Splendid Grand (smplr,
+Sounds: Accurate-Salamander (CC BY 3.0, reduced mp3 copy ~8.5 MB in `public/samples/accurate-salamander/`, 5 velocity
+layers; loads only when picked, watch load time on school Wi-Fi), Salamander Grand (Tone.js version, from `tonejs.github.io`; sounded thinner in headphones), Splendid Grand (smplr,
 from `smpldsnds.github.io`, loaded lazily), Felt (Accurate-Salamander soft layer through a low-pass), Rhodes (jRhodes3d,
 reduced copy ~0.8 MB in `public/samples/jrhodes3d/`, CC BY-NC 4.0), Synth Keys (SynthLab engine; Bright was toned down).
 Sample files for Rhodes/Accurate are hosted with the app, so they need no outside host. Keep credits in the right panel.
@@ -77,3 +77,16 @@ Dropped: the smplr electric piano and the paste-a-SynthLab-patch sound.
 Right panel controls must be defined OUTSIDE components (the Slider once lived inside RightPanel and broke click-and-drag).
 Metronome: wood block chosen by Mr. Comiskey; compact (icon button, BPM box + slider, volume knob).
 Metronome sounds are in `audioEngine.ts` `tick()`.
+
+## Open items (last updated end of Phase 1 testing)
+- Waiting on Mr. Comiskey's Chromebook test of: Accurate-Salamander (5 layers, ~8.5 MB: load time on school Wi-Fi, sound in
+  headphones), Felt (now Accurate-based), Synth Keys Bright (toned down, may need more), wood-block metronome + volume knob.
+- Pick one sound per category, then delete the others and the "Compare versions" box (SPEC section 13). Candidates to cut:
+  Salamander (Tone.js), Splendid Grand, and one of the Synth Keys.
+- Rhodes still uses 2 velocity layers; the source set has 5 (would grow ~0.8 MB to ~2 MB). Ask before changing.
+- Grading: second try = half credit; he said grading was "a tad harsh but close". Pass marks (80%) and the five Lesson 1
+  levels were my proposal, not confirmed.
+- Not built yet: About screen with full credits (credits are in a small right-panel list), scale-degree colors, Phases 2-4.
+- Confirm the Vercel preview for branch `claude/charming-wozniak-94lfxk` builds; nothing is on `main` yet (merge only on his
+  say-so, after class).
+- Latency check result varied (88-141 ms in tests); worth a second look once timing grades exist (Phase 3).

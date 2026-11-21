@@ -53,8 +53,9 @@ SALAMANDER_FILES['C6'] = 'C6.mp3';
 /** The Rhodes files live in /public/samples/jrhodes3d (a reduced copy of jRhodes3d, ~0.8 MB), so they load from our own site. */
 const RHODES_URL = `${import.meta.env.BASE_URL}samples/jrhodes3d/`;
 const RHODES_ROOTS = [40, 45, 50, 55, 59, 62, 65, 71, 76, 81, 86];
-/** Accurate-Salamander: a reduced copy (C2-C6 every minor third, 2 velocity layers, ~3.5 MB) hosted with the app. */
+/** Accurate-Salamander: a reduced copy (C2-C6 every minor third, 5 velocity layers, ~8.5 MB) hosted with the app. */
 const ACCURATE_URL = `${import.meta.env.BASE_URL}samples/accurate-salamander/`;
+const ACCURATE_LAYERS = [5, 7, 9, 12, 15]; // of the original 16, softest to hardest
 const ACCURATE_ROOTS = [...Array.from({ length: 16 }, (_, i) => 36 + i * 3), 84];
 
 interface Voice {
@@ -170,9 +171,9 @@ export class AudioEngine {
       case 'felt':
         return this.buildFelt();
       case 'rhodes':
-        return this.buildLayered(RHODES_URL, RHODES_ROOTS, 2, 4, 0.8, this.bus);
+        return this.buildLayered(RHODES_URL, RHODES_ROOTS, [2, 4], 0.8, this.bus);
       case 'accurate':
-        return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, 7, 12, 1.2, this.bus);
+        return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, ACCURATE_LAYERS, 1.2, this.bus);
       case 'splendid':
         return this.buildSplendid();
       case 'synthWarm':
@@ -203,8 +204,8 @@ export class AudioEngine {
     });
   }
 
-  /** A sampler with a soft and a hard velocity layer (Rhodes, Accurate-Salamander). Files are `<midi>_<layer>.mp3`. */
-  private async buildLayered(url: string, roots: number[], softLayer: number, hardLayer: number, release: number, out: Tone.ToneAudioNode, softOnly = false): Promise<Voice> {
+  /** A sampler with several velocity layers (softest first). Files are `<midi>_<layer>.mp3`. Harder playing picks a louder layer. */
+  private async buildLayered(url: string, roots: number[], layers: number[], release: number, out: Tone.ToneAudioNode): Promise<Voice> {
     const make = (layer: number) =>
       new Promise<Tone.Sampler>((resolve, reject) => {
         const urls: Record<string, string> = {};
@@ -217,12 +218,12 @@ export class AudioEngine {
           onerror: (e) => reject(e instanceof Error ? e : new Error('sample files did not load')),
         }).connect(out);
       });
-    const soft = await make(softLayer);
-    const hard = softOnly ? soft : await make(hardLayer);
+    const samplers = await Promise.all(layers.map(make));
     const used = new Map<number, Tone.Sampler>();
     return {
       on: (midi, vel) => {
-        const s = vel < 0.62 ? soft : hard;
+        // Split the 0-1 velocity range evenly across the layers.
+        const s = samplers[Math.min(samplers.length - 1, Math.floor(Math.max(0, vel) * samplers.length))];
         used.set(midi, s);
         s.triggerAttack(noteName(midi), Tone.now(), vel);
       },
@@ -231,14 +232,10 @@ export class AudioEngine {
         used.delete(midi);
       },
       allOff: () => {
-        soft.releaseAll();
-        hard.releaseAll();
+        samplers.forEach((x) => x.releaseAll());
         used.clear();
       },
-      dispose: () => {
-        soft.dispose();
-        if (hard !== soft) hard.dispose();
-      },
+      dispose: () => samplers.forEach((x) => x.dispose()),
     };
   }
 
@@ -247,7 +244,7 @@ export class AudioEngine {
     const lp = new Tone.Filter(1400, 'lowpass');
     const level = new Tone.Gain(0.85);
     lp.chain(level, this.bus);
-    return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, 7, 7, 1.4, lp, true);
+    return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, [7], 1.4, lp);
   }
 
   /** Splendid Grand (Steinway) from smplr. smplr is loaded only when this sound is picked. */
