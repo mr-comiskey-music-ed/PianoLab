@@ -88,9 +88,13 @@ Mix: behind a small faders icon at the top right of the Sound box (not essential
 Grade Report tab (like SynthLab): Get my code (`CodePanel`) and the teacher's batch grader. No Teacher button in the top bar.
 Sandbox (`ModeSandbox.tsx`, `PianoRoll.tsx`, `utils/performance.ts`): records only while its tab is open; Save performance =
 code (key `p`, name inside), link (`?perf=`, no name) or .mid; Clear. Batch view can play a performance back.
-Piano roll (Shared Piano style): its own "roll clock" runs while you play and glides to a stop ~1.4 s after you stop
-(`makeRollMap`); notes keep real timing for play back/MIDI. Scroll/drag to look back, "Back to live", Play back starts
-from the scrolled-to spot, a new note jumps back to live.
+Piano roll (Shared Piano style): its own "roll clock" runs while you play, keeps going 1.2 s after the last key is let go,
+then glides to a stop over 1.6 s (`TAIL`/`GLIDE` in `PianoRoll.tsx`); notes keep real timing for play back/MIDI.
+Scroll/drag to look back ("Back to live" returns); scrolling plays the keys the line crosses, like play back (held while
+the line sits in a note, let go 0.5 s after scrolling stops). Play back starts from the scrolled-to spot; the button is
+Play back / Pause / Resume, and the space bar toggles it (Sandbox only, not while typing). A new note jumps back to live
+and ends a paused play back.
+Name boxes in code makers say "Your Name".
 Oct -/+ buttons light up like the class MIDI keyboards: plain at home (C3-C5), green 1 octave, yellow 2, red 3, on the
 button in the direction you moved (`octColor` in App.tsx).
 Mix panel floats over the sound list (doesn't push it down).

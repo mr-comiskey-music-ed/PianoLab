@@ -5,9 +5,9 @@ import { PerfNote } from '../utils/performance';
 /** Pixels per second the notes rise. */
 export const ROLL_SPEED = 110;
 /** After the last key is let go, the roll keeps moving this long at full speed… */
-const TAIL = 500;
+const TAIL = 1200;
 /** …then glides to a stop over this long (like Chrome Music Lab's Shared Piano), so silence doesn't scroll forever. */
-const GLIDE = 900;
+const GLIDE = 1600;
 const glide = (gap: number) => (gap >= GLIDE ? GLIDE / 2 : gap - (gap * gap) / (2 * GLIDE));
 
 /**
@@ -70,7 +70,9 @@ export const PianoRoll: React.FC<{
   offset: MutableRefObject<number>;
   /** False while playing back: the roll then follows the music. */
   canScroll: boolean;
-}> = ({ notes, start, now, offset, canScroll }) => {
+  /** While you scroll: the notes sitting on the keyboard line right now (midi -> velocity), so they can sound. */
+  onScrub?: (under: Map<number, number>, passed: Map<number, number>) => void;
+}> = ({ notes, start, now, offset, canScroll, onScrub }) => {
   const canvas = useRef<HTMLCanvasElement>(null);
   const live = useRef({ notes, start, now, canScroll });
   live.current = { notes, start, now, canScroll };
@@ -79,9 +81,34 @@ export const PianoRoll: React.FC<{
   const [atLive, setAtLive] = useState(true);
   const tween = useRef<number | null>(null);
 
+  /**
+   * Notes on the keyboard line now (`under`), and notes the line jumped right over since the last position (`passed`, so a
+   * quick scroll still sounds short notes, like play back).
+   */
+  const scrubNotes = (prevBottom: number) => {
+    const under = new Map<number, number>();
+    const passed = new Map<number, number>();
+    if (offset.current < 1) return { under, passed };
+    const { rollAt } = map.current;
+    const bottom = rollNow.current - offset.current;
+    const lo = Math.min(prevBottom, bottom);
+    const hi = Math.max(prevBottom, bottom);
+    for (const n of live.current.notes) {
+      if (n.d <= 0) continue;
+      const rs = rollAt(n.t);
+      const re = rollAt(n.t + n.d);
+      if (rs <= bottom && bottom < re) under.set(n.m, n.v);
+      else if (rs < hi && re > lo) passed.set(n.m, n.v);
+    }
+    return { under, passed };
+  };
+
   const setOffset = (v: number) => {
+    const prevBottom = rollNow.current - offset.current;
     offset.current = Math.max(0, Math.min(rollNow.current, v));
     setAtLive(offset.current < 1);
+    const { under, passed } = scrubNotes(prevBottom);
+    onScrub?.(under, passed);
   };
 
   // Any new note (or play back) jumps back to live.

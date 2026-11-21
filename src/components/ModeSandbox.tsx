@@ -19,6 +19,8 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const [playing, setPlaying] = useState(false);
   const [playLit, setPlayLit] = useState<Set<number>>(new Set());
   const [saveOpen, setSaveOpen] = useState(false);
+  const saveOpenRef = useRef(false);
+  saveOpenRef.current = saveOpen;
   const [loadedMsg, setLoadedMsg] = useState('');
 
   // Recording clock: t0 is when the first note was played (performance.now()).
@@ -50,6 +52,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   useEffect(() => {
     return ctx.subscribeNotes((e) => {
       if (playRef.current) return; // don't record while playing back
+      if (e.on && activeRef.current && pausedAt.current !== null) stop(); // playing again ends a paused play back
       if (e.on && !activeRef.current) return; // (a note-off still finishes a note started in the Sandbox)
       const now = performance.now();
       if (e.on) {
@@ -75,44 +78,70 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
         setNotes((prev) => prev.map((n, k) => (k === i ? { ...n, d: Math.max(20, end - n.t) } : n)));
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx]);
 
-  const stop = useCallback(() => {
+  /** Paused play back: the moment (real ms on the performance's clock) to resume from. */
+  const pausedAt = useRef<number | null>(null);
+  const [paused, setPaused] = useState(false);
+
+  /** Stop the sound and the timers (used by pause and stop). */
+  const halt = useCallback(() => {
     const p = playRef.current;
-    if (!p) return;
-    p.timers.forEach((id) => window.clearTimeout(id));
+    if (p) p.timers.forEach((id) => window.clearTimeout(id));
     playRef.current = null;
     setPlaying(false);
     setPlayLit((lit) => {
       lit.forEach((m) => ctx.engine.noteOff(m));
       return new Set();
     });
-    t0.current = null; // the next note you play continues after the recording
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx.engine]);
 
+  /** Stop play back for good (finished, cleared, or you started playing again). */
+  const stop = useCallback(() => {
+    halt();
+    pausedAt.current = null;
+    setPaused(false);
+    t0.current = null; // the next note you play continues after the recording
+  }, [halt]);
+
+  const pause = useCallback(() => {
+    const p = playRef.current;
+    if (!p) return;
+    const at = performance.now() - p.start;
+    halt();
+    pausedAt.current = Math.max(0, at);
+    setPaused(true);
+  }, [halt]);
+
   const play = async () => {
-    const done = notes.filter((n) => n.d > 0);
+    const done = notesRef.current.filter((n) => n.d > 0);
     if (!done.length) return;
-    // If you scrolled back, play from the moment at the bottom of the roll; otherwise from the start.
+    // Where to start: the scrolled-to spot if you scrolled, else where you paused, else the beginning.
     let from = 0;
     if (rollOffset.current > 0) {
       const { rollAt } = makeRollMap(done);
-      const bottom = rollAt(restingNow(done)) - rollOffset.current;
+      const bottom = rollAt(pausedAt.current ?? restingNow(done)) - rollOffset.current;
       const next = done.filter((n) => rollAt(n.t) >= bottom - 1);
       from = next.length ? Math.min(...next.map((n) => n.t)) : 0;
-    }
-    stop();
+    } else if (pausedAt.current !== null) from = pausedAt.current;
+    halt();
+    pausedAt.current = null;
+    setPaused(false);
     await ctx.engine.unlock();
     const LEAD = 50;
     const timers: number[] = [];
     for (const n of done) {
-      if (n.t < from) continue;
+      const end = n.t + n.d;
+      if (end <= from) continue;
+      // A note that was already sounding at the resume point starts right away for the rest of its length.
+      const on = Math.max(0, n.t - from);
       timers.push(
         window.setTimeout(() => {
           ctx.engine.noteOn(n.m, n.v / 127);
           setPlayLit((s) => new Set(s).add(n.m));
-        }, LEAD + n.t - from),
+        }, LEAD + on),
       );
       timers.push(
         window.setTimeout(() => {
@@ -122,7 +151,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
             x.delete(n.m);
             return x;
           });
-        }, LEAD + n.t + n.d - from),
+        }, LEAD + end - from),
       );
     }
     timers.push(window.setTimeout(stop, LEAD + perfLength(done) - from + 1500));
@@ -130,6 +159,65 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     playRef.current = { start: performance.now() + LEAD - from, timers };
     setPlaying(true);
   };
+  const playRefFn = useRef(play);
+  playRefFn.current = play;
+
+  const toggle = useCallback(() => {
+    if (playRef.current) pause();
+    else void playRefFn.current();
+  }, [pause]);
+
+  // Space bar plays / pauses (Sandbox tab only, and not while typing in a box).
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat || saveOpenRef.current) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && !['range', 'checkbox', 'radio', 'button'].includes((t as HTMLInputElement).type)) || t.isContentEditable)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      toggle();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [active, toggle]);
+
+  // ---- Scrubbing: scrolling the roll plays the keys under the keyboard line, like play back does ----
+  const scrub = useRef(new Map<number, number>()); // midi -> velocity, sounding now
+  const scrubIdle = useRef<number | null>(null);
+  const releaseScrub = useCallback(() => {
+    scrub.current.forEach((_, m) => ctx.engine.noteOff(m));
+    scrub.current = new Map();
+    if (!playRef.current) setPlayLit(new Set());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ctx.engine]);
+  const onScrub = useCallback(
+    (under: Map<number, number>, passed: Map<number, number>) => {
+      if (playRef.current) return;
+      void ctx.engine.unlock();
+      // Notes the scroll jumped right over: a short blip each, so fast scrolling still sounds every note.
+      passed.forEach((v, m) => {
+        if (under.has(m) || scrub.current.has(m)) return;
+        ctx.engine.noteOn(m, v / 127);
+        window.setTimeout(() => {
+          if (!scrub.current.has(m)) ctx.engine.noteOff(m);
+        }, 140);
+      });
+      scrub.current.forEach((_, m) => {
+        if (!under.has(m)) ctx.engine.noteOff(m);
+      });
+      under.forEach((v, m) => {
+        if (!scrub.current.has(m)) ctx.engine.noteOn(m, v / 127);
+      });
+      scrub.current = new Map(under);
+      setPlayLit(new Set([...under.keys(), ...passed.keys()]));
+      // Stop scrolling and the held notes let go, so nothing rings forever.
+      if (scrubIdle.current !== null) window.clearTimeout(scrubIdle.current);
+      scrubIdle.current = window.setTimeout(releaseScrub, 500);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ctx.engine, releaseScrub],
+  );
 
   const clear = () => {
     if (notes.length && !window.confirm('Clear your performance? Save it first if you want to keep it.')) return;
@@ -147,6 +235,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   // (the roll has glided to a stop there).
   const now = useCallback(() => {
     if (playRef.current) return performance.now() - playRef.current.start;
+    if (pausedAt.current !== null) return pausedAt.current;
     if (t0.current !== null) return performance.now() - t0.current;
     return notesRef.current.length ? restingNow(notesRef.current) : null;
   }, []);
@@ -169,8 +258,8 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
         {full && <div className="mt-1 text-[13px] text-bad">Recording is full ({formatLength(MAX_PERF_MS)} or {MAX_PERF_NOTES} notes). Save it, or Clear to start again.</div>}
         {loadedMsg && <div className="mt-1 text-[13px] text-wal1">{loadedMsg}</div>}
       </div>
-      <button className="btn" onClick={() => (playing ? stop() : void play())} disabled={!finished.length} data-testid="perf-play">
-        {playing ? '■ Stop' : '▶ Play back'}
+      <button className="btn" onClick={toggle} disabled={!finished.length} data-testid="perf-play" title="Space bar: play / pause">
+        {playing ? '❚❚ Pause' : paused ? '▶ Resume' : '▶ Play back'}
       </button>
       <button className="btn btn-brass" onClick={() => setSaveOpen(true)} disabled={!finished.length} data-testid="perf-save">
         Save performance
@@ -185,7 +274,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     <div className="relative h-full w-full">
       {/* Matches the piano below: the stage's wood border is 10px, the piano's cheeks 12px. */}
       <div className="absolute inset-y-0 left-[2px] right-[2px]">
-        <PianoRoll notes={notes} start={ctx.viewStart} now={now} offset={rollOffset} canScroll={!playing} />
+        <PianoRoll notes={notes} start={ctx.viewStart} now={now} offset={rollOffset} canScroll={!playing} onScrub={onScrub} />
       </div>
       {!notes.length && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
@@ -200,7 +289,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     stage,
     labels,
     labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels },
-    lit: playing ? playLit : undefined,
+    lit: playLit.size ? playLit : undefined,
     overlay: saveOpen ? <SavePerformance notes={finished} onClose={() => setSaveOpen(false)} /> : undefined,
   };
 }
@@ -242,7 +331,7 @@ const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void }> = ({
           </div>
           <section>
             <div className="h text-[15px] text-wal3">Turn it in (code)</div>
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="off" placeholder="Your first and last name" data-testid="perf-name" className="mt-1 w-full rounded-lg border border-line2 bg-white px-2 py-1.5 text-[15px]" />
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="off" placeholder="Your Name" data-testid="perf-name" className="mt-1 w-full rounded-lg border border-line2 bg-white px-2 py-1.5 text-[15px]" />
             <textarea readOnly value={code} rows={3} placeholder="Your code shows up here once you type your name." data-testid="perf-code" className="mt-2 w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[11px] break-all" onFocus={(e) => e.currentTarget.select()} />
             <button className="btn btn-brass mt-1 w-full" disabled={!code} onClick={() => void copy(code, 'code')}>
               {copied === 'code' ? 'Copied ✓' : 'Copy code'}

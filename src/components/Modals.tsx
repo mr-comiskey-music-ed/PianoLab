@@ -47,8 +47,8 @@ export const CodePanel: React.FC<{ results: LevelResult[]; learnDone: boolean }>
     <div data-testid="code-panel">
       <p className="text-[15px] text-wal1">Type your name, then copy your code and paste it into Google Classroom to turn in your work. Your name goes inside the code only. This app never saves it.</p>
       <label className="mt-3 block text-[14px]">
-        <span className="h text-wal3">Your name</span>
-        <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="off" data-testid="name" placeholder="First and last name" className="mt-0.5 w-full rounded-lg border border-line2 bg-white px-2 py-1.5 text-[15px]" />
+        <span className="h text-wal3">Your Name</span>
+        <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="off" data-testid="name" placeholder="Your Name" className="mt-0.5 w-full rounded-lg border border-line2 bg-white px-2 py-1.5 text-[15px]" />
       </label>
       <div className="mt-3 rounded-lg border border-line bg-page p-2 text-[14px]">
         <div>Learn: {learnDone ? '✓ finished' : 'not finished yet'}</div>
