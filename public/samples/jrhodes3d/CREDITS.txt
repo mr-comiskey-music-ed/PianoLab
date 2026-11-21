@@ -1,3 +1,3 @@
 jRhodes3d (Rhodes Mark I) by Joshua Learman, https://github.com/sfzinstruments/jlearman.jRhodes3d
 Licensed CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/). Non-commercial use only.
-These files are a reduced copy: 11 notes, 2 velocity layers, mono, 32 kHz mp3, trimmed to 4.5 seconds.
+These files are a reduced copy: 11 notes, 5 velocity layers (top notes missing a layer in the original borrow the nearest one), mono, 32 kHz mp3, trimmed to 4.5 seconds.

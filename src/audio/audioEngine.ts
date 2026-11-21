@@ -12,7 +12,7 @@ import { noteName } from '../utils/music';
  * The metronome goes straight to master so the Mix panel never changes its level.
  */
 
-export type SoundKind = 'accurate' | 'salamander' | 'splendid' | 'felt' | 'rhodes' | 'synthWarm' | 'synthBright';
+export type SoundKind = 'accurate' | 'salamander' | 'splendid' | 'felt' | 'rhodes' | 'synthWarm' | 'synthBright' | 'synthCustom';
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface SoundDef {
@@ -31,14 +31,10 @@ export const SOUNDS: SoundDef[] = [
   { id: 'felt', kind: 'felt', category: 'Felt Piano', label: 'Felt Piano', note: 'Accurate-Salamander, soft layer, through a low-pass' },
   { id: 'synth-warm', kind: 'synthWarm', category: 'Synth Keys', label: 'Synth Keys: Warm', note: 'SynthLab engine' },
   { id: 'synth-bright', kind: 'synthBright', category: 'Synth Keys', label: 'Synth Keys: Bright', note: 'SynthLab engine' },
+  { id: 'custom', kind: 'synthCustom', category: 'Synth Keys', label: 'Custom Synth', note: 'Build your own sound with the Modern Synth panel' },
 ];
 
 export type MetroSound = 'wood' | 'windup' | 'click';
-export const METRO_SOUNDS: { id: MetroSound; label: string }[] = [
-  { id: 'wood', label: 'Wood block' },
-  { id: 'windup', label: 'Wind-up (tick-tock)' },
-  { id: 'click', label: 'Plain click' },
-];
 
 export const DEFAULT_SOUND = 'synth-warm';
 
@@ -53,6 +49,11 @@ SALAMANDER_FILES['C6'] = 'C6.mp3';
 /** The Rhodes files live in /public/samples/jrhodes3d (a reduced copy of jRhodes3d, ~0.8 MB), so they load from our own site. */
 const RHODES_URL = `${import.meta.env.BASE_URL}samples/jrhodes3d/`;
 const RHODES_ROOTS = [40, 45, 50, 55, 59, 62, 65, 71, 76, 81, 86];
+const RHODES_LAYERS = [1, 2, 3, 4, 5];
+/** The original set is missing some layers on the top notes; those borrow the nearest layer of the SAME note. */
+const RHODES_HAS: Record<number, number[]> = { 71: [1, 2, 4, 5], 76: [1, 2, 4, 5], 81: [2, 4, 5], 86: [2, 4, 5] };
+const rhodesLayerFor = (midi: number, layer: number) =>
+  (RHODES_HAS[midi] ?? RHODES_LAYERS).reduce((a, b) => (Math.abs(b - layer) < Math.abs(a - layer) ? b : a));
 /** Accurate-Salamander: a reduced copy (C2-C6 every minor third, 5 velocity layers, ~8.5 MB) hosted with the app. */
 const ACCURATE_URL = `${import.meta.env.BASE_URL}samples/accurate-salamander/`;
 const ACCURATE_LAYERS = [5, 7, 9, 12, 15]; // of the original 16, softest to hardest
@@ -93,6 +94,8 @@ export class AudioEngine {
   private voices = new Map<string, Voice>();
   private loading = new Map<string, Promise<void>>();
   private synthEngine: SubtractiveEngine | null = null;
+  /** The student's Custom Synth patch (built in the Modern Synth panel). */
+  private customParams: SynthParams = SYNTH_KEYS_WARM;
   private currentId = '';
   private metroEvent: number | null = null;
 
@@ -171,7 +174,7 @@ export class AudioEngine {
       case 'felt':
         return this.buildFelt();
       case 'rhodes':
-        return this.buildLayered(RHODES_URL, RHODES_ROOTS, [2, 4], 0.8, this.bus);
+        return this.buildLayered(RHODES_URL, RHODES_ROOTS, RHODES_LAYERS, 0.8, this.bus, rhodesLayerFor);
       case 'accurate':
         return this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, ACCURATE_LAYERS, 1.2, this.bus);
       case 'splendid':
@@ -180,6 +183,8 @@ export class AudioEngine {
         return this.buildSynth(SYNTH_KEYS_WARM);
       case 'synthBright':
         return this.buildSynth(SYNTH_KEYS_BRIGHT);
+      case 'synthCustom':
+        return this.buildSynth(this.customParams);
     }
   }
 
@@ -205,11 +210,18 @@ export class AudioEngine {
   }
 
   /** A sampler with several velocity layers (softest first). Files are `<midi>_<layer>.mp3`. Harder playing picks a louder layer. */
-  private async buildLayered(url: string, roots: number[], layers: number[], release: number, out: Tone.ToneAudioNode): Promise<Voice> {
+  private async buildLayered(
+    url: string,
+    roots: number[],
+    layers: number[],
+    release: number,
+    out: Tone.ToneAudioNode,
+    fileLayer: (midi: number, layer: number) => number = (_m, l) => l,
+  ): Promise<Voice> {
     const make = (layer: number) =>
       new Promise<Tone.Sampler>((resolve, reject) => {
         const urls: Record<string, string> = {};
-        for (const m of roots) urls[noteName(m)] = `${m}_${layer}.mp3`;
+        for (const m of roots) urls[noteName(m)] = `${m}_${fileLayer(m, layer)}.mp3`;
         const sampler = new Tone.Sampler({
           urls,
           baseUrl: url,
@@ -284,6 +296,19 @@ export class AudioEngine {
     };
   }
 
+  /** The SynthLab engine itself, for the Custom Synth panel (its scope, filter and envelope displays read from it). */
+  getSynthEngine(): SubtractiveEngine {
+    const eng = (this.synthEngine ??= SubtractiveEngine.getInstance(this.customParams));
+    eng.setOutput(this.bus);
+    return eng;
+  }
+
+  /** Update the Custom Synth patch. If it's the sound being played, you hear the change right away. */
+  setCustomParams(p: SynthParams) {
+    this.customParams = p;
+    if (this.currentId === 'custom') this.synthEngine?.applyParams(p);
+  }
+
   // ---------- Playing ----------
   /** Synth voices share one engine; re-apply the right patch before a note if the sound changed. */
   private prepareSynth() {
@@ -291,6 +316,7 @@ export class AudioEngine {
     if (!this.synthEngine) return;
     if (kind === 'synthWarm') this.synthEngine.applyParams(SYNTH_KEYS_WARM);
     else if (kind === 'synthBright') this.synthEngine.applyParams(SYNTH_KEYS_BRIGHT);
+    else if (kind === 'synthCustom') this.synthEngine.applyParams(this.customParams);
   }
 
   noteOn(midi: number, velocity = 0.8) {

@@ -3,6 +3,10 @@ import { AudioEngine, DEFAULT_SOUND, LoadState } from './audio/audioEngine';
 import { useInputs } from './input/useInputs';
 import { Piano } from './components/Piano';
 import { Metro, RightPanel } from './components/RightPanel';
+import { CustomSynthPanel } from './components/CustomSynthPanel';
+import { SYNTH_KEYS_WARM } from './data/defaults';
+import { loadCurrentPatch } from './utils/synthPresets';
+import { SynthParams } from './types';
 import { BatchModal, CodeModal, LatencyModal } from './components/Modals';
 import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { useLearn } from './components/ModeLearn';
@@ -29,6 +33,12 @@ export default function App() {
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
   const [modal, setModal] = useState<null | 'code' | 'latency' | 'batch'>(null);
   const [lastNote, setLastNote] = useState<number | null>(null);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customParams, setCustomParams] = useState<SynthParams>(() => {
+    const p = loadCurrentPatch() ?? SYNTH_KEYS_WARM;
+    engine.setCustomParams(p);
+    return p;
+  });
 
   // ---- Autosave: off until the student answers the restore prompt ----
   const [saved] = useState(() => loadSaved());
@@ -268,7 +278,18 @@ export default function App() {
 
         {/* Right panel */}
         <aside className="order-3 min-h-0 overflow-auto border-l border-line bg-page p-3 lg:order-none">
-          <RightPanel engine={engine} soundId={soundId} states={states} onSelect={pickSound} metro={metro} onMetro={onMetro} />
+          <RightPanel
+            engine={engine}
+            soundId={soundId}
+            states={states}
+            onSelect={pickSound}
+            metro={metro}
+            onMetro={onMetro}
+            onOpenCustom={() => {
+              void pickSound('custom');
+              setCustomOpen(true);
+            }}
+          />
         </aside>
       </div>
 
@@ -283,6 +304,17 @@ export default function App() {
             clearSaved();
             setAutosaveOn(true);
           }}
+        />
+      )}
+      {customOpen && (
+        <CustomSynthPanel
+          engine={engine}
+          params={customParams}
+          onParams={(p) => {
+            setCustomParams(p);
+            engine.setCustomParams(p);
+          }}
+          onClose={() => setCustomOpen(false)}
         />
       )}
       {modal === 'code' && <CodeModal results={results} learnDone={learnDone} onClose={() => setModal(null)} />}

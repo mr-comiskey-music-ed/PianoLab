@@ -9,7 +9,7 @@ Drills are the means; students making music is the goal.
   the code (like SynthLab); the app never stores it. Older codes with no name still work; the batch view then uses any text
   pasted next to the code.
 - Only things kept in the browser: autosave (`pianolab:v1:autosave`), latency (`pianolab:v1:latency`), personal bests
-  (`pianolab:v1:best`). Never a name. "Restore your last session?" prompt first; autosave stays off until answered.
+  (`pianolab:v1:best`), Custom Synth patches (`pianolab:v1:synths`: sound settings + patch names). Never a student name. "Restore your last session?" prompt first; autosave stays off until answered.
 - **Chromebooks first**: each student has a Chromebook, a **25-key USB MIDI keyboard** and headphones. Keep it light and
   fast. Sounds load only when picked. Mobile is nice-to-have only.
 - No traditional notation. MIDI-block notation, chord names, roman numerals only.
@@ -71,11 +71,14 @@ Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + M
 Sounds: Accurate-Salamander (CC BY 3.0, reduced mp3 copy ~8.5 MB in `public/samples/accurate-salamander/`, 5 velocity
 layers; loads only when picked, watch load time on school Wi-Fi), Salamander Grand (Tone.js version, from `tonejs.github.io`; sounded thinner in headphones), Splendid Grand (smplr,
 from `smpldsnds.github.io`, loaded lazily), Felt (Accurate-Salamander soft layer through a low-pass), Rhodes (jRhodes3d,
-reduced copy ~0.8 MB in `public/samples/jrhodes3d/`, CC BY-NC 4.0), Synth Keys (SynthLab engine; Bright was toned down).
+reduced copy ~1.8 MB in `public/samples/jrhodes3d/`, CC BY-NC 4.0), Synth Keys (SynthLab engine; Bright was toned down).
 Sample files for Rhodes/Accurate are hosted with the app, so they need no outside host. Keep credits in the right panel.
 Dropped: the smplr electric piano and the paste-a-SynthLab-patch sound.
 Right panel controls must be defined OUTSIDE components (the Slider once lived inside RightPanel and broke click-and-drag).
-Metronome: wood block chosen by Mr. Comiskey; compact (icon button, BPM box + slider, volume knob).
+Metronome: wood block only (chosen by Mr. Comiskey; no sound menu); compact (icon button, BPM box + slider, volume knob).
+Custom Synth: SynthLab's Modern Synth panel (`src/synthlab/`, copied unchanged, see its README) in a pop-up that stops above
+the piano so students keep playing. "Custom Synth" in the sound list opens it. Patches save to the browser.
+Rhodes now has all 5 velocity layers (~1.8 MB); top notes missing a layer borrow the nearest layer of the same note.
 Metronome sounds are in `audioEngine.ts` `tick()`.
 
 ## Open items (last updated end of Phase 1 testing)
@@ -83,9 +86,7 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
   headphones), Felt (now Accurate-based), Synth Keys Bright (toned down, may need more), wood-block metronome + volume knob.
 - Pick one sound per category, then delete the others and the "Compare versions" box (SPEC section 13). Candidates to cut:
   Salamander (Tone.js), Splendid Grand, and one of the Synth Keys.
-- Rhodes still uses 2 velocity layers; the source set has 5 (would grow ~0.8 MB to ~2 MB). Ask before changing.
-- Grading: second try = half credit; he said grading was "a tad harsh but close". Pass marks (80%) and the five Lesson 1
-  levels were my proposal, not confirmed.
+- Grading confirmed: second try = half credit, 80% pass, the five Lesson 1 levels.
 - Not built yet: About screen with full credits (credits are in a small right-panel list), scale-degree colors, Phases 2-4.
 - Confirm the Vercel preview for branch `claude/charming-wozniak-94lfxk` builds; nothing is on `main` yet (merge only on his
   say-so, after class).

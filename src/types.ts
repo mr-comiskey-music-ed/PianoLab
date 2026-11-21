@@ -105,3 +105,6 @@ export interface Submission {
   /** Compressed MIDI take (Play Along, later phases). Reserved so v1 codes can carry it. */
   take?: string;
 }
+
+/** SynthLab's two synth looks (only 'hardware-bench', the Modern Synth, is used here). Copied so the SynthLab panel compiles. */
+export type ThemeMode = 'studio-retro' | 'hardware-bench';

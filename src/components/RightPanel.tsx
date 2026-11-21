@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AudioEngine, LoadState, METRO_SOUNDS, MetroSound, SOUNDS } from '../audio/audioEngine';
+import { AudioEngine, LoadState, MetroSound, SOUNDS } from '../audio/audioEngine';
 import { Knob } from './Knob';
 
 export interface Metro {
@@ -34,12 +34,13 @@ interface Props {
   onSelect: (id: string) => void;
   metro: Metro;
   onMetro: (m: Metro) => void;
+  onOpenCustom: () => void;
 }
 
 const stateText: Record<LoadState, string> = { idle: '', loading: 'loading…', ready: '', error: 'could not load' };
 const CATEGORIES = ['Grand Piano', 'Electric Piano', 'Felt Piano', 'Synth Keys'] as const;
 
-export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect, metro, onMetro }) => {
+export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect, metro, onMetro, onOpenCustom }) => {
   const [mixOpen, setMixOpen] = useState(false);
   const [mix, setMix] = useState({ eq: 0, comp: 0, len: 1.8, color: 0.7, wet: 0.12 });
 
@@ -64,12 +65,12 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
                 <button
                   key={s.id}
                   data-testid={`sound-${s.id}`}
-                  onClick={() => onSelect(s.id)}
+                  onClick={() => (s.id === 'custom' ? onOpenCustom() : onSelect(s.id))}
                   className={`mt-0.5 flex w-full items-center justify-between rounded-lg border px-2 py-1.5 text-left text-[14px] ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
                   title={s.note}
                 >
                   <span className="font-semibold text-wal3">{s.label}</span>
-                  <span className={`text-[11px] ${st === 'error' ? 'text-bad' : 'text-muted'}`}>{st === 'error' ? 'could not load (offline?)' : stateText[st]}</span>
+                  <span className={`text-[11px] ${st === 'error' ? 'text-bad' : 'text-muted'}`}>{st === 'error' ? 'could not load (offline?)' : s.id === 'custom' ? 'Edit ›' : stateText[st]}</span>
                 </button>
               );
             })}
@@ -93,7 +94,7 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
         )}
       </div>
 
-      <div className="card flex flex-col gap-1.5 p-2" data-testid="metronome">
+      <div className="card p-2" data-testid="metronome">
         <div className="flex items-center gap-2">
           <button
             onClick={() => onMetro({ ...metro, on: !metro.on })}
@@ -121,21 +122,6 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
             className="h w-14 rounded-lg border border-line2 bg-white px-1 py-1 text-center text-[14px]"
           />
           <input type="range" min={40} max={160} step={1} value={metro.bpm} onChange={(e) => onMetro({ ...metro, bpm: Number(e.target.value) })} aria-label="Tempo slider" data-testid="bpm-slider" className="min-w-0 flex-1 accent-[#b8862c]" />
-        </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={metro.sound}
-            onChange={(e) => onMetro({ ...metro, sound: e.target.value as MetroSound })}
-            aria-label="Metronome sound"
-            className="min-w-0 flex-1 rounded-lg border border-line2 bg-white px-1.5 py-1 text-[13px]"
-            data-testid="metro-sound"
-          >
-            {METRO_SOUNDS.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
           <Knob value={metro.vol} onChange={(v) => onMetro({ ...metro, vol: v })} label="Metronome volume" size={30} />
         </div>
       </div>
@@ -144,7 +130,7 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
         <div className="h text-[12px] uppercase text-muted">Compare versions</div>
         <div className="text-[11px] text-muted">For teacher testing only. This box goes away once a version is chosen for each category.</div>
         <div className="mt-1.5 flex flex-col gap-1">
-          {SOUNDS.map((s) => (
+          {SOUNDS.filter((s) => s.id !== 'custom').map((s) => (
             <button
               key={s.id}
               className="btn text-left text-[13px]"
