@@ -159,6 +159,12 @@ export default function App() {
   const sandbox = useSandbox(ctx, mode === 'sandbox');
   const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : mode === 'sandbox' ? sandbox : challenge;
 
+  /** Notes sounding (play back / scrubbing) that are off the 25 keys on screen: flash the Oct button that would show them. */
+  const litList = parts.lit ? [...parts.lit] : [];
+  const offAbove = litList.some((m) => m >= viewStart + KEY_COUNT);
+  const offBelow = litList.some((m) => m < viewStart);
+
+
   const tabs: { id: Mode | 'jam'; label: string }[] = [
     { id: 'learn', label: 'Learn' },
     { id: 'practice', label: 'Practice' },
@@ -256,15 +262,20 @@ export default function App() {
             </div>
           </div>
           <div className="wood flex flex-wrap items-center gap-2 px-3 py-1.5 text-panel">
-            <button className={`btn btn-dark px-2 ${octColor(octShift < 0 ? -octShift : 0)}`} onClick={() => octave(-1)} disabled={viewStart <= 24} data-testid="oct-down" title="Octave down (Z)">
+            <button className={`btn btn-dark px-2 ${octColor(octShift < 0 ? -octShift : 0)} ${offBelow ? 'oct-alert' : ''}`} onClick={() => octave(-1)} disabled={viewStart <= 24} data-testid="oct-down" title="Octave down (Z)">
               Oct −
             </button>
             <span className="h w-20 text-center text-[14px]" data-testid="range">
               {noteName(viewStart)}–{noteName(viewStart + KEY_COUNT - 1)}
             </span>
-            <button className={`btn btn-dark px-2 ${octColor(octShift > 0 ? octShift : 0)}`} onClick={() => octave(1)} disabled={viewStart >= 84} data-testid="oct-up" title="Octave up (X)">
+            <button className={`btn btn-dark px-2 ${octColor(octShift > 0 ? octShift : 0)} ${offAbove ? 'oct-alert' : ''}`} onClick={() => octave(1)} disabled={viewStart >= 84} data-testid="oct-up" title="Octave up (X)">
               Oct +
             </button>
+            {(offAbove || offBelow) && (
+              <span className="h oct-alert-label rounded-md px-2 py-0.5 text-[13px]" data-testid="oct-alert" role="status">
+                {offBelow && offAbove ? '♪ Notes playing above and below: use Oct − / Oct +' : offAbove ? '♪ Notes playing higher up: press Oct +' : '♪ Notes playing lower down: press Oct −'}
+              </span>
+            )}
             <span className="h ml-3 text-[13px] text-line2">
               {lastNote === null ? 'Play a key' : <>Last note: <b className="text-brass">{noteName(lastNote)}</b></>}
             </span>

@@ -1,6 +1,7 @@
 import React, { MutableRefObject, useEffect, useRef, useState } from 'react';
 import { KEY_COUNT, isBlack, letterOf } from '../utils/music';
 import { PerfNote } from '../utils/performance';
+import { pitchColor, withAlpha } from '../utils/colors';
 
 /** Pixels per second the notes rise. */
 export const ROLL_SPEED = 110;
@@ -157,13 +158,20 @@ export const PianoRoll: React.FC<{
         const yTop = H - ((bottom - rs) * ROLL_SPEED) / 1000;
         const yBottom = H - ((bottom - re) * ROLL_SPEED) / 1000;
         if (yBottom < 0) continue; // above the top of the view
+        const h = Math.max(3, yBottom - yTop);
+        const alpha = 0.6 + (n.v / 127) * 0.4; // harder notes look brighter
         const k = keyBox(n.m, s);
-        if (!k) continue;
+        if (!k) {
+          // Outside the 25 keys on screen: a thin bar at the left edge (lower) or right edge (higher), so it isn't invisible.
+          g.fillStyle = withAlpha(pitchColor(n.m), 0.85);
+          g.beginPath();
+          g.roundRect(n.m < s ? 0 : W - 5, yBottom - h, 5, h, 2);
+          g.fill();
+          continue;
+        }
         const x = k.x * W + 1.5;
         const w = Math.max(3, k.w * W - 3);
-        const h = Math.max(3, yBottom - yTop);
-        const alpha = 0.55 + (n.v / 127) * 0.45; // harder notes look brighter
-        g.fillStyle = isBlack(n.m) ? `rgba(184,134,44,${alpha})` : `rgba(217,164,65,${alpha})`;
+        g.fillStyle = withAlpha(pitchColor(n.m), alpha);
         g.beginPath();
         g.roundRect(x, yBottom - h, w, h, 4);
         g.fill();

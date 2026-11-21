@@ -225,18 +225,12 @@ A teacher-only page that builds a **link** to paste into Google Classroom. All s
   - Lines: `#ddd0bc` and `#c4b49b`
   - Walnut browns: `#66584a` for muted text, `#4d3f31`, `#3a2f24`, `#2a2118` for text and the keyboard bed, `#1e1710` for the waterfall background, and `#140f0a` for black keys
   - Brass accent: `#d9a441`, with `#2a1e08` text on it. Darker brass `#b8862c` and `#8f6620` for rings and knob pointers.
-- **Wood textures:** use a CC0 walnut photo for the real build. The mockup's texture is a generated placeholder.
-- **Scale-degree colors**, the same in every key:
-
-| Degree | Background | Text |
-|---|---|---|
-| I | `#EBC0BD` | `#7A2E2A` |
-| ii | `#F3D3BC` | `#8A4A22` |
-| iii | `#F6EBB4` | `#5E5820` |
-| IV | `#DDEAB9` | `#46632A` |
-| V | `#B9D9D5` | `#285450` |
-| vi | `#C9C6E3` | `#3B3591` |
-| vii° | `#EAC5DF` | `#7A2F63` |
+- **Wood textures:** walnut photo texture "Wood 067" from ambientCG (CC0), in `public/textures/` (about 100 KB for both).
+- **Pitch colours** (`src/utils/colors.ts`): the chromatic scale C to B goes round the colour wheel like Chrome Music Lab's
+  Shared Piano, slightly toned down: C `#c94a5c`, C# `#d9674e`, D `#dc9356`, D# `#d9b052`, E `#d8cc5a`, F `#9fbf55`,
+  F# `#6ea362`, G `#3f7d6c`, G# `#46689e`, A `#5a49b8`, A# `#8f55b0`, B `#cc68a8`. Used on piano-roll notes (not the keys).
+- **Scale-degree colors**, the same in every key, are the C major scale's pitch colours (replacing the earlier pastel table):
+  I = C red, ii = D orange, iii = E yellow, IV = F lime, V = G teal, vi = A indigo, vii° = B pink (`DEGREE_COLORS`).
 
 - **Function is shown as a label, not a color:** Home (I, iii, vi), Away (ii, IV), and Tension (V, vii°). This mapping is editable.
 

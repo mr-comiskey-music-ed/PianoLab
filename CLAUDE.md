@@ -57,8 +57,9 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
   `#66584a` muted text, `#4d3f31`, `#3a2f24`, `#2a2118` (text, keyboard bed), `#1e1710` (waterfall), `#140f0a` (black keys);
   brass `#d9a441` with `#2a1e08` text, darker brass `#b8862c`, `#8f6620`.
 - Fonts: **Barlow** (body), **Barlow Semi Condensed** (headings/numbers). Nothing else.
-- Walnut wood cheeks around piano and waterfall (`.wood`, `.wood-v`); CSS-generated placeholder, swap for a CC0 walnut photo.
-- Scale-degree colors (same in every key) are in SPEC section 14; add them when chords arrive (Phase 2).
+- Walnut wood (`.wood`, `.wood-v`): ambientCG "Wood 067" photo texture (CC0, `public/textures/`, ~100 KB) under a soft shade.
+- Pitch colours (`src/utils/colors.ts`): C-to-B round the colour wheel like Shared Piano, slightly toned down. Piano-roll
+  notes use them (keys stay plain for now). Roman numerals will use the C major scale's colours (`DEGREE_COLORS`).
 - Layout: walnut top bar with tabs Learn / Practice / Challenges / Sandbox / Jam Room (soon) / Grade Report; left panel
   (lesson, instructions, scores, Challenge Yourself); center (stage/waterfall/piano roll, readout bar, piano); right panel
   (sounds + Mix icon, metronome, Compare versions). The piano is always the main view, except on the Grade Report page.
@@ -98,6 +99,9 @@ Name boxes in code makers say "Your Name".
 Oct -/+ buttons light up like the class MIDI keyboards: plain at home (C3-C5), green 1 octave, yellow 2, red 3, on the
 button in the direction you moved (`octColor` in App.tsx).
 Mix panel floats over the sound list (doesn't push it down).
+Off-screen notes: when play back/scrubbing sounds notes outside the 25 keys on screen, the Oct button in that direction
+flashes brass and a label says "Notes playing higher up: press Oct +" (or lower/Oct −). The roll draws such notes as thin
+bars on the right edge (higher) or left edge (lower).
 Learn "find another X in a different place" needs a different key; the same key again gets a hint.
 Metronome: arm swings in time with the clicks (`engine.metroPosition()`), BPM box drags up/down or double-click to type
 (40-200), volume 0-150% (squared gain so 150% sounds about half again as loud). On = brown button with brass icon.

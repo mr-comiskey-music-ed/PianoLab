@@ -40,15 +40,18 @@ button:disabled { cursor: default; opacity: 0.45; }
 textarea, input { user-select: text; -webkit-user-select: text; }
 
 /* Walnut wood. Placeholder generated with CSS; swap for a CC0 walnut photo in the real build (SPEC section 14). */
+/* Walnut: ambientCG "Wood 067" (CC0, see public/textures/CREDITS.txt) under a soft shade so text stays easy to read. */
 .wood {
   background:
-    repeating-linear-gradient(92deg, rgba(0,0,0,0) 0 7px, rgba(0,0,0,0.10) 7px 8px, rgba(255,255,255,0.03) 8px 14px, rgba(0,0,0,0.05) 14px 15px),
-    linear-gradient(180deg, #4d3f31, #3a2f24 55%, #2a2118);
+    linear-gradient(180deg, rgba(255,235,205,0.06), rgba(20,12,6,0.18) 55%, rgba(20,12,6,0.38)),
+    url('/textures/walnut-h.jpg') center / 520px auto repeat,
+    #3a2f24;
 }
 .wood-v {
   background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 7px, rgba(0,0,0,0.12) 7px 8px, rgba(255,255,255,0.03) 8px 14px),
-    linear-gradient(90deg, #2a2118, #4d3f31 45%, #3a2f24);
+    linear-gradient(90deg, rgba(20,12,6,0.40), rgba(255,235,205,0.05) 45%, rgba(20,12,6,0.30)),
+    url('/textures/walnut-v.jpg') center / auto 520px repeat,
+    #2a2118;
 }
 
 /* Waterfall stage: dark with faint key-boundary guides and a brass hit line along the bottom. */
@@ -88,3 +91,12 @@ textarea, input { user-select: text; -webkit-user-select: text; }
 .btn.oct-1:hover:not(:disabled) { background: #6d9c4a; }
 .btn.oct-2:hover:not(:disabled) { background: #ecd157; }
 .btn.oct-3:hover:not(:disabled) { background: #c2524b; }
+
+/* Notes are sounding outside the keys on screen: the Oct button flashes (hard to miss) and a label says which way. */
+@keyframes oct-alert {
+  0%, 100% { background: #d9a441; color: #2a1e08; box-shadow: 0 0 0 2px #fff2c8, 0 0 18px 6px rgba(217,164,65,0.85); transform: scale(1.08); }
+  50%      { background: #3a2f24; color: #f7f1e6; box-shadow: 0 0 0 2px rgba(217,164,65,0.6), 0 0 4px 1px rgba(217,164,65,0.3); transform: scale(1); }
+}
+.btn.oct-alert, .btn.oct-alert:hover:not(:disabled) { animation: oct-alert 0.55s ease-in-out infinite; position: relative; z-index: 1; }
+@keyframes oct-alert-label { 0%, 100% { background: #d9a441; color: #2a1e08; } 50% { background: #fff2c8; color: #2a1e08; } }
+.oct-alert-label { animation: oct-alert-label 0.55s ease-in-out infinite; }
