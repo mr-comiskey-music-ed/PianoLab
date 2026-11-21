@@ -16,6 +16,7 @@ import { ModeCtx } from './components/modeTypes';
 import { LevelResult } from './types';
 import { DEFAULT_START, KEY_COUNT, clampStart, inView, letterOf, noteName, startFor } from './utils/music';
 import { WorkSnapshot, clearSaved, hasWork, loadLatency, loadSaved, writeSaved } from './utils/autosave';
+import { levelInfo } from './utils/batch';
 
 type Mode = 'learn' | 'practice' | 'challenge';
 const engine = AudioEngine.get();
@@ -29,7 +30,7 @@ export default function App() {
   const [learnStep, setLearnStep] = useState(0);
   const [soundId, setSoundId] = useState(DEFAULT_SOUND);
   const [states, setStates] = useState<Record<string, LoadState>>({});
-  const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 0.8 });
+  const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 1 });
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
   const [modal, setModal] = useState<null | 'code' | 'latency' | 'batch'>(null);
   const [lastNote, setLastNote] = useState<number | null>(null);
@@ -47,7 +48,8 @@ export default function App() {
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
   const restore = (snap: WorkSnapshot) => {
-    setResults(snap.results);
+    // Drop results for levels that no longer exist (e.g. the removed octave level), so they don't go into new codes.
+    setResults(snap.results.filter((r) => levelInfo(r.levelId)));
     setLearnDone(snap.learnDone);
     setLearnStep(snap.learnStep);
     if (snap.soundId) void pickSound(snap.soundId);
@@ -196,10 +198,9 @@ export default function App() {
           <div className="mt-4 border-t border-line pt-3" data-testid="left-bottom">
             {parts.labelControl && (
               <>
-                <div className="h text-[11px] uppercase text-muted">Make it easier or harder</div>
-                <div className="mt-1 text-[13px] text-wal1">Note names on the keys</div>
-                <div className="mt-1 flex gap-1" role="radiogroup" aria-label="Note names on the keys">
-                  {([['all', 'All names'], ['c', 'C only'], ['off', 'Off']] as const).map(([v, t]) => {
+                <div className="h text-[11px] uppercase text-muted">Challenge Yourself</div>
+                <div className="mt-1 flex flex-col gap-1" role="radiogroup" aria-label="Challenge Yourself: note names on the keys">
+                  {([['all', 'Show Note Names'], ['c', 'Show Cs'], ['off', 'Hide Note Names']] as const).map(([v, t]) => {
                     const ok = parts.labelControl!.allowed.includes(v);
                     return (
                       <button
@@ -209,19 +210,21 @@ export default function App() {
                         disabled={!ok || parts.labelControl!.locked}
                         data-testid={`labels-${v}`}
                         onClick={() => parts.labelControl!.set(v)}
-                        className={`btn flex-1 px-1 text-[13px] ${parts.labelControl!.value === v ? 'btn-brass' : ''}`}
+                        className={`btn px-2 text-[14px] ${parts.labelControl!.value === v ? 'btn-brass' : ''}`}
                       >
                         {t}
                       </button>
                     );
                   })}
                 </div>
-                <div className="mt-1 text-[11px] text-muted">{parts.labelControl.note ?? 'You can make a level harder, but not easier than it starts.'}</div>
               </>
             )}
-            <button className="btn btn-dark mt-3 w-full" onClick={() => setModal('code')} data-testid="get-code">
-              Get my code
-            </button>
+            {/* Only once there is something to turn in: at least one finished Challenge level. */}
+            {results.length > 0 && (
+              <button className="btn btn-dark mt-3 w-full" onClick={() => setModal('code')} data-testid="get-code">
+                Get my code
+              </button>
+            )}
           </div>
         </aside>
 

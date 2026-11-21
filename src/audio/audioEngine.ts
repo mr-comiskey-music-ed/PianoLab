@@ -335,9 +335,11 @@ export class AudioEngine {
   }
 
   /** The app plays notes for the student (Learn demos). */
-  async playDemo(notes: number[], gapMs = 520, onStep?: (midi: number | null) => void) {
+  /** Play notes one by one. `stopped` is checked before each note so a demo can be cut short (e.g. leaving the step). */
+  async playDemo(notes: number[], gapMs = 520, onStep?: (midi: number | null) => void, stopped?: () => boolean) {
     await this.unlock();
     for (const n of notes) {
+      if (stopped?.()) return;
       onStep?.(n);
       this.noteOn(n, 0.75);
       await new Promise((r) => setTimeout(r, gapMs * 0.8));
@@ -395,8 +397,9 @@ export class AudioEngine {
   }
 
   /** 0 (silent) to 1 (full). */
+  /** 1 = 100% (the default level), up to 2 = 200%. */
   setMetroVolume(v: number) {
-    this.metroGain.gain.value = Math.max(0, Math.min(1, v));
+    this.metroGain.gain.value = 0.8 * Math.max(0, Math.min(2, v));
   }
 
   /** One metronome beat. Beat 0 of each bar is accented. */

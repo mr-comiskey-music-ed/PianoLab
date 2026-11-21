@@ -17,7 +17,7 @@ export function usePractice(ctx: ModeCtx): ModeParts {
       <p className="text-[15px] leading-snug text-wal1">
         Play anything you like. Notice the pattern of 2 and 3 black keys. Try to find every C, then every F, without looking at the labels.
       </p>
-      <p className="text-[13px] text-muted">Nothing here is graded. Use “Make it easier or harder” below to hide the note names.</p>
+      <p className="text-[13px] text-muted">Nothing here is graded. Use “Challenge Yourself” below to hide the note names.</p>
     </div>
   );
   const stage = (

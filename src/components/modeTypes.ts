@@ -29,8 +29,8 @@ export interface ModeParts {
   stage: ReactNode;
   /** Which note labels the piano shows right now. */
   labels: Labels;
-  /** Show the "easier or harder" control. Leave out where labels aren't a choice (Learn). */
-  labelControl?: { value: Labels; allowed: Labels[]; set: (l: Labels) => void; locked?: boolean; note?: string };
+  /** Show the "Challenge Yourself" control. Leave out where labels aren't a choice (Learn). */
+  labelControl?: { value: Labels; allowed: Labels[]; set: (l: Labels) => void; locked?: boolean };
   lit?: Set<number>;
   /** Keys that get a label even when labels are off (the note the app is demoing). */
   forceLabel?: Set<number>;

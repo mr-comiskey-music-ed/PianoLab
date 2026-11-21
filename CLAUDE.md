@@ -43,10 +43,13 @@ Drills are the means; students making music is the goal.
 
 ## Note labels (important teaching rule)
 Note names must NOT sit on the keys all the time; naming notes is the material. Each level in `lessons.json` has `labels`
-(`all` / `c` / `off`): the easiest setting allowed and the starting one. Students can go harder, never easier. Name It
+(`all` / `c` / `off`): the easiest setting allowed and the starting one. Students can go harder, never easier (the
+"Challenge Yourself" buttons: Show Note Names / Show Cs / Hide Note Names; no extra explanation text). Name It
 levels are always `off`. Learn shows no labels or highlights while a student is working something out; only the note the
 app is playing is lit and labelled. Practice lets students choose. Do not light up the answer when asking to identify a key.
 Learn steps only get a "Show me" demo when it teaches something (no demos for "play any D").
+Learn steps with `show: true` are show and tell (the musical alphabet): the demo plays by itself with names on every key
+(`labels: "all"`), no "now you try". Next step also appears in the center once a step is done. Leaving a step stops its demo.
 
 ## Design tokens (Studio Warm v2) - defined in `src/index.css`
 - AudioPlot palette: creams `#f7f1e6` (panels) / `#efe6d8` (page, chips); lines `#ddd0bc`, `#c4b49b`; walnut browns
@@ -67,7 +70,7 @@ Learn steps only get a "Show me" demo when it teaches something (no demos for "p
 
 ## Status
 Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + Mix + Compare box, Lesson 1 Learn and
-5 Challenge levels, codes, batch grading, autosave. See SPEC section 17 for Phases 2-4.
+4 Challenge levels, codes, batch grading, autosave. See SPEC section 17 for Phases 2-4.
 Sounds: Accurate-Salamander (CC BY 3.0, reduced mp3 copy ~8.5 MB in `public/samples/accurate-salamander/`, 5 velocity
 layers; loads only when picked, watch load time on school Wi-Fi), Salamander Grand (Tone.js version, from `tonejs.github.io`; sounded thinner in headphones), Splendid Grand (smplr,
 from `smpldsnds.github.io`, loaded lazily), Felt (Accurate-Salamander soft layer through a low-pass), Rhodes (jRhodes3d,
@@ -75,18 +78,25 @@ reduced copy ~1.8 MB in `public/samples/jrhodes3d/`, CC BY-NC 4.0), Synth Keys (
 Sample files for Rhodes/Accurate are hosted with the app, so they need no outside host. Keep credits in the right panel.
 Dropped: the smplr electric piano and the paste-a-SynthLab-patch sound.
 Right panel controls must be defined OUTSIDE components (the Slider once lived inside RightPanel and broke click-and-drag).
-Metronome: wood block only (chosen by Mr. Comiskey; no sound menu); compact (icon button, BPM box + slider, volume knob).
-Custom Synth: SynthLab's Modern Synth panel (`src/synthlab/`, copied unchanged, see its README) in a pop-up that stops above
-the piano so students keep playing. "Custom Synth" in the sound list opens it. Patches save to the browser.
+Metronome: wood block only (chosen by Mr. Comiskey; no sound menu); compact (his metronome SVG icon as the on/off button,
+BPM box + slider, volume knob: 100% default, 0-200%, value bubble while dragging, double-click resets).
+Mix: behind a small faders icon at the top right of the Sound box (not essential, so low-key).
+"Get my code" only shows once a Challenge level has been finished.
+Custom Synth: SynthLab's Modern Synth panel (`src/synthlab/`, copied, see its README; its `compact` prop hides the title
+bar and Master Vol and shortens the displays) in a pop-up that stops above the piano so students keep playing. One header
+row: Start from (Warm, Bright, West Coast lead, Plain saw), My sounds, name + Save. The synth is shrunk to fit so it never
+scrolls (down to 50%). "Custom Synth" in the sound list opens it. Patches save to the browser.
 Rhodes now has all 5 velocity layers (~1.8 MB); top notes missing a layer borrow the nearest layer of the same note.
 Metronome sounds are in `audioEngine.ts` `tick()`.
 
 ## Open items (last updated end of Phase 1 testing)
 - Waiting on Mr. Comiskey's Chromebook test of: Accurate-Salamander (5 layers, ~8.5 MB: load time on school Wi-Fi, sound in
   headphones), Felt (now Accurate-based), Synth Keys Bright (toned down, may need more), wood-block metronome + volume knob.
-- Pick one sound per category, then delete the others and the "Compare versions" box (SPEC section 13). Candidates to cut:
-  Salamander (Tone.js), Splendid Grand, and one of the Synth Keys.
-- Grading confirmed: second try = half credit, 80% pass, the five Lesson 1 levels.
+- Pick one sound per category, then delete the others and the "Compare versions" box (SPEC section 13). He wants to hear
+  the pianos on headphones and other speakers first. Candidates to cut: Salamander (Tone.js), Splendid Grand, one Synth Keys.
+- Grading confirmed: second try = half credit, 80% pass. Lesson 1 has four levels; the octave level (`l1-octave`) was removed
+  before anything reached students (he doesn't care about the octave). Old saves drop results for removed levels.
+- Teacher button should eventually assign anything (SPEC section 8, "Everything is assignable"). Today it only batch grades.
 - Not built yet: About screen with full credits (credits are in a small right-panel list), scale-degree colors, Phases 2-4.
 - Confirm the Vercel preview for branch `claude/charming-wozniak-94lfxk` builds; nothing is on `main` yet (merge only on his
   say-so, after class).

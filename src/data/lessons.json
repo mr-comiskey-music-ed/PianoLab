@@ -43,25 +43,37 @@
           "id": "alpha-up",
           "section": "The musical alphabet",
           "title": "Going up",
-          "say": "Music uses only 7 letters: A B C D E F G. Moving to the RIGHT, the letters go up in order.",
-          "tryText": "Play any E.",
-          "tryAnswer": [
-            "E"
+          "say": "Music uses only 7 letters: A B C D E F G. Moving to the RIGHT, the letters go up in order. Watch and listen.",
+          "need": 0,
+          "demo": [
+            "A3",
+            "B3",
+            "C4",
+            "D4",
+            "E4",
+            "F4",
+            "G4"
           ],
-          "need": 2,
-          "hint": "Start at C, then count right: C, D, E."
+          "show": true,
+          "labels": "all"
         },
         {
           "id": "alpha-down",
           "section": "The musical alphabet",
           "title": "Going down",
-          "say": "Moving to the LEFT, the letters go backward: G F E D C B A.",
-          "tryText": "Play any B.",
-          "tryAnswer": [
-            "B"
+          "say": "Moving to the LEFT, the letters go backward: G F E D C B A. Watch and listen.",
+          "need": 0,
+          "demo": [
+            "G4",
+            "F4",
+            "E4",
+            "D4",
+            "C4",
+            "B3",
+            "A3"
           ],
-          "need": 2,
-          "hint": "B is the white key just to the left of C."
+          "show": true,
+          "labels": "all"
         },
         {
           "id": "alpha-wrap",
@@ -69,21 +81,29 @@
           "title": "G wraps back to A",
           "say": "After G, the alphabet starts over at A. The keys repeat, so the same letters show up again higher up.",
           "demo": [
+            "C3",
+            "D3",
+            "E3",
+            "F3",
+            "G3",
+            "A3",
+            "B3",
+            "C4",
+            "D4",
+            "E4",
             "F4",
             "G4",
             "A4",
-            "B4"
+            "B4",
+            "C5"
           ],
-          "tryText": "Play any A.",
-          "tryAnswer": [
-            "A"
-          ],
-          "need": 2,
-          "hint": "A is the white key just right of G. Look between the 2-group and the 3-group of black keys."
+          "need": 0,
+          "show": true,
+          "labels": "all"
         },
         {
           "id": "all-white",
-          "section": "Every white key",
+          "section": "All white keys",
           "title": "All seven names",
           "say": "Every white key has one of those seven names. The pattern of black keys repeats, so the names repeat too.",
           "tryText": "Play any D.",
@@ -95,7 +115,7 @@
         },
         {
           "id": "all-white-2",
-          "section": "Every white key",
+          "section": "All white keys",
           "title": "One more",
           "say": "Use the map: groups of 2 and 3 tell you where you are.",
           "tryText": "Play any G.",
@@ -239,7 +259,7 @@
         },
         {
           "id": "l1-find-all",
-          "title": "Find every white key",
+          "title": "Find all white keys",
           "blurb": "Play the note you are asked for. Any octave counts.",
           "type": "findIt",
           "octave": "any",
@@ -334,7 +354,7 @@
         },
         {
           "id": "l1-name-all",
-          "title": "Name every white key",
+          "title": "Name all white keys",
           "blurb": "A key lights up. Pick its name.",
           "type": "nameIt",
           "octave": "any",
@@ -440,87 +460,6 @@
             }
           ],
           "labels": "off"
-        },
-        {
-          "id": "l1-octave",
-          "title": "Right note, right octave",
-          "blurb": "This time the octave matters. Middle C is C4.",
-          "type": "findIt",
-          "octave": "exact",
-          "pass": 80,
-          "prompts": [
-            {
-              "text": "Play F4.",
-              "answer": [
-                "F"
-              ],
-              "exact": "F4"
-            },
-            {
-              "text": "Play A3.",
-              "answer": [
-                "A"
-              ],
-              "exact": "A3"
-            },
-            {
-              "text": "Play C3.",
-              "answer": [
-                "C"
-              ],
-              "exact": "C3"
-            },
-            {
-              "text": "Play D3.",
-              "answer": [
-                "D"
-              ],
-              "exact": "D3"
-            },
-            {
-              "text": "Play E4.",
-              "answer": [
-                "E"
-              ],
-              "exact": "E4"
-            },
-            {
-              "text": "Play G3.",
-              "answer": [
-                "G"
-              ],
-              "exact": "G3"
-            },
-            {
-              "text": "Play B3.",
-              "answer": [
-                "B"
-              ],
-              "exact": "B3"
-            },
-            {
-              "text": "Play E3.",
-              "answer": [
-                "E"
-              ],
-              "exact": "E3"
-            },
-            {
-              "text": "Play F3.",
-              "answer": [
-                "F"
-              ],
-              "exact": "F3"
-            },
-            {
-              "text": "Play A4.",
-              "answer": [
-                "A"
-              ],
-              "exact": "A4"
-            }
-          ],
-          "labels": "c"
         }
       ]
     }

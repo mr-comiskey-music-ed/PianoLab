@@ -67,13 +67,17 @@ export interface LearnStep {
   say: string;
   /** Notes (with octave) the app plays as a demo. Leave out when a demo would not teach anything. */
   demo?: string[];
-  /** "Now you try" prompt. */
-  tryText: string;
-  /** Letters that count as right. `any: true` means any key counts (just play something). */
-  tryAnswer: string[];
-  /** How many correct notes finish the step. */
+  /** Show-and-tell step: the app demos with note names on the keys, no "now you try". Next is open right away. */
+  show?: boolean;
+  /** Note labels on the piano during this step (default: off). */
+  labels?: NoteLabels;
+  /** "Now you try" prompt (try steps only). */
+  tryText?: string;
+  /** Letters that count as right. */
+  tryAnswer?: string[];
+  /** How many correct notes finish the step (0 for show-and-tell). */
   need: number;
-  hint: string;
+  hint?: string;
 }
 
 export interface Lesson {

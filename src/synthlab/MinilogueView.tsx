@@ -16,6 +16,8 @@ interface MinilogueViewProps {
   engine: SubtractiveEngine;
   onParamChange: (key: keyof SynthParams, val: any) => void;
   highlightKey?: string | null;
+  /** PianoLab: no title bar, no master volume, shorter displays, so the panel fits a laptop screen without scrolling. */
+  compact?: boolean;
 }
 
 export const MinilogueView: React.FC<MinilogueViewProps> = ({
@@ -23,6 +25,7 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
   engine,
   onParamChange,
   highlightKey,
+  compact = false,
 }) => {
   const [activeEgTab, setActiveEgTab] = useState<'amp' | 'filter'>('amp');
   // A Learn step can name a panel ('envelope') and also one knob in another panel ('envelope+envAmt').
@@ -46,7 +49,7 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
 
       {/* Center Sandblasted Silver Aluminum Faceplate */}
       <div
-        className="flex-1 p-4 text-slate-800 font-sans"
+        className={`flex-1 ${compact ? 'p-2' : 'p-4'} text-slate-800 font-sans`}
         style={{
           background:
             'linear-gradient(180deg, #dce1e7 0%, #c8cfd8 45%, #b9c2cc 100%)',
@@ -54,6 +57,7 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
         }}
       >
         {/* Top Header */}
+        {!compact && (
         <div className="flex items-center justify-between border-b-2 border-slate-400/50 pb-2 mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-base sm:text-lg font-bold tracking-wider text-slate-900 uppercase font-sans flex items-center gap-2">
@@ -71,6 +75,7 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
             </div>
           </div>
         </div>
+        )}
 
         {/* Modules Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 items-stretch">
@@ -354,11 +359,11 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
 
             {/* Both displays share what's left of the panel: filter 2 parts, scope 3 (scope is the bigger of the two) */}
             <div className="flex flex-col flex-1 min-h-0 gap-1.5">
-              <div className="min-h-[130px]" style={{ flex: '2 1 0%' }}>
-                <FilterVisualizer engine={engine} theme="hardware-bench" height={130} fill onParamChange={onParamChange} />
+              <div className={compact ? 'min-h-[96px]' : 'min-h-[130px]'} style={{ flex: '2 1 0%' }}>
+                <FilterVisualizer engine={engine} theme="hardware-bench" height={compact ? 96 : 130} fill onParamChange={onParamChange} />
               </div>
-              <div className="min-h-[160px]" style={{ flex: '3 1 0%' }}>
-                <Visualizer engine={engine} theme="hardware-bench" height={160} fill />
+              <div className={compact ? 'min-h-[84px]' : 'min-h-[160px]'} style={{ flex: compact ? '1 1 0%' : '3 1 0%' }}>
+                <Visualizer engine={engine} theme="hardware-bench" height={compact ? 84 : 160} fill />
               </div>
             </div>
           </div>
@@ -405,7 +410,7 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
                 decay={activeEgTab === 'amp' ? params.ampDecay : params.modDecay}
                 sustain={activeEgTab === 'amp' ? params.ampSustain : params.modSustain}
                 release={activeEgTab === 'amp' ? params.ampRelease : params.modRelease}
-                height={95}
+                height={compact ? 72 : 95}
                 theme="diagram"
                 engine={engine}
               />
@@ -633,7 +638,7 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
             {/* Master Volume */}
             <div className="p-2 rounded bg-black/10 border border-slate-400 flex flex-col items-center">
             {/* Voicing: poly (chords) or mono (one note, with glide) */}
-            <div className="flex flex-col items-center gap-1 mb-2 pb-2 border-b border-slate-400">
+            <div className={`flex flex-col items-center gap-1 ${compact ? '' : 'mb-2 pb-2 border-b border-slate-400'}`}>
               <ToggleSwitch<VoiceMode>
                 id="mini-voice-mode"
                 label="Voices"
@@ -664,6 +669,7 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
               />
               <span className="text-[8px] font-mono font-bold uppercase text-slate-600">{params.voiceMode === 'mono' ? 'GLIDE ON' : 'MONO ONLY'}</span>
             </div>
+              {!compact && (<>
               <span className="text-[10px] font-bold text-slate-800 font-mono mb-1 uppercase tracking-wider">
                 Master Vol
               </span>
@@ -681,6 +687,7 @@ export const MinilogueView: React.FC<MinilogueViewProps> = ({
                 theme="hardware-bench"
                 onChange={(v) => onParamChange('masterVolume', v / 100)}
               />
+              </>)}
             </div>
           </div>
         </div>

@@ -1,13 +1,24 @@
-import React, { useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AudioEngine } from '../audio/audioEngine';
 import { MinilogueView } from '../synthlab/MinilogueView';
 import { SynthParams } from '../types';
-import { DEFAULT_SYNTH_PARAMS, SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM } from '../data/defaults';
+import { DEFAULT_SYNTH_PARAMS, SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM, SYNTH_WEST_COAST_LEAD } from '../data/defaults';
 import { MAX_PRESETS, SavedPatch, deletePreset, listPresets, saveCurrentPatch, savePreset } from '../utils/synthPresets';
+
+const STARTERS: [string, SynthParams][] = [
+  ['Warm', SYNTH_KEYS_WARM],
+  ['Bright', SYNTH_KEYS_BRIGHT],
+  ['West Coast lead', SYNTH_WEST_COAST_LEAD],
+  ['Plain saw', DEFAULT_SYNTH_PARAMS],
+];
+
+/** Never shrink the synth below this; past it, scrolling is better than unreadable knobs. */
+const MIN_SCALE = 0.5;
 
 /**
  * Custom Synth: SynthLab's Modern Synth panel in a pop-up. It sits above the piano so students can keep playing (MIDI,
  * computer keys or the on-screen keys) while they turn knobs. Patches save to this browser only.
+ * The synth is shrunk to fit the space (no scrolling) on short screens.
  */
 export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthParams; onParams: (p: SynthParams) => void; onClose: () => void }> = ({
   engine,
@@ -19,6 +30,49 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
   const [presets, setPresets] = useState<SavedPatch[]>(() => listPresets());
   const [name, setName] = useState('');
   const [msg, setMsg] = useState('');
+  const boxRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [shownH, setShownH] = useState<number | undefined>(undefined);
+
+  // Fit the synth to the box: find the biggest scale where it is not taller than the box. Narrower layouts are taller,
+  // so we lay it out at (box width / scale) and shrink it back, which fills the width exactly.
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    const inner = innerRef.current;
+    if (!box || !inner) return;
+    const fit = () => {
+      const W = box.clientWidth;
+      const H = box.clientHeight;
+      const fits = (s: number) => {
+        inner.style.width = `${W / s}px`;
+        return inner.offsetHeight * s <= H;
+      };
+      let s = 1;
+      if (!fits(1)) {
+        let lo = MIN_SCALE;
+        let hi = 1;
+        for (let k = 0; k < 8; k++) {
+          const mid = (lo + hi) / 2;
+          if (fits(mid)) lo = mid;
+          else hi = mid;
+        }
+        s = lo;
+      }
+      inner.style.width = `${W / s}px`;
+      setScale(s);
+      setShownH(inner.offsetHeight * s);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(box);
+    // Fonts arriving late can change the height a little.
+    const t = window.setTimeout(fit, 400);
+    return () => {
+      ro.disconnect();
+      window.clearTimeout(t);
+    };
+  }, []);
 
   const set = (p: SynthParams) => {
     onParams(p);
@@ -27,59 +81,33 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
   const change = (key: keyof SynthParams, val: unknown) => set({ ...params, [key]: val } as SynthParams);
 
   const save = () => {
-    if (!name.trim()) return setMsg('Give your sound a name first.');
-    if (!savePreset(name, params)) return setMsg(presets.length >= MAX_PRESETS ? `You can keep up to ${MAX_PRESETS} sounds. Delete one first.` : 'This browser is not letting us save.');
+    if (!name.trim()) return setMsg('Name it first.');
+    if (!savePreset(name, params)) return setMsg(presets.length >= MAX_PRESETS ? `Up to ${MAX_PRESETS} sounds. Delete one first.` : 'This browser is not letting us save.');
     setPresets(listPresets());
     setMsg(`Saved “${name.trim()}”.`);
   };
 
   return (
     <div
-      className="fixed inset-x-2 top-12 z-40 flex flex-col overflow-hidden rounded-xl border border-wal1 bg-[#0e1014] shadow-2xl"
+      className="fixed inset-x-2 top-1 z-40 flex flex-col overflow-hidden rounded-xl border border-wal1 bg-[#0e1014] shadow-2xl"
       // Stop above the piano so it stays playable underneath.
       style={{ bottom: 'calc(clamp(150px, 24vh, 210px) + 14px)' }}
       role="dialog"
       aria-label="Custom Synth"
       data-testid="custom-synth"
     >
-      <div className="wood flex flex-wrap items-center gap-2 px-3 py-2 text-panel">
-        <span className="h text-[18px]">Custom Synth</span>
-        <span className="h text-[12px] text-line2">Start from:</span>
-        {(
-          [
-            ['Warm', SYNTH_KEYS_WARM],
-            ['Bright', SYNTH_KEYS_BRIGHT],
-            ['Plain saw', DEFAULT_SYNTH_PARAMS],
-          ] as const
-        ).map(([label, p]) => (
-          <button key={label} className="btn btn-dark px-2 py-1 text-[12px]" onClick={() => set(p)}>
+      <div className="wood flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1.5 text-panel">
+        <span className="h text-[17px]">Custom Synth</span>
+        <span className="h ml-1 text-[12px] text-line2">Start from:</span>
+        {STARTERS.map(([label, p]) => (
+          <button key={label} className="btn btn-dark px-2 py-0.5 text-[12px]" onClick={() => set(p)} data-testid={`starter-${label}`}>
             {label}
           </button>
         ))}
-        <span className="ml-auto flex items-center gap-1.5">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={40}
-            placeholder="Name this sound"
-            aria-label="Sound name"
-            data-testid="preset-name"
-            className="w-40 rounded-md border border-wal1 bg-panel px-2 py-1 text-[13px] text-wal3"
-            onKeyDown={(e) => e.key === 'Enter' && save()}
-          />
-          <button className="btn btn-brass px-2 py-1 text-[13px]" onClick={save} data-testid="preset-save">
-            Save
-          </button>
-          <button className="btn btn-dark px-2 py-1 text-[13px]" onClick={onClose} data-testid="custom-close">
-            Close
-          </button>
-        </span>
-      </div>
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-wal2 bg-wal3 px-3 py-1.5 text-[12px] text-line2">
-        <span className="h">My sounds:</span>
-        {presets.length === 0 && <span className="text-line2/70">none yet. Saved sounds stay in this browser on this computer.</span>}
+        <span className="h ml-2 text-[12px] text-line2">My sounds:</span>
+        {presets.length === 0 && <span className="text-[12px] text-line2/70">none yet</span>}
         {presets.map((p) => (
-          <span key={p.id} className="flex items-center overflow-hidden rounded-md border border-wal1 bg-wal2">
+          <span key={p.id} className="flex items-center overflow-hidden rounded-md border border-wal1 bg-wal2 text-[12px]">
             <button
               className="h px-2 py-0.5 text-panel hover:bg-wal1"
               onClick={() => {
@@ -104,10 +132,34 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
             </button>
           </span>
         ))}
-        {msg && <span className="ml-auto text-brass">{msg}</span>}
+        <span className="ml-auto flex items-center gap-1.5">
+          {msg && <span className="text-[12px] text-brass">{msg}</span>}
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={40}
+            placeholder="Name this sound"
+            aria-label="Sound name"
+            title="Saved sounds stay in this browser on this computer."
+            data-testid="preset-name"
+            className="w-36 rounded-md border border-wal1 bg-panel px-2 py-0.5 text-[13px] text-wal3"
+            onKeyDown={(e) => e.key === 'Enter' && save()}
+          />
+          <button className="btn btn-brass px-2 py-0.5 text-[13px]" onClick={save} data-testid="preset-save">
+            Save
+          </button>
+          <button className="btn btn-dark px-2 py-0.5 text-[13px]" onClick={onClose} data-testid="custom-close">
+            Close
+          </button>
+        </span>
       </div>
-      <div className="min-h-0 flex-1 overflow-auto p-3 text-slate-100">
-        <MinilogueView params={params} engine={synth} onParamChange={change} highlightKey={null} />
+      <div ref={boxRef} className={`relative min-h-0 flex-1 text-slate-100 ${scale <= MIN_SCALE ? 'overflow-y-auto' : 'overflow-hidden'}`} data-testid="synth-box">
+        {/* The outer div takes the shrunk height, so scrolling (only on very small screens) matches what you see. */}
+        <div style={{ height: shownH, overflow: 'hidden' }}>
+          <div ref={innerRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+            <MinilogueView params={params} engine={synth} onParamChange={change} highlightKey={null} compact />
+          </div>
+        </div>
       </div>
     </div>
   );

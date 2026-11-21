@@ -247,7 +247,6 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       allowed: LABEL_ORDER.filter((l) => LABEL_ORDER.indexOf(l) >= LABEL_ORDER.indexOf(selLevel.labels)),
       set: (l) => setLabelPick((p) => ({ ...p, [selLevel.id]: l })),
       locked: !!run,
-      note: selLevel.type === 'nameIt' ? 'Names stay hidden here, since naming the key is the question.' : undefined,
     },
     start: { label: 'Start', onClick: () => start(selected), disabled: !!run },
     restart: { label: 'Restart', onClick: () => start(selected), disabled: !run },

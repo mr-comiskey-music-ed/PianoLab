@@ -28,7 +28,7 @@ The app follows the order Mr. Comiskey teaches in. Each lesson has levels.
 
 | Lesson | Topic | Notes |
 |---|---|---|
-| 1 | White-key note names | One lesson that Mr. Comiskey covers in about 10 minutes live. Its Learn section walks through three touch points: **finding F and C** (C sits left of the 2-black-key group, and F sits left of the 3-group), **the musical alphabet A–G** (up, down, and wrapping from G back to A), and then **every white key**. Early levels accept any octave, and later levels require a specific octave. |
+| 1 | White-key note names | One lesson that Mr. Comiskey covers in about 10 minutes live. Its Learn section walks through three touch points: **finding F and C** (C sits left of the 2-black-key group, and F sits left of the 3-group), **the musical alphabet A–G** (a show-and-tell with names on the keys: up, down, and wrapping from G back to A), and then **all white keys**. Levels accept any octave (the octave level was cut). |
 | 2 | White-key chords in C major and A minor | Chords as a concept: stacking **thirds** by skipping a white key (a quick moment, with no major/minor 3rds yet). Chord names and degree colors only, **no roman numerals yet**. |
 | 3 | Roman numerals and function | Once chords make sense, introduce numerals, then Home, Away, and Tension. Same white-key chords, new language. |
 | 4 | Black-key names and half steps | Sharps and flats, two names for one key, and the **half step** (any key to its nearest neighbor, black or white). |
@@ -126,6 +126,9 @@ Example pattern data:
 
 A teacher-only page that builds a **link** to paste into Google Classroom. All settings live in the URL, so the app stays stateless. Settings:
 
+- **Everything is assignable.** Any lesson, Learn section, Practice setup or Challenge level (or a hand-picked set of
+  levels) can be set from the Teacher button, along with every setting students could otherwise change (note names on the
+  keys, sounds, tempo, and so on): fixed, a minimum, or "student chooses".
 - Lesson, level, and assessment type
 - Pattern (key, progression, texture, rhythm, voicing), or a custom progression the teacher types in (e.g. a song the class is covering)
 - Minimum tempo and other minimum-difficulty settings
@@ -195,15 +198,15 @@ A teacher-only page that builds a **link** to paste into Google Classroom. All s
 
 | Category | Versions to compare |
 |---|---|
-| Grand Piano | Salamander Grand (Yamaha C5, CC-BY 3.0). Splendid Grand and Accurate-Salamander dropped after Phase 1 testing. |
+| Grand Piano | Accurate-Salamander (5 velocity layers, hosted with the app), Salamander Grand (Tone.js copy) and Splendid Grand (smplr). All three still in, to compare on headphones and speakers. |
 | Electric Piano | jRhodes3d (Rhodes Mark I, CC BY-NC), a reduced copy hosted with the app. The smplr electric piano sounded like an electric grand and was dropped. |
-| Felt Piano | The softest Salamander layers (or the "Moonlight" soft bank) with a darker EQ, or the grand with a low-pass "felt" filter |
-| Synth Keys | Built-in PianoLab synth presets (warm and bright), sharing SynthLab's synth engine with a cleaner UI |
+| Felt Piano | Accurate-Salamander's soft layer through a low-pass "felt" filter |
+| Synth Keys | Built-in PianoLab synth presets (warm and bright), sharing SynthLab's synth engine, plus **Custom Synth**: SynthLab's Modern Synth panel in a pop-up (starters: Warm, Bright, West Coast lead, Plain saw), patches saved in the browser |
 | SynthLab patch | Dropped after Phase 1 (not needed). |
 
 - The "Compare versions" box is **for teacher testing only** and gets removed once a version is chosen for each category.
-- **Mix panel** (behind the Mix button, not always visible): a one-knob EQ, a one-knob compressor, and reverb with Length, Color, and Mix.
-- A metronome toggle.
+- **Mix panel** (behind a small faders icon at the top right of the Sound box, not always visible): a one-knob EQ, a one-knob compressor, and reverb with Length, Color, and Mix.
+- A compact wood-block metronome: icon on/off, BPM box and slider, volume knob (100% default, up to 200%).
 - **Licensing:** credit sample authors on an About screen. The app is educational and non-commercial. Never use samples rendered out of commercial DAW instruments.
 
 ## 14. Visual language

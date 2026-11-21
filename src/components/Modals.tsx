@@ -175,8 +175,7 @@ export const BatchModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
   return (
     <Shell title="Teacher: batch grading" onClose={onClose} wide>
-      <p className="text-[14px] text-wal1">Paste a whole class’s codes (a Classroom page works). Anything next to a code on the same line shows up as that student’s label.</p>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} data-testid="batch-input" placeholder="Paste codes here…" className="mt-2 w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px]" />
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} data-testid="batch-input" placeholder="Paste codes here…" className="w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px]" />
       <button className="btn btn-brass mt-2" onClick={run} data-testid="batch-run">
         Check codes
       </button>

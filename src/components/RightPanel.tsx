@@ -6,7 +6,7 @@ export interface Metro {
   on: boolean;
   bpm: number;
   sound: MetroSound;
-  /** 0 to 1 */
+  /** 1 = 100% (default), up to METRO_VOL_MAX */
   vol: number;
 }
 
@@ -25,6 +25,26 @@ const Slider: React.FC<{ label: string; value: number; min: number; max: number;
       </span>
     )}
   </label>
+);
+
+/** Metronome volume goes up to 200% (1 = 100%, the default). */
+export const METRO_VOL_MAX = 2;
+
+/** Mixer faders: opens the Mix panel. */
+const FadersIcon = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+    <path d="M6 3v18M12 3v18M18 3v18" strokeWidth="1.4" opacity="0.6" />
+    <rect x="3.5" y="13" width="5" height="3" rx="1" fill="currentColor" stroke="none" />
+    <rect x="9.5" y="6" width="5" height="3" rx="1" fill="currentColor" stroke="none" />
+    <rect x="15.5" y="10" width="5" height="3" rx="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+/** Metronome (from SVG Repo, recoloured to follow the button's text colour). */
+const MetronomeIcon = () => (
+  <svg viewBox="0 0 314 314" width="22" height="22" fill="currentColor" stroke="currentColor" strokeWidth="4.71" aria-hidden="true">
+    <path d="M281.853,46.631c-0.39-2.035-1.66-3.794-3.47-4.802l-11.257-6.271l5.297-9.511c1.881-3.378,0.668-7.641-2.709-9.521 c-3.38-1.881-7.641-0.667-9.521,2.709l-5.297,9.511l-11.257-6.269c-1.81-1.008-3.975-1.162-5.908-0.422 c-1.936,0.74-3.442,2.3-4.117,4.259l-13.806,40.109c-1.103,3.207,0.25,6.743,3.213,8.394l4.741,2.642l-23.115,41.501L184.592,17.11 C182.703,7.516,173.563,0,163.783,0h-56.052c-9.778,0-18.918,7.516-20.809,17.11L46.102,224.425 c-0.002,0.012-0.004,0.023-0.006,0.035l-13.729,69.725c-0.998,5.067,0.205,10.132,3.3,13.895C38.76,311.842,43.496,314,48.66,314 h174.195c5.163,0,9.898-2.158,12.993-5.92c3.095-3.763,4.298-8.827,3.301-13.896l-13.732-69.741 c-0.001-0.002-0.001-0.004-0.001-0.004l-16.584-84.225l31.16-55.944l4.742,2.642c1.072,0.598,2.243,0.885,3.402,0.885 c2.046,0,4.056-0.896,5.425-2.571l26.836-32.853C281.708,50.769,282.241,48.665,281.853,46.631z M100.659,19.816 c0.6-3.044,3.971-5.816,7.072-5.816h56.052c3.103,0,6.473,2.771,7.072,5.815l23.249,118.069L164,191.933 c-6.17-2.645-13.121-4.627-21.242-5.363v-14.92h10.96c3.866,0,7-3.134,7-7s-3.134-7-7-7h-10.96v-41.211h10.96c3.866,0,7-3.134,7-7 c0-3.866-3.134-7-7-7h-10.96v-41.21h10.96c3.866,0,7-3.134,7-7s-3.134-7-7-7h-10.96V34.938c0-3.866-3.134-7-7-7 c-3.866,0-7,3.134-7,7v12.291h-10.96c-3.866,0-7,3.134-7,7s3.134,7,7,7h10.96v41.21h-10.96c-3.866,0-7,3.134-7,7 c0,3.866,3.134,7,7,7h10.96v41.211h-10.96c-3.866,0-7,3.134-7,7s3.134,7,7,7h10.96v14.92c-19.447,1.763-32.189,10.688-43.564,18.666 c-7.894,5.536-14.975,10.493-23.52,12.573L100.659,19.816z M225.036,299.188c-0.432,0.523-1.206,0.813-2.181,0.813H48.66 c-0.976,0-1.75-0.289-2.181-0.814c-0.432-0.524-0.565-1.34-0.377-2.297l12.675-64.372c14.147-1.593,24.455-8.807,34.455-15.82 c12.059-8.457,23.448-16.444,42.525-16.444c19.077,0,30.466,7.987,42.524,16.444c10.001,7.014,20.308,14.228,34.456,15.82 l12.675,64.371C225.602,297.846,225.468,298.662,225.036,299.188z M209.842,217.809c-8.545-2.08-15.627-7.037-23.521-12.574 c-3.175-2.227-6.456-4.527-9.959-6.726l21.928-39.367L209.842,217.809z M246.427,71.829l-11.474-6.392l9.177-26.662l20.136,11.216 L246.427,71.829z" />
+  </svg>
 );
 
 interface Props {
@@ -54,7 +74,29 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
   return (
     <div className="flex flex-col gap-3" data-testid="right-panel">
       <div>
-        <div className="h mb-1 text-[11px] uppercase text-muted">Sound</div>
+        <div className="mb-1 flex items-center justify-between">
+          <div className="h text-[11px] uppercase text-muted">Sound</div>
+          <button
+            onClick={() => setMixOpen((v) => !v)}
+            data-testid="mix-button"
+            aria-expanded={mixOpen}
+            aria-label="Mix (tone, squash, reverb)"
+            title="Mix: tone, squash, reverb"
+            className={`flex h-7 w-7 items-center justify-center rounded-md border ${mixOpen ? 'border-brass3 bg-brass text-brasstext' : 'border-transparent text-muted hover:border-line2 hover:bg-panel'}`}
+          >
+            <FadersIcon />
+          </button>
+        </div>
+        {mixOpen && (
+          <div className="card mb-2 flex flex-col gap-2 p-3" data-testid="mix-panel">
+            <Slider label="Tone (EQ)" value={mix.eq} min={-1} max={1} step={0.05} left="Darker" right="Brighter" onChange={(v) => applyMix({ ...mix, eq: v })} />
+            <Slider label="Squash (compressor)" value={mix.comp} min={0} max={1} step={0.05} left="Off" right="Squashed" onChange={(v) => applyMix({ ...mix, comp: v })} />
+            <div className="h text-[12px] text-brass3">Reverb</div>
+            <Slider label="Length" value={mix.len} min={0.3} max={6} step={0.1} onChange={(v) => applyMix({ ...mix, len: v })} />
+            <Slider label="Color" value={mix.color} min={0} max={1} step={0.05} left="Dark" right="Bright" onChange={(v) => applyMix({ ...mix, color: v })} />
+            <Slider label="Mix" value={mix.wet} min={0} max={1} step={0.02} onChange={(v) => applyMix({ ...mix, wet: v })} />
+          </div>
+        )}
         {CATEGORIES.map((cat) => (
           <div key={cat} className="mb-1.5">
             <div className="h text-[12px] text-brass3">{cat}</div>
@@ -78,22 +120,6 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
         ))}
       </div>
 
-      <div className="relative">
-        <button className="btn btn-dark w-full" onClick={() => setMixOpen((v) => !v)} data-testid="mix-button" aria-expanded={mixOpen}>
-          Mix {mixOpen ? '▴' : '▾'}
-        </button>
-        {mixOpen && (
-          <div className="card mt-1.5 flex flex-col gap-2 p-3" data-testid="mix-panel">
-            <Slider label="Tone (EQ)" value={mix.eq} min={-1} max={1} step={0.05} left="Darker" right="Brighter" onChange={(v) => applyMix({ ...mix, eq: v })} />
-            <Slider label="Squash (compressor)" value={mix.comp} min={0} max={1} step={0.05} left="Off" right="Squashed" onChange={(v) => applyMix({ ...mix, comp: v })} />
-            <div className="h text-[12px] text-brass3">Reverb</div>
-            <Slider label="Length" value={mix.len} min={0.3} max={6} step={0.1} onChange={(v) => applyMix({ ...mix, len: v })} />
-            <Slider label="Color" value={mix.color} min={0} max={1} step={0.05} left="Dark" right="Bright" onChange={(v) => applyMix({ ...mix, color: v })} />
-            <Slider label="Mix" value={mix.wet} min={0} max={1} step={0.02} onChange={(v) => applyMix({ ...mix, wet: v })} />
-          </div>
-        )}
-      </div>
-
       <div className="card p-2" data-testid="metronome">
         <div className="flex items-center gap-2">
           <button
@@ -104,12 +130,7 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
             title="Metronome on/off"
             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${metro.on ? 'border-brass3 bg-brass text-brasstext' : 'border-line2 bg-panel text-wal1 hover:bg-[#fff8ea]'}`}
           >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M8 21 10.2 4h3.6L16 21Z" />
-              <path d="M7 21h10" />
-              <path d="M12 17 15.5 7" />
-              <circle cx="14.6" cy="9.4" r="1.2" fill="currentColor" />
-            </svg>
+            <MetronomeIcon />
           </button>
           <input
             type="number"
@@ -122,7 +143,15 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
             className="h w-14 rounded-lg border border-line2 bg-white px-1 py-1 text-center text-[14px]"
           />
           <input type="range" min={40} max={160} step={1} value={metro.bpm} onChange={(e) => onMetro({ ...metro, bpm: Number(e.target.value) })} aria-label="Tempo slider" data-testid="bpm-slider" className="min-w-0 flex-1 accent-[#b8862c]" />
-          <Knob value={metro.vol} onChange={(v) => onMetro({ ...metro, vol: v })} label="Metronome volume" size={30} />
+          {/* 0-200%, 100% in the middle (straight up). Double-click goes back to 100%. */}
+          <Knob
+            value={metro.vol / METRO_VOL_MAX}
+            onChange={(v) => onMetro({ ...metro, vol: Math.round(v * METRO_VOL_MAX * 100) / 100 })}
+            onReset={() => onMetro({ ...metro, vol: 1 })}
+            display={`${Math.round(metro.vol * 100)}%`}
+            label="Metronome volume"
+            size={30}
+          />
         </div>
       </div>
 

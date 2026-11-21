@@ -29,3 +29,18 @@ export const SYNTH_KEYS_BRIGHT: SynthParams = {
   ampAttack: 0.006, ampDecay: 0.5, ampSustain: 0.5, ampRelease: 0.35,
   modAttack: 0.005, modDecay: 0.4, modSustain: 0.35, modRelease: 0.35,
 };
+
+/**
+ * West Coast lead (Buchla-style): round triangle + a thin pulse an octave up, a gentle 2-pole filter that opens and closes
+ * with each note like a low-pass gate, a little glide and vibrato. Mono, for melodies.
+ */
+export const SYNTH_WEST_COAST_LEAD: SynthParams = {
+  ...DEFAULT_SYNTH_PARAMS,
+  vco1Waveform: 'triangle', vco1Level: 0.85,
+  vco2Waveform: 'square', vco2Octave: 1, vco2PulseWidth: 0.3, vco2Fine: 4, vco2Level: 0.35, oscBalance: -0.15,
+  filterCutoff: 650, filterResonance: 2.5, filterEnvAmount: 70, filterKeyTracking: 0.8, filterRolloff: -12,
+  ampAttack: 0.005, ampDecay: 0.35, ampSustain: 0.5, ampRelease: 0.25,
+  modAttack: 0.003, modDecay: 0.28, modSustain: 0.2, modRelease: 0.25,
+  lfoRate: 5.5, lfoWaveform: 'sine', lfoDepth: 0.13, lfoDestination: 'pitch',
+  voiceMode: 'mono', glide: 0.06,
+};
