@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { AudioEngine } from '../audio/audioEngine';
 import { Lesson, LevelResult } from '../types';
+import { KeyDef } from '../utils/chords';
 import { KeyMark } from './Piano';
 
 export type Labels = 'off' | 'c' | 'all';
@@ -27,6 +28,8 @@ export interface ModeCtx {
   getHeld: () => number[];
   /** The lesson picked in the lesson picker. Learn, Practice and Challenges all follow it. */
   lesson: Lesson;
+  /** The chord strip's key (for Roman numerals). */
+  keyDef: KeyDef;
   results: LevelResult[];
   setResults: (fn: (prev: LevelResult[]) => LevelResult[]) => void;
   /** Learn progress for the current lesson. */

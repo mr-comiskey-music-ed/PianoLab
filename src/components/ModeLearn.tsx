@@ -1,8 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
+import { KEY_COUNT, isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
 import { chordLongName, chordName, detectChord, matchesChord, parseChord } from '../utils/chords';
 import { ModeCtx, ModeParts } from './modeTypes';
-import { chordWatcher } from './chordInput';
+import { useChordWatcher, useNoteListener } from './chordInput';
+
+/** Position of a white key counting only white keys (C0 = 0, D0 = 1 ...). Black keys: null. */
+const WHITE_INDEX = [0, null, 1, null, 2, 3, null, 4, null, 5, null, 6];
+const whiteIndex = (m: number) => {
+  const w = WHITE_INDEX[pc(m)];
+  return w === null ? null : Math.floor(m / 12) * 7 + w;
+};
+/** Three white keys, each two white keys above the last (root, skip one, 3rd, skip one, 5th). `held` is sorted low to high. */
+export function isWhiteTriad(held: number[]): boolean {
+  if (held.length !== 3) return false;
+  const w = held.map(whiteIndex);
+  if (w.some((x) => x === null)) return false;
+  return (w[1] as number) - (w[0] as number) === 2 && (w[2] as number) - (w[1] as number) === 2;
+}
 
 /** A demo entry: "C4" is one note, "C4+E4+G4" a chord. */
 const entryNotes = (e: string) => e.split('+').map(parseNote).filter((n): n is number => n !== null);
@@ -40,12 +54,23 @@ export function useLearn(ctx: ModeCtx): ModeParts {
 
   /** Bumped on every step change, so a demo from the step you just left stops. */
   const demoRun = useRef(0);
+  const viewRef = useRef(ctx.viewStart);
+  viewRef.current = ctx.viewStart;
   /** Keys already counted in this step (each right answer must be a different key). */
   const usedKeys = useRef(new Set<number>());
   const showMe = useCallback(async () => {
     const s = stepRef.current;
-    const entries = (s.demo ?? []).map(entryNotes).filter((e) => e.length);
+    let entries = (s.demo ?? []).map(entryNotes).filter((e) => e.length);
     if (!entries.length) return;
+    // Keep the demo on the keys you can see: move it by whole octaves if it would run off either end.
+    const all = entries.flat();
+    const lo = Math.min(...all);
+    const hi = Math.max(...all);
+    const start = viewRef.current;
+    if (lo < start || hi > start + KEY_COUNT - 1) {
+      const shift = 12 * Math.ceil((start - lo) / 12);
+      if (hi + shift <= start + KEY_COUNT - 1) entries = entries.map((e) => e.map((n) => n + shift));
+    }
     const run = ++demoRun.current;
     const stopped = () => demoRun.current !== run;
     setDemoing(true);
@@ -105,8 +130,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   lessonRef.current = ctx.lesson;
 
   // Single-note tries ("Play an F♯").
-  useEffect(() => {
-    return ctx.subscribe((midi) => {
+  useNoteListener(ctx.subscribe, (midi) => {
       const s = stepRef.current;
       if (doneRef.current || s.show || !s.tryAnswer) return;
       const answers = s.tryAnswer.map(pcOf);
@@ -132,14 +156,34 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       } else {
         setMsg({ kind: 'hint', text: `That one is ${letter}. ${s.hint}` });
       }
-    });
-  }, [ctx]);
+  });
 
   // Chord tries ("Play an F chord"): one chord (3+ keys together) = one answer.
-  useEffect(() => {
-    const w = chordWatcher(ctx.getHeld, (held) => {
+  useChordWatcher(ctx.getHeld, ctx.subscribeNotes, (held) => {
       const s = stepRef.current;
-      if (doneRef.current || s.show || !s.tryChord) return;
+      if (doneRef.current || s.show) return;
+      if (s.tryTriad) {
+        // Any white-key triad: root, skip a white key, 3rd, skip a white key, 5th. Each on a different root.
+        const triad = isWhiteTriad(held);
+        if (!triad) {
+          setMsg({ kind: 'hint', text: `Not a stacked triad yet. ${s.hint ?? ''} Let go and try again.` });
+          return;
+        }
+        const rootPc = pc(held[0]);
+        if (usedKeys.current.has(rootPc)) {
+          setMsg({ kind: 'hint', text: `You already built a triad on ${pretty(letterOf(held[0]))}. Start on a different white key.` });
+          return;
+        }
+        usedKeys.current.add(rootPc);
+        const name = detectChord(held)?.symbol ?? '';
+        setCount((c) => {
+          const n = c + 1;
+          setMsg({ kind: 'good', text: n >= s.need ? `Yes! ${name}. That's four triads. Nice work.` : `Yes! That's a ${name} triad: ${pretty(letterOf(held[0]))} is the root. Now start on a different key.` });
+          return n;
+        });
+        return;
+      }
+      if (!s.tryChord) return;
       const ok = s.tryChord.some((c) => {
         const ch = parseChord(c);
         return ch && matchesChord(held, ch, s.tryInversion);
@@ -157,11 +201,9 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         const ch = parseChord(c);
         return ch && matchesChord(held, ch);
       });
-      const why = rightChord && s.tryInversion !== undefined ? 'Right chord, but check which note is on the bottom.' : got ? `That is ${chordLongName(got.chord)}.` : 'Those keys don’t make that chord yet.';
+      const why = rightChord && s.tryInversion !== undefined ? 'Right chord, but check which note is on the bottom.' : got ? `That is ${got.longName}.` : 'Those keys don’t make that chord yet.';
       setMsg({ kind: 'hint', text: `${why} ${s.hint ?? ''} Let go and try again.` });
-    });
-    return ctx.subscribeNotes(w.handle);
-  }, [ctx]);
+  });
 
   // Finishing the last step marks Learn done (this goes in the code).
   useEffect(() => {
@@ -176,11 +218,6 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       <div>
         <div className="h text-[11px] uppercase text-muted">Lesson {ctx.lesson.number} · Learn</div>
         <h2 className="h text-[22px] leading-tight text-wal3">{ctx.lesson.title}</h2>
-      </div>
-      <div className="card p-3">
-        <div className="h text-[11px] uppercase text-brass3">{step.section}</div>
-        <div className="h text-[17px] text-wal3">{step.title}</div>
-        <p className="mt-1 text-[15px] leading-snug text-wal1">{step.say}</p>
       </div>
       <div className="flex flex-col gap-1.5">
         {sections.map((sec) => {
@@ -236,11 +273,21 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     </button>
   );
 
+  // The explanation sits right above what to do with it, in the big centre area (not in a small side box).
+  const explain = (
+    <div className="max-w-[720px]" data-testid="learn-say">
+      <div className="h text-[12px] uppercase tracking-wider text-brass">
+        {step.section === step.title ? step.title : `${step.section} · ${step.title}`}
+      </div>
+      <p className="mt-1 text-[18px] leading-snug text-line">{step.say}</p>
+    </div>
+  );
+
   const stage = step.show ? (
-    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <div className="h text-[12px] uppercase tracking-wider text-brass">Watch and listen</div>
-      <div className="h text-[34px] leading-tight text-panel" data-testid="learn-prompt">
-        {step.title}
+    <div className="flex h-full flex-col items-center justify-center gap-3 overflow-auto px-6 py-3 text-center">
+      {explain}
+      <div className="h text-[12px] uppercase tracking-wider text-brass" data-testid="learn-prompt">
+        Watch and listen
       </div>
       <div className="h flex flex-wrap justify-center gap-x-3 gap-y-1 text-[26px] tracking-wide text-line2" aria-hidden="true">
         {(step.demo ?? []).map((n, k) => (
@@ -257,10 +304,13 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       </div>
     </div>
   ) : (
-    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <div className="h text-[12px] uppercase tracking-wider text-brass">Now you try</div>
-      <div className="h text-[34px] leading-tight text-panel" data-testid="learn-prompt">
-        {step.tryText}
+    <div className="flex h-full flex-col items-center justify-center gap-2.5 overflow-auto px-6 py-3 text-center">
+      {explain}
+      <div className="w-full max-w-[720px] border-t border-wal1 pt-2.5">
+        <div className="h text-[12px] uppercase tracking-wider text-brass">Now you try</div>
+        <div className="h text-[28px] leading-tight text-panel" data-testid="learn-prompt">
+          {step.tryText}
+        </div>
       </div>
       <div className="flex gap-1.5" aria-label={`${count} of ${step.need} done`}>
         {Array.from({ length: step.need }, (_, k) => (

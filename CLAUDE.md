@@ -14,7 +14,8 @@ Drills are the means; students making music is the goal.
 - **Chromebooks first**: each student has a Chromebook, a **25-key USB MIDI keyboard** and headphones. Keep it light and
   fast. Sounds load only when picked. Mobile is nice-to-have only.
 - No traditional notation. MIDI-block notation, chord names, roman numerals only.
-- Roman numerals/function labels are hidden in Lessons 1-2 (they appear from Lesson 3).
+- Roman numerals: always shown on the chord strip and in Practice's centre display (his call; the old "hidden in Lessons
+  1-2" rule is retired). No Home/Away/Tension function labels anywhere (removed at his request).
 
 ## Stack (same as SynthLab/AudioPlot)
 - Vite + React 19 + TypeScript, Tailwind 4, Tone.js. Sounds load only when picked.
@@ -78,19 +79,35 @@ Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + M
 codes, batch grading, autosave, Sandbox.
 **Phase 2 (Chords) built** (all at once, his choice): Lessons 2-6 in `lessons.json` (written by a script; edit the JSON),
 lesson picker (all lessons open; later the teacher's assignment link can decide), chord detector, chord strip, Smooth Mover.
-- Theory: `src/utils/chords.ts` (parse "Dm"/"F#"/"Bdim", voicings, keys, numerals, Home/Away/Tension, `detectChord`,
-  `matchesChord`, `smoothestVoicing`). Tests: `chords.test.ts`, and `lessons.test.ts` checks every lesson's content.
+- Theory: `src/utils/chords.ts` (parse "Dm"/"F#"/"Bdim", voicings, keys, numerals, `detectChord`, `matchesChord`,
+  `smoothestVoicing`). `detectChord` names extended chords too (6, 7, maj7, m7, m7♭5, °7, sus2/4, add9, 9, 11, 13, 7♭9...,
+  5th-less forms; the bass picks between readings; slash chords like C7/E) with numerals like V7, ii7, viiø7.
+  Tests: `chords.test.ts`, and `lessons.test.ts` checks every lesson's content.
 - A chord counts in any octave or inversion with no extra notes (his choice); doubling is fine. Lesson 6 levels with
-  `inv` require the right bass note. B° is shown in Learn but not tested in Lesson 2 (tested from Lesson 3's function level).
+  `inv` require the right bass note. B° is shown in Learn but not tested in Lesson 2 (it appears as vii° in Lesson 3).
 - Chord input (`chordInput.ts`): judged once 3+ keys are held steady ~90 ms; one chord = one answer; let go of all keys
-  before the next try. Mouse can't hold chords; MIDI, computer keys and touch can.
-- Level types: findIt, nameIt, buildIt, nameChord (name / numeral / function / inversion via `choices`), halfStep,
+  before the next try. Mouse can't hold chords; MIDI, computer keys and touch can. **Listeners must be created once per
+  screen (`useChordWatcher`, `useNoteListener`), never re-subscribed on every render**: that once let a real keyboard's
+  separate note messages judge one chord twice ("That is C major, not G major" right after a correct C). `e16` tests it.
+- Level types: findIt, nameIt, buildIt, nameChord (name / numeral / inversion via `choices`), halfStep,
   earCheck (major/minor, "Hear it again"), smooth (Smooth Mover: right chord AND fewest half steps from the lit chord;
   result shows half steps moved vs the smoothest possible). Choice-button answers don't flash the keys.
-- Detector: readout bar (chord, inversion, and with numerals on: numeral + function) in Learn, Practice, Sandbox; OFF in
-  Challenges. Chord strip: Practice (Lesson 2+) and Sandbox only (in Learn it would give answers away); key picker (all
-  major/minor keys), degree colours, Numerals checkbox (default off in Lessons 1-2, on from Lesson 3). Click a chord to
-  hear it.
+- What you played: Practice's centre shows the last thing played, big: a chord (symbol, full name, inversion or bass, and
+  its Roman numeral in the strip's key, in its degree colour) or a single note. A chord stays "the last thing" while its
+  notes are let go unevenly; it changes only when a new chord forms or a new note starts from silence. The readout bar
+  above the piano no longer shows "Last note"; only the Sandbox shows the chord there (its centre is the roll). No chord
+  names in Challenges.
+- Chord strip: Practice (Lesson 2+) and Sandbox only (in Learn it would give answers away); key picker, degree colours,
+  numerals always shown (no checkbox). Click a chord or press 1-7: one chord at a time (the last is cut off), voiced from
+  a low I upward (I in octave 3, roots climbing) so there's no jump down. Strip chords go straight to the sound engine,
+  not the piano: they never count in Learn/Practice/Challenges and the Sandbox doesn't record them.
+- Learn layout: the explanation ("say") sits in the centre stage right above "Now you try"; the left panel only has the
+  step list and Back/Next. Demos shift by whole octaves to stay on the keys on screen.
+- Lesson 2 (now "White-key triads"): triad / third / root, 3rd, 5th language; "Build 4 triads" accepts any white-key
+  stacked triad (root, skip, 3rd, skip, 5th; `tryTriad`), each on a different root; hints say "Find a D and build the
+  triad up from there". Levels in order: Name C, F and G (`l2-name-cfg`) · Build C, F and G · Name all white-key triads ·
+  Build all white-key triads. "Chords in A minor" level removed (same as Build all). Lesson 3 is "Roman numerals": Play
+  the numeral · Name the numeral · Numerals in A minor (`l3-function` removed). Removed ids never reached students.
 - Black keys (Lesson 4+, and Sandbox): names on black keys when names are showing ("C♯" over "D♭"); black keys count as
   answers. Flats are read as sharps internally (`pcOf`).
 - Per-lesson Learn: autosave keeps `learn: {lessonId: {done, step}}` + `lessonId` (old Phase 1 saves still load). Codes:
@@ -153,7 +170,7 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
 - Teacher button should eventually assign anything (SPEC section 8, "Everything is assignable"). Today it only batch grades.
 - Not built yet: About screen with full credits (credits are in a small right-panel list), Phases 3-4 (SPEC section 17).
 - Phase 2 to try on the Chromebook: every lesson's Learn, the chord levels with the MIDI keyboard, Smooth Mover, the strip.
-- Later: the Teacher's assignment link picks the lesson/levels (SPEC section 8); a numerals toggle for Learn if wanted.
+- Later: the Teacher's assignment link picks the lesson/levels (SPEC section 8).
 - Confirm the Vercel preview for branch `claude/charming-wozniak-94lfxk` builds; nothing is on `main` yet (merge only on his
   say-so, after class).
 - Latency check result varied (88-141 ms in tests); worth a second look once timing grades exist (Phase 3).

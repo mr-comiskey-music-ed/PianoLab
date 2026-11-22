@@ -15,7 +15,7 @@ describe('lesson content', () => {
     for (const l of LESSONS)
       for (const s of l.learn) {
         for (const d of s.demo ?? []) for (const n of d.split('+')) expect(parseNote(n), `${s.id} demo ${n}`).not.toBeNull();
-        if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0), `${s.id} has an answer`).toBeGreaterThan(0);
+        if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0) + (s.tryTriad ? 1 : 0), `${s.id} has an answer`).toBeGreaterThan(0);
         for (const a of s.tryAnswer ?? []) expect(pcOf(a), `${s.id} answer ${a}`).not.toBeNull();
         for (const c of s.tryChord ?? []) expect(parseChord(c), `${s.id} chord ${c}`).not.toBeNull();
       }

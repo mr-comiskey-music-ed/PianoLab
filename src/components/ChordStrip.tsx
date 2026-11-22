@@ -9,17 +9,17 @@ const textOn = (hex: string) => {
 };
 
 /**
- * The chord strip (SPEC section 14): the key's seven chords in scale-degree colours. Click one to hear it. The chord you
- * are playing lights up. Roman numerals and Home/Away/Tension show when `numerals` is on (Lesson 3 on; a toggle here).
+ * The chord strip (SPEC section 14): the key's seven chords in scale-degree colours, with Roman numerals. Click one (or
+ * press 1-7) to hear it; one chord sounds at a time. The chord you are playing lights up.
  */
 export const ChordStrip: React.FC<{
   keyDef: KeyDef;
   onKey: (id: string) => void;
-  numerals: boolean;
-  onNumerals: (v: boolean) => void;
   active: Detected | null;
+  /** The strip chord sounding right now (clicked or 1-7). */
+  playing: number | null;
   onPlay: (degree: number) => void;
-}> = ({ keyDef, onKey, numerals, onNumerals, active, onPlay }) => (
+}> = ({ keyDef, onKey, active, playing, onPlay }) => (
   <div className="wood flex items-center gap-1.5 rounded-t-lg px-2 py-1.5" data-testid="chord-strip">
     <select
       value={keyDef.id}
@@ -37,29 +37,22 @@ export const ChordStrip: React.FC<{
     </select>
     <div className="flex min-w-0 flex-1 gap-1">
       {diatonic(keyDef).map((d) => {
-        const on = !!active && active.chord.root === d.chord.root && active.chord.quality === d.chord.quality;
+        const on = playing === d.degree || (!!active && active.chord.root === d.chord.root && active.chord.quality === d.chord.quality);
         return (
           <button
             key={d.degree}
             onClick={() => onPlay(d.degree)}
             data-testid={`strip-${d.degree}`}
-            title={`${chordName(d.chord)}${numerals ? ` · ${d.numeral} · ${d.fn}` : ''}. Click to hear it.`}
-            className={`h flex min-w-0 flex-1 flex-col items-center rounded-md px-1 py-0.5 leading-tight transition-transform ${on ? 'scale-105 ring-2 ring-panel' : 'opacity-90 hover:opacity-100'}`}
+            title={`${chordName(d.chord)} (${d.numeral}). Click or press ${d.degree + 1} to hear it.`}
+            className={`h relative flex min-w-0 flex-1 flex-col items-center rounded-md px-1 py-0.5 leading-tight transition-transform ${on ? 'scale-105 ring-2 ring-panel' : 'opacity-90 hover:opacity-100'}`}
             style={{ background: d.color, color: textOn(d.color) }}
           >
+            <span className="absolute left-1 top-0.5 text-[9px] opacity-60">{d.degree + 1}</span>
             <span className="truncate text-[15px]">{chordName(d.chord)}</span>
-            {numerals && (
-              <span className="truncate text-[11px] opacity-90">
-                {d.numeral} · {d.fn}
-              </span>
-            )}
+            <span className="truncate text-[12px] opacity-90">{d.numeral}</span>
           </button>
         );
       })}
     </div>
-    <label className="h flex shrink-0 cursor-pointer items-center gap-1 text-[12px] text-line" title="Show Roman numerals and Home / Away / Tension">
-      <input type="checkbox" checked={numerals} onChange={(e) => onNumerals(e.target.checked)} data-testid="strip-numerals" className="accent-[#d9a441]" />
-      Numerals
-    </label>
   </div>
 );

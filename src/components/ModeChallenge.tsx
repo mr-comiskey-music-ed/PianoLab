@@ -6,7 +6,7 @@ import { accuracy, credit, floored, passed } from '../utils/grading';
 import { loadBest, saveBest } from '../utils/autosave';
 import { KeyMark } from './Piano';
 import { LABEL_ORDER, Labels, ModeCtx, ModeParts } from './modeTypes';
-import { chordWatcher } from './chordInput';
+import { useChordWatcher, useNoteListener } from './chordInput';
 
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
@@ -173,8 +173,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   };
 
   // Playing single keys: Find It and Half Step.
-  useEffect(() => {
-    return ctx.subscribe((midi) => {
+  useNoteListener(ctx.subscribe, (midi) => {
       const r = runRef.current;
       if (!r) return;
       const p = r.prompts[r.idx];
@@ -192,20 +191,17 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         const target = from + (p.step ?? 1);
         answer(midi === target, [midi], midi === from ? 'That is the lit key itself. Move one key.' : 'Not quite. A half step is the very next key, black or white.');
       }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctx]);
+  });
 
   // Playing chords: Build It and Smooth Mover. One chord (3+ keys held together) = one answer.
-  useEffect(() => {
-    const w = chordWatcher(ctx.getHeld, (held) => {
+  useChordWatcher(ctx.getHeld, ctx.subscribeNotes, (held) => {
       const r = runRef.current;
       if (!r || (r.level.type !== 'buildIt' && r.level.type !== 'smooth')) return;
       const p = r.prompts[r.idx];
       const c = parseChord(p.chord ?? '');
       if (!c) return;
       const got = detectChord(held);
-      const gotName = got ? chordLongName(got.chord) : null;
+      const gotName = got ? got.longName : null;
       if (r.level.type === 'buildIt') {
         const ok = matchesChord(held, c, p.inv);
         const right = matchesChord(held, c);
@@ -230,10 +226,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         return;
       }
       answer(true, held, '', { prev: held, moved: (r.moved ?? 0) + moved, bestMoves: (r.bestMoves ?? 0) + bestMove });
-    });
-    return ctx.subscribeNotes(w.handle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctx]);
+  });
 
   // What to light for the current prompt.
   const prompt = run?.prompts[run.idx];

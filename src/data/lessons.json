@@ -467,91 +467,93 @@
     {
       "id": "lesson-2",
       "number": 2,
-      "title": "White-key chords",
+      "title": "White-key triads",
       "key": "C",
-      "practice": "Play the seven chords in C by stacking every other white key. Watch the chord name change. Try A minor too.",
+      "practice": "Build triads on different white keys: play one, skip one, play one, skip one, play one. Watch the chord name and numeral change.",
       "learn": [
         {
           "id": "l2-thirds",
           "section": "Stacking thirds",
           "title": "Skip a key, play a key",
-          "say": "A chord is three notes played together. The simplest way to build one: play a white key, skip one, play one, skip one, play one. Each jump is called a third. C, E and G make a C chord.",
+          "say": "Play a white key, skip the next one, and play the one after it. That jump is called a third. Stack two thirds (play, skip, play, skip, play) and you get a triad: a chord made of 3 notes. The bottom note is the root, the middle note is the 3rd, and the top note is the 5th. A triad is named after its root.",
           "need": 0,
           "demo": [
-            "C4",
-            "E4",
-            "G4",
+            "C3",
+            "E3",
+            "G3",
+            "C3+E3+G3",
+            "D3",
+            "F3",
+            "A3",
+            "D3+F3+A3"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l2-try-any",
+          "section": "Stacking thirds",
+          "title": "Build your own triads",
+          "say": "Pick any white key as the root. Play it, skip one, play one (the 3rd), skip one, play one (the 5th), all at the same time.",
+          "need": 4,
+          "tryText": "Build 4 triads on white keys, each starting on a different key.",
+          "tryTriad": true,
+          "hint": "Root, skip a white key, 3rd, skip a white key, 5th. Hold all three down together."
+        },
+        {
+          "id": "l2-key",
+          "section": "Chords in a key",
+          "title": "Chords in a key",
+          "say": "Build a triad on every white key from C up to B and you get the chords in the key of C major: C, Dm, Em, F, G, Am and B°. The \"m\" means minor, a darker sound. B° (diminished) is the odd one out; it comes back later.",
+          "need": 0,
+          "demo": [
+            "C3+E3+G3",
+            "D3+F3+A3",
+            "E3+G3+B3",
+            "F3+A3+C4",
+            "G3+B3+D4",
+            "A3+C4+E4",
+            "B3+D4+F4",
             "C4+E4+G4"
           ],
           "show": true,
           "labels": "all"
         },
         {
-          "id": "l2-try-c",
-          "section": "Stacking thirds",
-          "title": "Your first chord",
-          "say": "Hold C, E and G down together.",
-          "need": 1,
-          "tryText": "Play a C chord: C, E and G together.",
-          "tryChord": [
-            "C"
-          ],
-          "hint": "Start on C, skip D, play E, skip F, play G.",
-          "labels": "all"
-        },
-        {
-          "id": "l2-seven",
-          "section": "Chords in C major",
-          "title": "Seven chords",
-          "say": "Stack thirds on every white key and you get seven chords. In C major they are C, Dm, Em, F, G, Am, and B° (the odd one out). The little \"m\" means minor: a darker sound.",
-          "need": 0,
-          "demo": [
-            "C4+E4+G4",
-            "D4+F4+A4",
-            "E4+G4+B4",
-            "F4+A4+C5",
-            "G4+B4+D5",
-            "A3+C4+E4",
-            "B3+D4+F4"
-          ],
-          "show": true,
-          "labels": "all"
-        },
-        {
           "id": "l2-try-f",
-          "section": "Chords in C major",
+          "section": "Chords in a key",
           "title": "Now F",
-          "say": "F, A and C make an F chord.",
+          "say": "F is the root. Its 3rd is A and its 5th is C.",
           "need": 1,
-          "tryText": "Play an F chord.",
+          "tryText": "Play an F triad.",
           "tryChord": [
             "F"
           ],
-          "hint": "F, skip G, A, skip B, C."
+          "hint": "Find an F and build the triad up from there: skip a white key, play the next one, skip one, play one."
         },
         {
           "id": "l2-try-g",
-          "section": "Chords in C major",
+          "section": "Chords in a key",
           "title": "Now G",
-          "say": "G, B and D make a G chord.",
+          "say": "G is the root. Its 3rd is B and its 5th is D.",
           "need": 1,
-          "tryText": "Play a G chord.",
+          "tryText": "Play a G triad.",
           "tryChord": [
             "G"
           ],
-          "hint": "G, skip A, B, skip C, D."
+          "hint": "Find a G and build the triad up from there: skip a white key, play the next one, skip one, play one."
         },
         {
           "id": "l2-try-dm",
-          "section": "Chords in C major",
-          "title": "A minor chord",
-          "say": "D, F and A make D minor (Dm).",
+          "section": "Chords in a key",
+          "title": "A minor triad",
+          "say": "D is the root of D minor (Dm). Its 3rd is F and its 5th is A.",
           "need": 1,
           "tryText": "Play D minor (Dm).",
           "tryChord": [
             "Dm"
           ],
-          "hint": "D, skip E, F, skip G, A."
+          "hint": "Find a D and build the triad up from there: skip a white key, play the next one, skip one, play one."
         },
         {
           "id": "l2-aminor",
@@ -561,8 +563,8 @@
           "need": 0,
           "demo": [
             "A3+C4+E4",
-            "D4+F4+A4",
-            "E4+G4+B4",
+            "D3+F3+A3",
+            "E3+G3+B3",
             "A3+C4+E4"
           ],
           "show": true,
@@ -572,32 +574,104 @@
           "id": "l2-try-am",
           "section": "Chords in A minor",
           "title": "Home in A minor",
-          "say": "A, C and E make A minor (Am).",
+          "say": "A is the root of A minor (Am). Its 3rd is C and its 5th is E.",
           "need": 1,
           "tryText": "Play A minor (Am).",
           "tryChord": [
             "Am"
           ],
-          "hint": "A, skip B, C, skip D, E."
+          "hint": "Find an A and build the triad up from there: skip a white key, play the next one, skip one, play one."
         },
         {
           "id": "l2-try-em",
           "section": "Chords in A minor",
           "title": "One more",
-          "say": "E, G and B make E minor.",
+          "say": "E is the root of E minor (Em). Its 3rd is G and its 5th is B.",
           "need": 1,
           "tryText": "Play E minor (Em).",
           "tryChord": [
             "Em"
           ],
-          "hint": "E, skip F, G, skip A, B."
+          "hint": "Find an E and build the triad up from there: skip a white key, play the next one, skip one, play one."
         }
       ],
       "levels": [
         {
+          "id": "l2-name-cfg",
+          "title": "Name C, F and G",
+          "blurb": "A triad lights up. Is it C, F or G?",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which triad is lit?",
+              "chord": "C",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Which triad is lit?",
+              "chord": "F",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Which triad is lit?",
+              "chord": "G",
+              "answer": [
+                "G"
+              ]
+            },
+            {
+              "text": "Which triad is lit?",
+              "chord": "C",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Which triad is lit?",
+              "chord": "G",
+              "answer": [
+                "G"
+              ]
+            },
+            {
+              "text": "Which triad is lit?",
+              "chord": "F",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Which triad is lit?",
+              "chord": "G",
+              "answer": [
+                "G"
+              ]
+            },
+            {
+              "text": "Which triad is lit?",
+              "chord": "C",
+              "answer": [
+                "C"
+              ]
+            }
+          ],
+          "choices": [
+            "C",
+            "F",
+            "G"
+          ]
+        },
+        {
           "id": "l2-build-cfg",
           "title": "Build C, F and G",
-          "blurb": "Play the chord. Any octave, any order of notes.",
+          "blurb": "Play the triad. Any octave, any order of notes.",
           "type": "buildIt",
           "octave": "any",
           "pass": 80,
@@ -638,138 +712,79 @@
           ]
         },
         {
-          "id": "l2-build-all",
-          "title": "Build all six chords",
-          "blurb": "Play the chord. Any octave, any order of notes.",
-          "type": "buildIt",
-          "octave": "any",
-          "pass": 80,
-          "labels": "c",
-          "prompts": [
-            {
-              "text": "Play C major.",
-              "chord": "C"
-            },
-            {
-              "text": "Play D minor.",
-              "chord": "Dm"
-            },
-            {
-              "text": "Play E minor.",
-              "chord": "Em"
-            },
-            {
-              "text": "Play F major.",
-              "chord": "F"
-            },
-            {
-              "text": "Play G major.",
-              "chord": "G"
-            },
-            {
-              "text": "Play A minor.",
-              "chord": "Am"
-            },
-            {
-              "text": "Play C major.",
-              "chord": "C"
-            },
-            {
-              "text": "Play D minor.",
-              "chord": "Dm"
-            },
-            {
-              "text": "Play E minor.",
-              "chord": "Em"
-            },
-            {
-              "text": "Play F major.",
-              "chord": "F"
-            },
-            {
-              "text": "Play G major.",
-              "chord": "G"
-            },
-            {
-              "text": "Play A minor.",
-              "chord": "Am"
-            }
-          ]
-        },
-        {
           "id": "l2-name",
-          "title": "Name the chord",
-          "blurb": "A chord lights up. Which one is it?",
+          "title": "Name all white-key triads",
+          "blurb": "A triad lights up. Which one is it?",
           "type": "nameChord",
           "octave": "any",
           "pass": 80,
           "labels": "off",
           "prompts": [
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "C",
               "answer": [
                 "C"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "Dm",
               "answer": [
                 "Dm"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "Em",
               "answer": [
                 "Em"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "F",
               "answer": [
                 "F"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "G",
               "answer": [
                 "G"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "Am",
               "answer": [
                 "Am"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "C",
               "answer": [
                 "C"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "F",
               "answer": [
                 "F"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "G",
               "answer": [
                 "G"
               ]
             },
             {
-              "text": "Which chord is lit?",
+              "text": "Which triad is lit?",
               "chord": "Am",
               "answer": [
                 "Am"
@@ -786,17 +801,17 @@
           ]
         },
         {
-          "id": "l2-build-aminor",
-          "title": "Chords in A minor",
-          "blurb": "Play the chord. Any octave, any order of notes.",
+          "id": "l2-build-all",
+          "title": "Build all white-key triads",
+          "blurb": "Play the triad. Any octave, any order of notes.",
           "type": "buildIt",
           "octave": "any",
           "pass": 80,
           "labels": "c",
           "prompts": [
             {
-              "text": "Play A minor.",
-              "chord": "Am"
+              "text": "Play C major.",
+              "chord": "C"
             },
             {
               "text": "Play D minor.",
@@ -815,16 +830,32 @@
               "chord": "G"
             },
             {
-              "text": "Play C major.",
-              "chord": "C"
-            },
-            {
               "text": "Play A minor.",
               "chord": "Am"
             },
             {
+              "text": "Play C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Play D minor.",
+              "chord": "Dm"
+            },
+            {
               "text": "Play E minor.",
               "chord": "Em"
+            },
+            {
+              "text": "Play F major.",
+              "chord": "F"
+            },
+            {
+              "text": "Play G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Play A minor.",
+              "chord": "Am"
             }
           ]
         }
@@ -833,25 +864,26 @@
     {
       "id": "lesson-3",
       "number": 3,
-      "title": "Roman numerals and function",
+      "title": "Roman numerals",
       "key": "C",
       "numerals": true,
-      "practice": "Play the chords of C major and watch their numerals and jobs (Home, Away, Tension). Try a loop like I – IV – V – I.",
+      "practice": "Play the chords of C major and watch their Roman numerals. Try a loop like I – IV – V – I, or I – V – vi – IV.",
       "learn": [
         {
           "id": "l3-numerals",
           "section": "Roman numerals",
           "title": "Chords get numbers",
-          "say": "Each chord in a key gets a Roman numeral for its spot in the scale. Big numerals (I, IV, V) are major chords. Small ones (ii, iii, vi) are minor. In C: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am, vii° = B°.",
+          "say": "Each triad in a key gets a Roman numeral for the scale note it is built on. Capital numerals (I, IV, V) are major. Lower-case ones (ii, iii, vi) are minor. In C: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am, vii° = B°.",
           "need": 0,
           "demo": [
-            "C4+E4+G4",
-            "D4+F4+A4",
-            "E4+G4+B4",
-            "F4+A4+C5",
-            "G4+B4+D5",
+            "C3+E3+G3",
+            "D3+F3+A3",
+            "E3+G3+B3",
+            "F3+A3+C4",
+            "G3+B3+D4",
             "A3+C4+E4",
-            "B3+D4+F4"
+            "B3+D4+F4",
+            "C4+E4+G4"
           ],
           "show": true,
           "labels": "all"
@@ -860,78 +892,75 @@
           "id": "l3-try-iv",
           "section": "Roman numerals",
           "title": "Play the IV",
-          "say": "IV is the fourth chord: count C, D, E, F.",
+          "say": "IV is built on the 4th note of the scale: count C, D, E, F.",
           "need": 1,
           "tryText": "Play the IV chord in C.",
           "tryChord": [
             "F"
           ],
-          "hint": "Count up four from C: C (I), D (ii), E (iii), F (IV). Play an F chord."
+          "hint": "Count up four from C: C (I), D (ii), E (iii), F (IV). Find an F and build the triad up from there."
         },
         {
           "id": "l3-try-vi",
           "section": "Roman numerals",
           "title": "Play the vi",
-          "say": "vi is the sixth chord, and it is minor.",
+          "say": "vi is built on the 6th note of the scale, and it is minor.",
           "need": 1,
           "tryText": "Play the vi chord in C.",
           "tryChord": [
             "Am"
           ],
-          "hint": "The sixth note of C major is A. Play A minor."
+          "hint": "The 6th note of C major is A. Find an A and build the triad up from there."
         },
         {
-          "id": "l3-jobs",
-          "section": "Function",
-          "title": "Chords have jobs",
-          "say": "Home chords (I, iii, vi) feel at rest. Away chords (ii, IV) move away from home. Tension chords (V, vii°) want to go back home. Listen: Home, Away, Tension, Home.",
+          "id": "l3-loop",
+          "section": "Progressions",
+          "title": "Numerals tell a story",
+          "say": "Songs move between chords. Written as numerals, a progression works in any key. Listen to I – V – vi – IV, one of the most-used progressions in pop music.",
           "need": 0,
           "demo": [
-            "C4+E4+G4",
-            "F4+A4+C5",
-            "G4+B4+D5",
-            "C4+E4+G4"
+            "C3+E3+G3",
+            "G3+B3+D4",
+            "A3+C4+E4",
+            "F3+A3+C4"
           ],
           "show": true,
           "labels": "all"
         },
         {
-          "id": "l3-try-tension",
-          "section": "Function",
-          "title": "Make some tension",
-          "say": "V and vii° are the Tension chords in C.",
+          "id": "l3-try-v",
+          "section": "Progressions",
+          "title": "Play the V",
+          "say": "V is built on the 5th note of the scale.",
           "need": 1,
-          "tryText": "Play a Tension chord in C (V or vii°).",
+          "tryText": "Play the V chord in C.",
           "tryChord": [
-            "G",
-            "Bdim"
+            "G"
           ],
-          "hint": "V in C is G: G, B, D."
+          "hint": "Count up five from C: C, D, E, F, G. Find a G and build the triad up from there."
         },
         {
-          "id": "l3-try-home",
-          "section": "Function",
-          "title": "Back home",
-          "say": "I, iii and vi are Home chords.",
+          "id": "l3-try-ii",
+          "section": "Progressions",
+          "title": "Play the ii",
+          "say": "ii is built on the 2nd note of the scale, and it is minor.",
           "need": 1,
-          "tryText": "Now play a Home chord.",
+          "tryText": "Play the ii chord in C.",
           "tryChord": [
-            "C",
-            "Em",
-            "Am"
+            "Dm"
           ],
-          "hint": "I in C is C: C, E, G."
+          "hint": "The 2nd note of C major is D. Find a D and build the triad up from there."
         },
         {
           "id": "l3-minor",
           "section": "Minor keys",
           "title": "Numerals in A minor",
-          "say": "In A minor the numerals start on A: i = Am, iv = Dm, v = Em, VI = F, VII = G.",
+          "say": "In A minor the numerals count from A: i = Am, ii° = B°, III = C, iv = Dm, v = Em, VI = F, VII = G.",
           "need": 0,
           "demo": [
             "A3+C4+E4",
-            "D4+F4+A4",
-            "E4+G4+B4",
+            "D3+F3+A3",
+            "E3+G3+B3",
             "A3+C4+E4"
           ],
           "show": true,
@@ -1080,89 +1109,54 @@
           ]
         },
         {
-          "id": "l3-function",
-          "title": "Home, Away or Tension?",
-          "blurb": "A chord in C lights up. What is its job?",
-          "type": "nameChord",
+          "id": "l3-play-minor",
+          "title": "Numerals in A minor",
+          "blurb": "Play the chord for each numeral in A minor.",
+          "type": "buildIt",
           "octave": "any",
           "pass": 80,
-          "labels": "off",
+          "labels": "c",
           "prompts": [
             {
-              "text": "Home, Away or Tension?",
-              "chord": "C",
-              "answer": [
-                "Home"
-              ]
+              "text": "Play the i chord in A minor.",
+              "chord": "Am"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "F",
-              "answer": [
-                "Away"
-              ]
+              "text": "Play the iv chord in A minor.",
+              "chord": "Dm"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "G",
-              "answer": [
-                "Tension"
-              ]
+              "text": "Play the v chord in A minor.",
+              "chord": "Em"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "Am",
-              "answer": [
-                "Home"
-              ]
+              "text": "Play the VI chord in A minor.",
+              "chord": "F"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "Dm",
-              "answer": [
-                "Away"
-              ]
+              "text": "Play the VII chord in A minor.",
+              "chord": "G"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "Em",
-              "answer": [
-                "Home"
-              ]
+              "text": "Play the III chord in A minor.",
+              "chord": "C"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "G",
-              "answer": [
-                "Tension"
-              ]
+              "text": "Play the i chord in A minor.",
+              "chord": "Am"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "F",
-              "answer": [
-                "Away"
-              ]
+              "text": "Play the iv chord in A minor.",
+              "chord": "Dm"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "C",
-              "answer": [
-                "Home"
-              ]
+              "text": "Play the VI chord in A minor.",
+              "chord": "F"
             },
             {
-              "text": "Home, Away or Tension?",
-              "chord": "Bdim",
-              "answer": [
-                "Tension"
-              ]
+              "text": "Play the v chord in A minor.",
+              "chord": "Em"
             }
-          ],
-          "choices": [
-            "Home",
-            "Away",
-            "Tension"
           ]
         }
       ]

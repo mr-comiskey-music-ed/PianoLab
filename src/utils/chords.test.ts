@@ -29,9 +29,7 @@ describe('chords', () => {
     expect(matchesChord(n('E3', 'G3', 'C4'), c, 0)).toBe(false);
   });
   it('knows the keys', () => {
-    expect(diatonic(keyById('C')).map((d) => chordName(d.chord) + ' ' + d.numeral + ' ' + d.fn)).toEqual([
-      'C I Home', 'Dm ii Away', 'Em iii Home', 'F IV Away', 'G V Tension', 'Am vi Home', 'B° vii° Tension',
-    ]);
+    expect(diatonic(keyById('C')).map((d) => chordName(d.chord) + ' ' + d.numeral)).toEqual(['C I', 'Dm ii', 'Em iii', 'F IV', 'G V', 'Am vi', 'B° vii°']);
     expect(diatonic(keyById('Am')).map((d) => d.numeral)).toEqual(['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII']);
     expect(diatonic(keyById('F')).map((d) => chordName(d.chord))[3]).toBe('B♭');
   });
@@ -40,7 +38,6 @@ describe('chords', () => {
     expect(chordName(d.chord)).toBe('F');
     expect(d.inversion).toBe(1);
     expect(d.numeral).toBe('IV');
-    expect(d.fn).toBe('Away');
     expect(detectChord(n('C4', 'D4', 'E4'))).toBeNull();
     expect(chordName(detectChord(n('B3', 'D4', 'F4'))!.chord)).toBe('B°');
   });
@@ -52,5 +49,29 @@ describe('chords', () => {
     const g = smoothestVoicing(cMaj, parseChord('G')!);
     expect(g.distance).toBe(3); // B3 D4 G4
     expect(moveDistance(cMaj, n('G3', 'B3', 'D4'))).toBe(15);
+  });
+});
+
+describe('chord names with extensions', () => {
+  const name = (...ns: string[]) => detectChord(n(...ns), keyById('C'));
+  it('names 7ths, 9ths, 11ths, 13ths, sus and add chords, with numerals', () => {
+    expect(name('G3', 'B3', 'D4', 'F4')).toMatchObject({ symbol: 'G7', longName: 'G dominant 7th', numeral: 'V7' });
+    expect(name('C4', 'E4', 'G4', 'B4')).toMatchObject({ symbol: 'Cmaj7', numeral: 'Imaj7' });
+    expect(name('D4', 'F4', 'A4', 'C5')).toMatchObject({ symbol: 'Dm7', numeral: 'ii7' });
+    expect(name('B3', 'D4', 'F4', 'A4')).toMatchObject({ symbol: 'Bm7♭5', numeral: 'viiø7' });
+    expect(name('C4', 'E4', 'G4', 'D5')).toMatchObject({ symbol: 'Cadd9' });
+    expect(name('C3', 'E3', 'G3', 'B♭3'.replace('♭', 'b'), 'D4')).toMatchObject({ symbol: 'C9' });
+    expect(name('C4', 'F4', 'G4')).toMatchObject({ symbol: 'Csus4', numeral: 'Isus4' });
+    expect(name('G3', 'B3', 'F4')).toMatchObject({ symbol: 'G7', longName: 'G dominant 7th' }); // no 5th
+    expect(name('C3', 'E3', 'G3', 'Bb3', 'D4', 'A4')).toMatchObject({ symbol: 'C13' });
+    expect(name('C3', 'E3', 'G3', 'Bb3', 'D4', 'F4')).toMatchObject({ symbol: 'C11' });
+  });
+  it('uses the bass to choose between readings, and shows slash chords', () => {
+    expect(name('C4', 'E4', 'G4', 'A4')?.symbol).toBe('C6');
+    expect(name('A3', 'C4', 'E4', 'G4')?.symbol).toBe('Am7');
+    expect(name('E3', 'G3', 'Bb3', 'C4')?.symbol).toBe('C7/E');
+    const tri = name('E3', 'G3', 'C4')!;
+    expect(tri.symbol).toBe('C');
+    expect(tri.inversion).toBe(1);
   });
 });

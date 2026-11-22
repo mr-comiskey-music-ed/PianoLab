@@ -52,20 +52,49 @@ export default function App() {
   const setLearnDone = useCallback((v: boolean) => setLearnMap((p) => ({ ...p, [lessonId]: { step: p[lessonId]?.step ?? 0, done: v } })), [lessonId]);
   const setLearnStep = useCallback((n: number) => setLearnMap((p) => ({ ...p, [lessonId]: { done: p[lessonId]?.done ?? false, step: n } })), [lessonId]);
   const learned = Object.entries(learnMap).filter(([, v]) => v.done).map(([k]) => k);
-  // Chord strip and detector: the key and whether numerals show follow the lesson (and can be changed in the strip).
+  // Chord strip: its key follows the lesson (and can be changed in the strip). Numerals always show on it.
   const [stripKeyId, setStripKeyId] = useState(lesson.key ?? 'C');
-  const [numeralsOn, setNumeralsOn] = useState(!!lesson.numerals);
   useEffect(() => {
     setStripKeyId(lesson.key ?? 'C');
-    setNumeralsOn(!!lesson.numerals);
-  }, [lesson.id, lesson.key, lesson.numerals]);
+  }, [lesson.id, lesson.key]);
   const stripKey = keyById(stripKeyId);
+
+  /**
+   * Play a chord from the strip (click, or keys 1-7). One chord at a time: the last one is cut off first, so they don't
+   * pile up and get too loud. Voiced from a low I upward (I in octave 3, each chord's root climbing the scale), so going
+   * I to vii never jumps down an octave. These go straight to the sound engine, NOT through the piano, so they never count
+   * as playing in Learn, Practice or Challenges, and the Sandbox doesn't record them.
+   */
+  const stripNotes = useRef<number[]>([]);
+  const stripTimer = useRef<number | undefined>(undefined);
+  const [stripLit, setStripLit] = useState<Set<number> | null>(null);
+  const [stripActive, setStripActive] = useState<number | null>(null);
+  const playStripChord = useCallback(
+    (degree: number) => {
+      const d = diatonic(stripKey)[degree];
+      if (!d) return;
+      stripNotes.current.forEach((n) => engine.noteOff(n));
+      window.clearTimeout(stripTimer.current);
+      const rootMidi = 48 + stripKey.tonic + ((d.chord.root - stripKey.tonic + 12) % 12);
+      const notes = voicing(d.chord, 0, rootMidi);
+      stripNotes.current = notes;
+      setStripLit(new Set(notes));
+      setStripActive(degree);
+      void engine.unlock().then(() => notes.forEach((n) => engine.noteOn(n, 0.7)));
+      stripTimer.current = window.setTimeout(() => {
+        notes.forEach((n) => engine.noteOff(n));
+        stripNotes.current = [];
+        setStripLit(null);
+        setStripActive(null);
+      }, 1100);
+    },
+    [stripKey],
+  );
   const [soundId, setSoundId] = useState(DEFAULT_SOUND);
   const [states, setStates] = useState<Record<string, LoadState>>({});
   const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 1 });
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
   const [modal, setModal] = useState<null | 'latency' | 'batch'>(null);
-  const [lastNote, setLastNote] = useState<number | null>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [customParams, setCustomParams] = useState<SynthParams>(() => {
     const p = loadCurrentPatch() ?? SYNTH_KEYS_WARM;
@@ -144,7 +173,6 @@ export default function App() {
     heldRef.current.add(midi);
     engine.noteOn(midi, vel);
     setPressed((p) => new Set(p).add(midi));
-    setLastNote(midi);
     // A MIDI note outside the view slides the view so the key is visible (matches the controller's own octave buttons).
     if (source === 'midi' && !inView(midi, startRef.current)) setViewStart(startFor(midi, startRef.current));
     listeners.current.forEach((fn) => fn(midi));
@@ -175,6 +203,7 @@ export default function App() {
     viewStart,
     getHeld,
     lesson,
+    keyDef: stripKey,
     results,
     setResults,
     learnDone,
@@ -194,6 +223,20 @@ export default function App() {
   const detectorOn = mode !== 'challenge' && mode !== 'report';
   const detected = detectorOn ? detectChord([...pressed], stripKey) : null;
   const showStrip = (mode === 'practice' && !!lesson.key) || mode === 'sandbox';
+
+  // Number keys 1-7 play the strip's chords (only while the strip is showing; never while typing in a box).
+  useEffect(() => {
+    if (!showStrip) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'TEXTAREA' || t.isContentEditable || (t.tagName === 'INPUT' && !['range', 'checkbox', 'radio', 'button'].includes((t as HTMLInputElement).type)))) return;
+      const n = Number(e.key);
+      if (n >= 1 && n <= 7) playStripChord(n - 1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showStrip, playStripChord]);
 
   /** Notes sounding (play back / scrubbing) that are off the 25 keys on screen: flash the Oct button that would show them. */
   const litList = parts.lit ? [...parts.lit] : [];
@@ -299,17 +342,9 @@ export default function App() {
             <ChordStrip
               keyDef={stripKey}
               onKey={setStripKeyId}
-              numerals={numeralsOn}
-              onNumerals={setNumeralsOn}
               active={detected}
-              onPlay={(degree) => {
-                const d = diatonic(stripKey)[degree];
-                const notes = voicing(d.chord, 0, 57);
-                void engine.unlock().then(() => {
-                  notes.forEach((n) => engine.noteOn(n, 0.75));
-                  window.setTimeout(() => notes.forEach((n) => engine.noteOff(n)), 900);
-                });
-              }}
+              playing={stripActive}
+              onPlay={playStripChord}
             />
           )}
           <div className={`stage min-h-[150px] flex-1 overflow-hidden border-x-[10px] border-t-[10px] border-transparent shadow-inner wood-v ${showStrip ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
@@ -332,31 +367,21 @@ export default function App() {
                 {offBelow && offAbove ? '♪ Notes playing above and below: use Oct − / Oct +' : offAbove ? '♪ Notes playing higher up: press Oct +' : '♪ Notes playing lower down: press Oct −'}
               </span>
             )}
-            <span className="h ml-3 text-[13px] text-line2">
-              {detected ? (
-                // The chord detector ("What am I playing?"): name, inversion, and (with numerals on) numeral + function.
-                <span data-testid="detector">
-                  Chord: <b className="text-brass">{chordLongName(detected.chord)}</b>
-                  {detected.inversion > 0 && <> · {INVERSION_NAMES[detected.inversion]}</>}
-                  {numeralsOn && detected.numeral && (
-                    <>
-                      {' '}
-                      ·{' '}
-                      <b className="rounded px-1" style={{ background: detected.color, color: '#2a1e08' }}>
-                        {detected.numeral}
-                      </b>{' '}
-                      {detected.fn}
-                    </>
-                  )}
-                </span>
-              ) : lastNote === null ? (
-                'Play a key'
-              ) : (
-                <>
-                  Last note: <b className="text-brass">{noteName(lastNote)}</b>
-                </>
-              )}
-            </span>
+            {mode === 'sandbox' && detected && (
+              // The Sandbox's centre is the piano roll, so the chord name goes here. (Practice shows it big in the centre.)
+              <span className="h ml-3 text-[13px] text-line2" data-testid="detector">
+                Chord: <b className="text-brass">{detected.symbol}</b> ({detected.longName}
+                {detected.triad && detected.inversion > 0 ? `, ${INVERSION_NAMES[detected.inversion].toLowerCase()}` : ''})
+                {detected.numeral && (
+                  <>
+                    {' '}
+                    <b className="rounded px-1" style={{ background: detected.color, color: '#2a1e08' }}>
+                      {detected.numeral}
+                    </b>
+                  </>
+                )}
+              </span>
+            )}
             <span className="ml-auto flex gap-2">
               {parts.restart && (
                 <button className="btn btn-dark" onClick={parts.restart.onClick} disabled={parts.restart.disabled}>
@@ -376,7 +401,7 @@ export default function App() {
               <Piano
                 start={viewStart}
                 pressed={pressed}
-                lit={parts.lit}
+                lit={stripLit && !parts.lit ? stripLit : parts.lit}
                 forceLabel={parts.forceLabel}
                 marks={parts.marks}
                 labels={parts.labels}

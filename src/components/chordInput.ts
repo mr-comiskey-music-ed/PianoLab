@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { NoteEvent } from './modeTypes';
 
 /** How long the held keys must stay the same before a chord is judged (lets a rolled chord on a MIDI keyboard land). */
@@ -32,5 +33,32 @@ export function chordWatcher(getHeld: () => number[], judge: (held: number[]) =>
       window.clearTimeout(timer);
       armed = getHeld().length === 0;
     },
+    dispose: () => window.clearTimeout(timer),
   };
+}
+
+/**
+ * Listen for chords for as long as the screen is open. The listener is created ONCE (not on every render) and always
+ * calls the latest `judge`, so one chord can never be judged twice. (When it was re-created on every render, a real MIDI
+ * keyboard's separate note messages could leave an old listener's timer running, and the same chord was judged again
+ * against the next question.)
+ */
+export function useChordWatcher(getHeld: () => number[], subscribeNotes: (fn: (e: NoteEvent) => void) => () => void, judge: (held: number[]) => void) {
+  const latest = useRef(judge);
+  latest.current = judge;
+  useEffect(() => {
+    const w = chordWatcher(getHeld, (held) => latest.current(held));
+    const off = subscribeNotes(w.handle);
+    return () => {
+      off();
+      w.dispose();
+    };
+  }, [getHeld, subscribeNotes]);
+}
+
+/** Listen for single notes for as long as the screen is open, always calling the latest handler. */
+export function useNoteListener(subscribe: (fn: (midi: number) => void) => () => void, fn: (midi: number) => void) {
+  const latest = useRef(fn);
+  latest.current = fn;
+  useEffect(() => subscribe((m) => latest.current(m)), [subscribe]);
 }

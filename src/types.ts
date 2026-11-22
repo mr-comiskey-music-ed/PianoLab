@@ -92,6 +92,8 @@ export interface LearnStep {
   tryText?: string;
   /** Letters that count as right ("F", "C#"; flats are read as sharps). */
   tryAnswer?: string[];
+  /** Or: any white-key triad built by stacking thirds (root, skip, 3rd, skip, 5th), each on a different root. */
+  tryTriad?: boolean;
   /** Or: chords that count as right ("F", "Dm"). Any octave/inversion unless `tryInversion` is set. */
   tryChord?: string[];
   tryInversion?: number;

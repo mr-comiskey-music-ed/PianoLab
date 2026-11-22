@@ -10,7 +10,7 @@ PianoLab is a piano learning app for Mr. Comiskey's classes. It reinforces the p
 
 ## 1. Teaching goal
 
-By the end of the course, a student can **find, name, build, voice, and play chords in time, in a key, and talk about them by function** (roman numerals, plus Home, Away, and Tension).
+By the end of the course, a student can **find, name, build, voice, and play chords in time, in a key, and talk about them with roman numerals**.
 
 The class's real aim is creative: students expressing themselves, writing songs, making beats, etc. PianoLab's drills are the means, not the end. Jam Room and Play Along are where the drills turn into music.
 
@@ -29,8 +29,8 @@ The app follows the order Mr. Comiskey teaches in. Each lesson has levels.
 | Lesson | Topic | Notes |
 |---|---|---|
 | 1 | White-key note names | One lesson that Mr. Comiskey covers in about 10 minutes live. Its Learn section walks through three touch points: **finding F and C** (C sits left of the 2-black-key group, and F sits left of the 3-group), **the musical alphabet A–G** (a show-and-tell with names on the keys: up, down, and wrapping from G back to A), and then **all white keys**. Levels accept any octave (the octave level was cut). |
-| 2 | White-key chords in C major and A minor | Chords as a concept: stacking **thirds** by skipping a white key (a quick moment, with no major/minor 3rds yet). Chord names and degree colors only, **no roman numerals yet**. |
-| 3 | Roman numerals and function | Once chords make sense, introduce numerals, then Home, Away, and Tension. Same white-key chords, new language. |
+| 2 | White-key triads | Stacking **thirds** by skipping a white key makes a **triad** (root, 3rd, 5th); students build any four themselves. Then the chords in a key (C major, A minor). |
+| 3 | Roman numerals | Once chords make sense, introduce numerals (Home/Away/Tension function labels were dropped). Same white-key chords, new language. |
 | 4 | Black-key names and half steps | Sharps and flats, two names for one key, and the **half step** (any key to its nearest neighbor, black or white). |
 | 5 | Major and minor chords anywhere | The real work on **major and minor 3rds**: counting half steps. Major = 4 + 3, and minor = 3 + 4. Build major and minor chords on any root, black keys included. |
 | 6 | Inversions | Show-and-tell plus lots of repetition. Smooth Mover lives here. |
@@ -38,7 +38,7 @@ The app follows the order Mr. Comiskey teaches in. Each lesson has levels.
 | Bonus | 7th chords | A bonus level, not a full lesson. |
 
 - Root position versus inversion ear training is **not** for beginners. It appears only in Lesson 6 and later.
-- **Roman numerals and function labels stay hidden** in Lessons 1–2: the chord strip, waterfall, and chord readout show chord names only. From Lesson 3 on they appear. In Practice and Jam Room they're a toggle.
+- Roman numerals always show on the chord strip and in Practice (changed after Phase 2 testing). There are no Home/Away/Tension labels.
 
 ## 4. App structure
 
@@ -220,7 +220,7 @@ longer cap for imports, play-along (recording on top) instead of appending.
 ### Layout (see the Studio Warm v2 mockup)
 - **Top bar (walnut wood):** the logo, mode tabs, MIDI status, and latency status.
 - **Left panel:** the lesson and level, instructions, level progress, the "Make it easier or harder" controls, scores, and **Get my code**.
-- **Center:** the chord strip (the key's seven chords), the waterfall, the chord readout bar (octave buttons, chord, numeral, inversion, function, Restart, and Start), and the piano. Walnut **wood cheeks** frame the piano and waterfall.
+- **Center:** the chord strip (the key's seven chords), the waterfall, the chord readout bar (octave buttons, Restart, and Start; the chord name shows in the centre), and the piano. Walnut **wood cheeks** frame the piano and waterfall.
 - **Right panel:** the sound list, the Mix button, the Compare versions box (temporary), and the metronome.
 
 ### Colors
@@ -236,7 +236,6 @@ longer cap for imports, play-along (recording on top) instead of appending.
 - **Scale-degree colors**, the same in every key, are the C major scale's pitch colours (replacing the earlier pastel table):
   I = C red, ii = D orange, iii = E yellow, IV = F lime, V = G teal, vi = A indigo, vii° = B pink (`DEGREE_COLORS`).
 
-- **Function is shown as a label, not a color:** Home (I, iii, vi), Away (ii, IV), and Tension (V, vii°). This mapping is editable.
 
 ### Type
 - **Barlow** for body text and **Barlow Semi Condensed** for headings and numbers, matching SynthLab.
@@ -246,7 +245,7 @@ longer cap for imports, play-along (recording on top) instead of appending.
 
 ## 15. Other features
 
-- **Chord detector ("What am I playing?"):** live chord name, inversion, numeral in the current key, and function. Mr. Comiskey can use it on the projector while teaching. It's on in Practice, Learn, and Jam Room, and off in Identify and Build assessments.
+- **Chord detector ("What am I playing?"):** live chord name (with 7ths, 9ths, 11ths, 13ths, sus and add chords), inversion or bass note, and numeral in the current key. Mr. Comiskey can use it on the projector while teaching. It's on in Practice, Learn, and Jam Room, and off in Identify and Build assessments.
 - **Fingering hints**, especially for scales: numbers over the keys, with the thumb-under spot highlighted.
 - **MIDI export:** download a performance or a recorded Practice session as a `.mid` file, for example to bring into Soundtrap.
 - **MIDI import:** see §10.
@@ -261,7 +260,7 @@ longer cap for imports, play-along (recording on top) instead of appending.
 Each phase gets its own branch and a Vercel preview, and is tested on a real Chromebook with a 25-key keyboard. Merges to `main` happen **after class**, never while students are working.
 
 1. **Foundation:** the piano with all three inputs, latency calibration, the audio engine with all sound versions and the Mix panel, Lesson 1 (white-key note names) with interactive Learn, codes, batch grading with the 50% floor, autosave, and the Studio Warm v2 layout. **Design the pattern data format now**, even though it isn't used until Phase 3.
-2. **Chords:** Lessons 2–6 (white-key chords, roman numerals and function, black keys and half steps, major and minor chords anywhere, and inversions), the chord detector, Smooth Mover, and the chord strip. **Built.** Lessons are picked with a lesson picker (all open for now; the assignment link will be able to choose). A chord counts in any octave or inversion with no extra notes until Lesson 6, where the bass note matters. B° is shown in Lesson 2's Learn but not tested until Lesson 3. The chord strip shows in Practice and the Sandbox (not in Learn, where it would give answers away).
+2. **Chords:** Lessons 2–6 (white-key triads, roman numerals, black keys and half steps, major and minor chords anywhere, and inversions), the chord detector, Smooth Mover, and the chord strip. **Built.** Lessons are picked with a lesson picker (all open for now; the assignment link will be able to choose). A chord counts in any octave or inversion with no extra notes until Lesson 6, where the bass note matters. B° is shown in Lesson 2's Learn but not tested until Lesson 3. The chord strip shows in Practice and the Sandbox (not in Learn, where it would give answers away).
 3. **Time:** the pattern engine, metronome, waterfall, hit windows, Progression Play, Speed Round, Echo, the assignment builder, and Practice recording (the Sandbox already records and saves as a code, link or .mid).
 4. **Music:** Lesson 7 (scales and the circle of 5ths with fingering), Jam Room, backing tracks, YouTube Play Along with the mixer, MIDI import with playback speed, the 7th-chord bonus, and the optional class record backend.
 
