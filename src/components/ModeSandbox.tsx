@@ -227,11 +227,23 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
 
   // ---- MIDI import: a .mid file replaces the performance, ready to play back, scroll through, or play along with ----
   const fileInput = useRef<HTMLInputElement>(null);
+  /**
+   * "Are you sure?" questions are asked in the panel, not with the browser's pop-up (the pop-up froze the page while it
+   * was open, which Vercel's speed check reported as a slow button).
+   */
+  const [asking, setAsking] = useState<null | { kind: 'clear' } | { kind: 'import'; got: ReturnType<typeof readMidiFile>; name: string }>(null);
   const importMidi = async (file: File) => {
     try {
       const got = readMidiFile(await file.arrayBuffer());
       if (!got.notes.length) return setLoadedMsg('That MIDI file has no notes to show (drums are left out).');
-      if (notesRef.current.length && !window.confirm('Replace your performance with this MIDI file? Save yours first if you want to keep it.')) return;
+      const name = got.title || file.name.replace(/\.midi?$/i, '');
+      if (notesRef.current.length) return setAsking({ kind: 'import', got, name });
+      applyImport(got, name);
+    } catch (e) {
+      setLoadedMsg(e instanceof Error ? e.message : 'That file could not be read.');
+    }
+  };
+  const applyImport = (got: ReturnType<typeof readMidiFile>, name: string) => {
       stop();
       held.current.clear();
       setFull(false);
@@ -239,19 +251,15 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       // Wait at the very start, so Play back (or the space bar) brings the notes up out of the keys from the beginning.
       pausedAt.current = 0;
       setAtStart(true);
-      const name = got.title || file.name.replace(/\.midi?$/i, '');
       setLoadedMsg(
         `Imported “${name}”.` +
           (got.skippedDrums ? ' Drums were left out.' : '') +
           (got.cutOff ? ` Only the first ${formatLength(MAX_PERF_MS)} came in.` : ''),
       );
-    } catch (e) {
-      setLoadedMsg(e instanceof Error ? e.message : 'That file could not be read.');
-    }
   };
 
   const clear = () => {
-    if (notes.length && !window.confirm('Clear your performance? Save it first if you want to keep it.')) return;
+    setAsking(null);
     stop();
     setNotes([]);
     held.current.clear();
@@ -292,9 +300,35 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       <button className="btn btn-brass py-1.5" onClick={() => setSaveOpen(true)} disabled={!finished.length} data-testid="perf-save">
         Save performance
       </button>
-      <button className="btn py-1.5" onClick={clear} disabled={!notes.length} data-testid="perf-clear">
-        Clear
-      </button>
+      {asking ? (
+        <div className="card flex flex-col gap-1.5 border-brass2 p-2 text-[13px]" role="alertdialog" data-testid="perf-confirm">
+          <span className="text-wal2">
+            {asking.kind === 'clear' ? 'Clear your performance? Save it first if you want to keep it.' : `Replace your performance with “${asking.name}”? Save yours first if you want to keep it.`}
+          </span>
+          <span className="flex gap-1.5">
+            <button
+              className="btn btn-brass flex-1 py-1"
+              data-testid="perf-confirm-yes"
+              onClick={() => {
+                if (asking.kind === 'clear') clear();
+                else {
+                  setAsking(null);
+                  applyImport(asking.got, asking.name);
+                }
+              }}
+            >
+              {asking.kind === 'clear' ? 'Clear' : 'Replace'}
+            </button>
+            <button className="btn flex-1 py-1" data-testid="perf-confirm-no" onClick={() => setAsking(null)}>
+              Keep it
+            </button>
+          </span>
+        </div>
+      ) : (
+        <button className="btn py-1.5" onClick={() => setAsking({ kind: 'clear' })} disabled={!notes.length} data-testid="perf-clear">
+          Clear
+        </button>
+      )}
       <button className="btn py-1.5" onClick={() => fileInput.current?.click()} data-testid="perf-import" title="Open a .mid file from GarageBand, Soundtrap, BandLab, MuseScore…">
         Import MIDI…
       </button>

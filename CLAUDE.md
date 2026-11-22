@@ -153,6 +153,9 @@ the line sits in a note, let go 0.5 s after scrolling stops). Play back starts f
 Play back / Pause / Resume, and the space bar toggles it (Sandbox only, not while typing). A new note jumps back to live
 and ends a paused play back.
 Name boxes in code makers say "Your Name".
+No browser pop-ups (`window.confirm`/`alert`): they freeze the page while open, which Vercel's speed check (the "INP
+Issue" box on preview links) reports as a ~1 s slow button. "Are you sure?" questions are asked in the panel instead
+(Sandbox Clear / import-over-a-recording: Clear-or-Replace / Keep it; Custom Synth delete: click × twice).
 Oct -/+ buttons light up like the class MIDI keyboards: plain at home (C3-C5), green 1 octave, yellow 2, red 3, on the
 button in the direction you moved (`octColor` in App.tsx).
 Mix panel floats over the sound list (doesn't push it down).

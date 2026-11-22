@@ -30,6 +30,7 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
   const [presets, setPresets] = useState<SavedPatch[]>(() => listPresets());
   const [name, setName] = useState('');
   const [msg, setMsg] = useState('');
+  const [deleting, setDeleting] = useState<string | null>(null);
   const areaRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -126,16 +127,23 @@ export const CustomSynthPanel: React.FC<{ engine: AudioEngine; params: SynthPara
             >
               {p.name}
             </button>
+            {/* Two clicks to delete (no browser pop-up): × turns into a red "Delete?" for a few seconds. */}
             <button
-              className="border-l border-wal1 px-1.5 text-line2 hover:bg-[#8a2f2a] hover:text-panel"
-              aria-label={`Delete ${p.name}`}
+              className={`border-l border-wal1 px-1.5 ${deleting === p.id ? 'bg-[#8a2f2a] text-panel' : 'text-line2 hover:bg-[#8a2f2a] hover:text-panel'}`}
+              aria-label={deleting === p.id ? `Click again to delete ${p.name}` : `Delete ${p.name}`}
+              data-testid={`preset-delete-${p.name}`}
               onClick={() => {
-                if (!window.confirm(`Delete “${p.name}”?`)) return;
+                if (deleting !== p.id) {
+                  setDeleting(p.id);
+                  window.setTimeout(() => setDeleting((d) => (d === p.id ? null : d)), 3000);
+                  return;
+                }
+                setDeleting(null);
                 deletePreset(p.id);
                 setPresets(listPresets());
               }}
             >
-              ×
+              {deleting === p.id ? 'Delete?' : '×'}
             </button>
           </span>
         ))}
