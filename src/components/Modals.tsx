@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AudioEngine } from '../audio/audioEngine';
 import { LevelResult } from '../types';
 import { encodeSubmission, DEFAULT_ASSIGNMENT } from '../utils/codec';
-import { parseBatch, BatchResult, BatchEntry, ALL_LEVELS } from '../utils/batch';
+import { parseBatch, BatchResult, BatchEntry, ALL_LESSONS } from '../utils/batch';
 import { floored, passed, bestByLevel } from '../utils/grading';
 import { saveLatency } from '../utils/autosave';
 import { downloadMidi, formatLength, perfLength, unpackPerf } from '../utils/performance';
@@ -22,7 +22,7 @@ const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; chil
 );
 
 // ---------------- Get my code (shown on the Grade Report tab) ----------------
-export const CodePanel: React.FC<{ results: LevelResult[]; learnDone: boolean }> = ({ results, learnDone }) => {
+export const CodePanel: React.FC<{ results: LevelResult[]; learned: string[] }> = ({ results, learned }) => {
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState(false);
   // The name is typed fresh each time and is never saved by the app. It lives only inside the code.
@@ -31,8 +31,8 @@ export const CodePanel: React.FC<{ results: LevelResult[]; learnDone: boolean }>
   useEffect(() => {
     if (!name.trim()) return setCode('');
     setCopied(false);
-    void encodeSubmission({ name, assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone, results }).then(setCode);
-  }, [results, learnDone, name]);
+    void encodeSubmission({ name, assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone: learned.includes('lesson-1'), learned, results }).then(setCode);
+  }, [results, learned, name]);
   const best = bestByLevel(results);
   const copy = async () => {
     try {
@@ -50,17 +50,26 @@ export const CodePanel: React.FC<{ results: LevelResult[]; learnDone: boolean }>
         <span className="h text-wal3">Your Name</span>
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="off" data-testid="name" placeholder="Your Name" className="mt-0.5 w-full rounded-lg border border-line2 bg-white px-2 py-1.5 text-[15px]" />
       </label>
-      <div className="mt-3 rounded-lg border border-line bg-page p-2 text-[14px]">
-        <div>Learn: {learnDone ? '✓ finished' : 'not finished yet'}</div>
-        {ALL_LEVELS.map((l) => {
-          const r = best[l.id];
-          return (
-            <div key={l.id} className="flex justify-between">
-              <span>{l.title}</span>
-              <span className={r && passed(r.raw, l) ? 'text-good' : 'text-muted'}>{r ? `${floored(r.raw)}%${passed(r.raw, l) ? ' ✓' : ''}` : '–'}</span>
+      <div className="mt-3 flex flex-col gap-2 rounded-lg border border-line bg-page p-2 text-[14px]" data-testid="report-levels">
+        {ALL_LESSONS.map((les) => (
+          <div key={les.id}>
+            <div className="flex justify-between">
+              <span className="h text-wal3">
+                Lesson {les.number}: {les.title}
+              </span>
+              <span className={`text-[13px] ${learned.includes(les.id) ? 'text-good' : 'text-muted'}`}>Learn {learned.includes(les.id) ? '✓' : '–'}</span>
             </div>
-          );
-        })}
+            {les.levels.map((l) => {
+              const r = best[l.id];
+              return (
+                <div key={l.id} className="flex justify-between pl-3">
+                  <span>{l.title}</span>
+                  <span className={r && passed(r.raw, l) ? 'text-good' : 'text-muted'}>{r ? `${floored(r.raw)}%${passed(r.raw, l) ? ' ✓' : ''}` : '–'}</span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
       <textarea ref={ref} readOnly value={code} rows={4} placeholder="Your code shows up here once you type your name." data-testid="code" className="mt-3 w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px] break-all" onFocus={(e) => e.currentTarget.select()} />
       <button className="btn btn-brass mt-2 w-full" onClick={copy} disabled={!code}>
@@ -239,13 +248,17 @@ const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle:
   <div className="rounded-lg border border-line bg-panel">
     <button className="flex w-full items-center gap-3 px-3 py-2 text-left" onClick={toggle}>
       <span className="h w-40 truncate text-[14px] text-wal3">{e.label || `Student ${e.id}`}</span>
-      <span className="text-[13px] text-muted">{e.submission.learnDone ? 'Learn ✓' : 'Learn –'}</span>
+      {/* One chip per lesson: the average of the levels done in it (raw before the floor in brackets), and a dot for Learn. */}
       <span className="flex flex-1 flex-wrap gap-1">
-        {ALL_LEVELS.map((l) => {
-          const x = e.levels.find((v) => v.levelId === l.id);
+        {ALL_LESSONS.map((les) => {
+          const done = e.levels.filter((v) => les.levels.some((l) => l.id === v.levelId));
+          const learnedIt = e.submission.learned?.includes(les.id) || (les.id === 'lesson-1' && e.submission.learnDone);
+          const avg = done.length ? Math.round(done.reduce((a, v) => a + v.grade, 0) / done.length) : null;
+          const allPassed = done.length === les.levels.length && done.every((v) => v.passed);
           return (
-            <span key={l.id} title={l.title} className={`h rounded px-1.5 text-[12px] ${x ? (x.passed ? 'bg-[#cfe3b4] text-good' : 'bg-[#f6e3b8] text-wal1') : 'bg-page text-muted'}`}>
-              {x ? `${x.grade}${x.raw !== x.grade ? ` (${x.raw})` : ''}` : '–'}
+            <span key={les.id} title={`Lesson ${les.number}: ${les.title}. ${done.length}/${les.levels.length} levels${learnedIt ? ', Learn finished' : ''}`} className={`h rounded px-1.5 text-[12px] ${avg === null ? 'bg-page text-muted' : allPassed ? 'bg-[#cfe3b4] text-good' : 'bg-[#f6e3b8] text-wal1'}`}>
+              L{les.number}: {avg === null ? '–' : `${avg}%`}
+              {learnedIt ? ' •' : ''}
             </span>
           );
         })}
@@ -260,6 +273,7 @@ const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle:
     {open && (
       <div className="border-t border-line px-3 py-2 text-[13px]">
         <div className="text-muted">Made {e.submission.timestamp ? new Date(e.submission.timestamp).toLocaleString() : 'unknown time'}. Numbers in ( ) are the raw score before the 50% floor (teacher only).</div>
+        <div className="mt-1 text-muted">Learn finished: {ALL_LESSONS.filter((les) => e.submission.learned?.includes(les.id) || (les.id === 'lesson-1' && e.submission.learnDone)).map((les) => les.number).join(', ') || 'none'}. • on a lesson chip = Learn finished.</div>
         {e.levels.map((l) => (
           <div key={l.levelId} className="flex justify-between">
             <span>{l.title}</span>

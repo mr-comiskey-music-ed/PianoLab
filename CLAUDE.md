@@ -61,7 +61,7 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
 - Pitch colours (`src/utils/colors.ts`): C-to-B round the colour wheel like Shared Piano, slightly toned down. Piano-roll
   notes use them (keys stay plain for now). Roman numerals will use the C major scale's colours (`DEGREE_COLORS`).
 - Layout: walnut top bar with tabs Learn / Practice / Challenges / Sandbox / Jam Room (soon) / Grade Report; left panel
-  (lesson, instructions, scores, Challenge Yourself); center (stage/waterfall/piano roll, readout bar, piano); right panel
+  (lesson picker, instructions, scores, Challenge Yourself); center (stage/waterfall/piano roll, readout bar, piano); right panel
   (sounds + Mix icon, metronome, credits). The piano is always the main view, except on the Grade Report page.
 - **The typing keyboard always belongs to the piano.** Only real text boxes take letter keys; sliders, knobs and buttons
   let go of focus after a mouse drag/click (`useInputs.ts`). Keep it that way for any new control.
@@ -74,8 +74,28 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
 - Suggest ideas and angles before building. Ask before big changes.
 
 ## Status
-Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + Mix + Compare box, Lesson 1 Learn and
-4 Challenge levels, codes, batch grading, autosave. See SPEC section 17 for Phases 2-4.
+Phase 1 (Foundation) built: piano with 3 inputs, latency check, sound engine + Mix, Lesson 1 Learn and 4 Challenge levels,
+codes, batch grading, autosave, Sandbox.
+**Phase 2 (Chords) built** (all at once, his choice): Lessons 2-6 in `lessons.json` (written by a script; edit the JSON),
+lesson picker (all lessons open; later the teacher's assignment link can decide), chord detector, chord strip, Smooth Mover.
+- Theory: `src/utils/chords.ts` (parse "Dm"/"F#"/"Bdim", voicings, keys, numerals, Home/Away/Tension, `detectChord`,
+  `matchesChord`, `smoothestVoicing`). Tests: `chords.test.ts`, and `lessons.test.ts` checks every lesson's content.
+- A chord counts in any octave or inversion with no extra notes (his choice); doubling is fine. Lesson 6 levels with
+  `inv` require the right bass note. B° is shown in Learn but not tested in Lesson 2 (tested from Lesson 3's function level).
+- Chord input (`chordInput.ts`): judged once 3+ keys are held steady ~90 ms; one chord = one answer; let go of all keys
+  before the next try. Mouse can't hold chords; MIDI, computer keys and touch can.
+- Level types: findIt, nameIt, buildIt, nameChord (name / numeral / function / inversion via `choices`), halfStep,
+  earCheck (major/minor, "Hear it again"), smooth (Smooth Mover: right chord AND fewest half steps from the lit chord;
+  result shows half steps moved vs the smoothest possible). Choice-button answers don't flash the keys.
+- Detector: readout bar (chord, inversion, and with numerals on: numeral + function) in Learn, Practice, Sandbox; OFF in
+  Challenges. Chord strip: Practice (Lesson 2+) and Sandbox only (in Learn it would give answers away); key picker (all
+  major/minor keys), degree colours, Numerals checkbox (default off in Lessons 1-2, on from Lesson 3). Click a chord to
+  hear it.
+- Black keys (Lesson 4+, and Sandbox): names on black keys when names are showing ("C♯" over "D♭"); black keys count as
+  answers. Flats are read as sharps internally (`pcOf`).
+- Per-lesson Learn: autosave keeps `learn: {lessonId: {done, step}}` + `lessonId` (old Phase 1 saves still load). Codes:
+  new key `L` = lesson ids with Learn finished; `l` still means Lesson 1. Grade Report and batch view group by lesson
+  (batch row = one chip per lesson: average, • = Learn finished; open a row for each level).
 Sounds (all decided by Mr. Comiskey; no more comparing, the Compare box is gone): **Grand Piano** = Accurate-Salamander
 (CC BY 3.0, ~8.5 MB in `public/samples/accurate-salamander/`, 5 velocity layers). **Electric Piano** (id `rhodes`) =
 jRhodes3d (CC BY-NC 4.0, ~1.8 MB; bell attack tamed with a -4 dB dip at 2.5 kHz + roll-off above 6 kHz; he likes it now).
@@ -131,7 +151,9 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
 - Grading confirmed: second try = half credit, 80% pass. Lesson 1 has four levels; the octave level (`l1-octave`) was removed
   before anything reached students (he doesn't care about the octave). Old saves drop results for removed levels.
 - Teacher button should eventually assign anything (SPEC section 8, "Everything is assignable"). Today it only batch grades.
-- Not built yet: About screen with full credits (credits are in a small right-panel list), scale-degree colors, Phases 2-4.
+- Not built yet: About screen with full credits (credits are in a small right-panel list), Phases 3-4 (SPEC section 17).
+- Phase 2 to try on the Chromebook: every lesson's Learn, the chord levels with the MIDI keyboard, Smooth Mover, the strip.
+- Later: the Teacher's assignment link picks the lesson/levels (SPEC section 8); a numerals toggle for Learn if wanted.
 - Confirm the Vercel preview for branch `claude/charming-wozniak-94lfxk` builds; nothing is on `main` yet (merge only on his
   say-so, after class).
 - Latency check result varied (88-141 ms in tests); worth a second look once timing grades exist (Phase 3).

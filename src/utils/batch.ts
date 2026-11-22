@@ -1,9 +1,10 @@
-import { Level, Submission } from '../types';
+import { Lesson, Level, Submission } from '../types';
 import { decodeSubmission } from './codec';
 import { bestByLevel, floored, passed } from './grading';
 import lessons from '../data/lessons.json';
 
-export const ALL_LEVELS: Level[] = (lessons.lessons as unknown as { levels: Level[] }[]).flatMap((l) => l.levels);
+export const ALL_LESSONS: Lesson[] = lessons.lessons as unknown as Lesson[];
+export const ALL_LEVELS: Level[] = ALL_LESSONS.flatMap((l) => l.levels);
 export const levelInfo = (id: string) => ALL_LEVELS.find((l) => l.id === id);
 
 /** An attempt where every raw score is under this is treated as "obviously not a real try" and left out of the class average. */

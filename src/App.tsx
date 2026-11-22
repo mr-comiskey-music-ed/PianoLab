@@ -9,6 +9,9 @@ import { loadCurrentPatch } from './utils/synthPresets';
 import { SynthParams } from './types';
 import { BatchModal, LatencyModal } from './components/Modals';
 import { GradeReport } from './components/GradeReport';
+import { LessonPicker } from './components/LessonPicker';
+import { ChordStrip } from './components/ChordStrip';
+import { INVERSION_NAMES, chordLongName, detectChord, diatonic, keyById, voicing } from './utils/chords';
 import { useSandbox } from './components/ModeSandbox';
 import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { useLearn } from './components/ModeLearn';
@@ -17,7 +20,9 @@ import { useChallenge } from './components/ModeChallenge';
 import { ModeCtx, NoteEvent } from './components/modeTypes';
 import { LevelResult } from './types';
 import { DEFAULT_START, KEY_COUNT, clampStart, inView, letterOf, noteName, startFor } from './utils/music';
-import { WorkSnapshot, clearSaved, hasWork, loadLatency, loadSaved, writeSaved } from './utils/autosave';
+import { LearnProgress, WorkSnapshot, clearSaved, hasWork, loadLatency, loadSaved, writeSaved } from './utils/autosave';
+import lessonsData from './data/lessons.json';
+import { Lesson } from './types';
 import { levelInfo } from './utils/batch';
 
 /**
@@ -26,6 +31,8 @@ import { levelInfo } from './utils/batch';
  */
 const octColor = (n: number) =>
   n <= 0 ? '' : n === 1 ? 'oct-1' : n === 2 ? 'oct-2' : 'oct-3';
+
+const LESSONS = (lessonsData.lessons as unknown as Lesson[]);
 
 type Mode = 'learn' | 'practice' | 'challenge' | 'sandbox' | 'report';
 const engine = AudioEngine.get();
@@ -36,8 +43,23 @@ export default function App() {
   const [viewStart, setViewStart] = useState(DEFAULT_START);
   const [pressed, setPressed] = useState<Set<number>>(new Set());
   const [results, setResults] = useState<LevelResult[]>([]);
-  const [learnDone, setLearnDone] = useState(false);
-  const [learnStep, setLearnStep] = useState(0);
+  // Lessons: the picker in the left panel. Learn progress is kept per lesson.
+  const [lessonId, setLessonId] = useState(LESSONS[0].id);
+  const lesson = LESSONS.find((l) => l.id === lessonId) ?? LESSONS[0];
+  const [learnMap, setLearnMap] = useState<Record<string, LearnProgress>>({});
+  const learnDone = learnMap[lesson.id]?.done ?? false;
+  const learnStep = learnMap[lesson.id]?.step ?? 0;
+  const setLearnDone = useCallback((v: boolean) => setLearnMap((p) => ({ ...p, [lessonId]: { step: p[lessonId]?.step ?? 0, done: v } })), [lessonId]);
+  const setLearnStep = useCallback((n: number) => setLearnMap((p) => ({ ...p, [lessonId]: { done: p[lessonId]?.done ?? false, step: n } })), [lessonId]);
+  const learned = Object.entries(learnMap).filter(([, v]) => v.done).map(([k]) => k);
+  // Chord strip and detector: the key and whether numerals show follow the lesson (and can be changed in the strip).
+  const [stripKeyId, setStripKeyId] = useState(lesson.key ?? 'C');
+  const [numeralsOn, setNumeralsOn] = useState(!!lesson.numerals);
+  useEffect(() => {
+    setStripKeyId(lesson.key ?? 'C');
+    setNumeralsOn(!!lesson.numerals);
+  }, [lesson.id, lesson.key, lesson.numerals]);
+  const stripKey = keyById(stripKeyId);
   const [soundId, setSoundId] = useState(DEFAULT_SOUND);
   const [states, setStates] = useState<Record<string, LoadState>>({});
   const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 1 });
@@ -60,19 +82,19 @@ export default function App() {
   const restore = (snap: WorkSnapshot) => {
     // Drop results for levels that no longer exist (e.g. the removed octave level), so they don't go into new codes.
     setResults(snap.results.filter((r) => levelInfo(r.levelId)));
-    setLearnDone(snap.learnDone);
-    setLearnStep(snap.learnStep);
+    setLearnMap(snap.learn);
+    if (LESSONS.some((l) => l.id === snap.lessonId)) setLessonId(snap.lessonId);
     if (snap.soundId) void pickSound(snap.soundId);
   };
 
   useEffect(() => {
     if (!autosaveOn) return;
-    const snap: WorkSnapshot = { results, learnDone, learnStep, soundId };
+    const snap: WorkSnapshot = { results, learn: learnMap, lessonId, soundId };
     if (!hasWork(snap)) return;
     const ok = writeSaved(snap);
     setSaveStatus(ok ? 'saved' : 'failed');
     if (ok) setSavedAt(Date.now());
-  }, [autosaveOn, results, learnDone, learnStep, soundId]);
+  }, [autosaveOn, results, learnMap, lessonId, soundId]);
 
   // ---- Sounds ----
   useEffect(() => {
@@ -113,8 +135,13 @@ export default function App() {
   const startRef = useRef(viewStart);
   startRef.current = viewStart;
 
+  /** Keys held down right now, kept in step synchronously (state updates arrive a render later). */
+  const heldRef = useRef(new Set<number>());
+  const getHeld = useCallback(() => [...heldRef.current], []);
+
   const noteOn = useCallback((midi: number, vel: number, source: 'midi' | 'typing' | 'touch') => {
     void engine.unlock();
+    heldRef.current.add(midi);
     engine.noteOn(midi, vel);
     setPressed((p) => new Set(p).add(midi));
     setLastNote(midi);
@@ -125,6 +152,7 @@ export default function App() {
   }, []);
   const noteOff = useCallback((midi: number) => {
     engine.noteOff(midi);
+    heldRef.current.delete(midi);
     noteListeners.current.forEach((fn) => fn({ on: false, midi, vel: 0 }));
     setPressed((p) => {
       const n = new Set(p);
@@ -145,6 +173,8 @@ export default function App() {
     subscribe,
     subscribeNotes,
     viewStart,
+    getHeld,
+    lesson,
     results,
     setResults,
     learnDone,
@@ -158,6 +188,12 @@ export default function App() {
   const challenge = useChallenge(ctx);
   const sandbox = useSandbox(ctx, mode === 'sandbox');
   const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : mode === 'sandbox' ? sandbox : challenge;
+
+  // Chord detector: on everywhere except Challenges (it would give answers away). Chord strip: Practice and Sandbox,
+  // Lessons 2 on (in Learn it would give the answers away too).
+  const detectorOn = mode !== 'challenge' && mode !== 'report';
+  const detected = detectorOn ? detectChord([...pressed], stripKey) : null;
+  const showStrip = (mode === 'practice' && !!lesson.key) || mode === 'sandbox';
 
   /** Notes sounding (play back / scrubbing) that are off the 25 keys on screen: flash the Oct button that would show them. */
   const litList = parts.lit ? [...parts.lit] : [];
@@ -220,12 +256,15 @@ export default function App() {
 
       {mode === 'report' ? (
         <main className="min-h-0 flex-1 overflow-auto">
-          <GradeReport results={results} learnDone={learnDone} onTeacher={() => setModal('batch')} />
+          <GradeReport results={results} learned={learned} onTeacher={() => setModal('batch')} />
         </main>
       ) : (
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_250px]">
         {/* Left panel */}
         <aside className="min-h-0 overflow-auto border-r border-line bg-page p-3 order-2 lg:order-none" data-testid="left-panel">
+          {(mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
+            <LessonPicker lessons={LESSONS} current={lessonId} learned={learned} results={results} onPick={setLessonId} />
+          )}
           {parts.left}
           <div className="mt-3 border-t border-line pt-2" data-testid="left-bottom">
             {parts.labelControl && (
@@ -256,7 +295,24 @@ export default function App() {
 
         {/* Center: stage, readout bar, piano */}
         <main className="flex min-h-0 min-w-0 flex-col p-2">
-          <div className="stage min-h-[150px] flex-1 overflow-hidden rounded-t-lg border-x-[10px] border-t-[10px] border-transparent shadow-inner wood-v" style={{ borderImage: 'none' }}>
+          {showStrip && (
+            <ChordStrip
+              keyDef={stripKey}
+              onKey={setStripKeyId}
+              numerals={numeralsOn}
+              onNumerals={setNumeralsOn}
+              active={detected}
+              onPlay={(degree) => {
+                const d = diatonic(stripKey)[degree];
+                const notes = voicing(d.chord, 0, 57);
+                void engine.unlock().then(() => {
+                  notes.forEach((n) => engine.noteOn(n, 0.75));
+                  window.setTimeout(() => notes.forEach((n) => engine.noteOff(n)), 900);
+                });
+              }}
+            />
+          )}
+          <div className={`stage min-h-[150px] flex-1 overflow-hidden border-x-[10px] border-t-[10px] border-transparent shadow-inner wood-v ${showStrip ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
             <div className="stage h-full w-full rounded-sm" data-testid="stage">
               {parts.stage}
             </div>
@@ -277,7 +333,29 @@ export default function App() {
               </span>
             )}
             <span className="h ml-3 text-[13px] text-line2">
-              {lastNote === null ? 'Play a key' : <>Last note: <b className="text-brass">{noteName(lastNote)}</b></>}
+              {detected ? (
+                // The chord detector ("What am I playing?"): name, inversion, and (with numerals on) numeral + function.
+                <span data-testid="detector">
+                  Chord: <b className="text-brass">{chordLongName(detected.chord)}</b>
+                  {detected.inversion > 0 && <> · {INVERSION_NAMES[detected.inversion]}</>}
+                  {numeralsOn && detected.numeral && (
+                    <>
+                      {' '}
+                      ·{' '}
+                      <b className="rounded px-1" style={{ background: detected.color, color: '#2a1e08' }}>
+                        {detected.numeral}
+                      </b>{' '}
+                      {detected.fn}
+                    </>
+                  )}
+                </span>
+              ) : lastNote === null ? (
+                'Play a key'
+              ) : (
+                <>
+                  Last note: <b className="text-brass">{noteName(lastNote)}</b>
+                </>
+              )}
             </span>
             <span className="ml-auto flex gap-2">
               {parts.restart && (
@@ -302,6 +380,7 @@ export default function App() {
                 forceLabel={parts.forceLabel}
                 marks={parts.marks}
                 labels={parts.labels}
+                blackNames={!!lesson.blackKeys || mode === 'sandbox'}
                 onDown={(m) => noteOn(m, 0.8, 'touch')}
                 onUp={noteOff}
               />

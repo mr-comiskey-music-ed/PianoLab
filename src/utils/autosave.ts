@@ -6,11 +6,19 @@ import { LevelResult } from '../types';
  * The submission code is still what students hand in. On load, a "Restore your last session?" prompt asks first;
  * autosave stays off until the student answers.
  */
+/** Learn progress for one lesson. */
+export interface LearnProgress {
+  done: boolean;
+  /** Index of the step the student is on. */
+  step: number;
+}
+
 export interface WorkSnapshot {
   results: LevelResult[];
-  learnDone: boolean;
-  /** How far through Learn: index of the next step. */
-  learnStep: number;
+  /** Learn progress by lesson id. (Saves from before Phase 2 had learnDone/learnStep for Lesson 1; they still load.) */
+  learn: Record<string, LearnProgress>;
+  /** The lesson picked in the lesson picker. */
+  lessonId: string;
   soundId: string;
 }
 
@@ -33,16 +41,26 @@ export function cleanSnapshot(raw: unknown): WorkSnapshot | null {
       results.push({ levelId: r.levelId, raw: num(r.raw, 0, 100, 0), labels, at: num(r.at, 0, Number.MAX_SAFE_INTEGER, 0) });
     }
   }
+  const learn: Record<string, LearnProgress> = {};
+  if (isObj(raw.learn)) {
+    for (const [id, v] of Object.entries(raw.learn).slice(0, 50)) {
+      if (!isObj(v) || !/^[a-z0-9-]{1,40}$/.test(id)) continue;
+      learn[id] = { done: v.done === true, step: Math.round(num(v.step, 0, 200, 0)) };
+    }
+  }
+  // Older saves (Phase 1): Lesson 1 only.
+  if (!learn['lesson-1'] && (raw.learnDone === true || typeof raw.learnStep === 'number'))
+    learn['lesson-1'] = { done: raw.learnDone === true, step: Math.round(num(raw.learnStep, 0, 200, 0)) };
   return {
     results,
-    learnDone: raw.learnDone === true,
-    learnStep: Math.round(num(raw.learnStep, 0, 200, 0)),
+    learn,
+    lessonId: typeof raw.lessonId === 'string' && /^[a-z0-9-]{1,40}$/.test(raw.lessonId) ? raw.lessonId : 'lesson-1',
     soundId: typeof raw.soundId === 'string' ? raw.soundId.slice(0, 40) : '',
   };
 }
 
 /** Used so an empty, brand-new session never overwrites a good save. */
-export const hasWork = (s: WorkSnapshot) => s.results.length > 0 || s.learnDone || s.learnStep > 0;
+export const hasWork = (s: WorkSnapshot) => s.results.length > 0 || Object.values(s.learn).some((p) => p.done || p.step > 0);
 
 export function loadSaved(): { snapshot: WorkSnapshot; savedAt: number } | null {
   try {

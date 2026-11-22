@@ -98,8 +98,11 @@ describe('autosave cleaning', () => {
   it('drops junk and keeps good data', () => {
     const s = cleanSnapshot({ results: [{ levelId: 'x', raw: 500, labels: 'weird', at: 1 }, 7, { raw: 3 }], learnDone: 'yes', learnStep: 3, soundId: 5, name: 'Nope' });
     expect(s?.results).toEqual([{ levelId: 'x', raw: 100, labels: 'all', at: 1 }]);
-    expect(s?.learnDone).toBe(false);
-    expect(s?.learnStep).toBe(3);
+    expect(s?.learn['lesson-1']).toEqual({ done: false, step: 3 }); // an old Phase 1 save still loads
+    expect(s?.lessonId).toBe('lesson-1');
+    const s2 = cleanSnapshot({ results: [], learn: { 'lesson-2': { done: true, step: 4 }, 'Bad Id!': { done: true } }, lessonId: 'lesson-3' });
+    expect(s2?.learn).toEqual({ 'lesson-2': { done: true, step: 4 } });
+    expect(s2?.lessonId).toBe('lesson-3');
     expect(JSON.stringify(s)).not.toContain('Nope'); // autosave never keeps a name
     expect(cleanSnapshot('nope')).toBeNull();
   });
@@ -158,5 +161,14 @@ describe('MIDI import', () => {
   });
   it('rejects a file that is not MIDI', () => {
     expect(() => readMidiFile(new TextEncoder().encode('hello there, not midi').buffer as ArrayBuffer)).toThrow(/not a MIDI/);
+  });
+});
+
+describe('per-lesson Learn in codes', () => {
+  it('round-trips L and keeps l for Lesson 1', async () => {
+    const code = await encodeSubmission({ assignment: 'open', timestamp: 0, learnDone: true, learned: ['lesson-1', 'lesson-3'], results: [] });
+    const back = await decodeSubmission(code);
+    expect(back?.learnDone).toBe(true);
+    expect(back?.learned).toEqual(['lesson-1', 'lesson-3']);
   });
 });

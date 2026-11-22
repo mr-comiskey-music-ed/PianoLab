@@ -1,10 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import lessons from '../data/lessons.json';
-import { Lesson } from '../types';
-import { isBlack, letterOf, parseNote } from '../utils/music';
+import { isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
+import { chordLongName, chordName, detectChord, matchesChord, parseChord } from '../utils/chords';
 import { ModeCtx, ModeParts } from './modeTypes';
+import { chordWatcher } from './chordInput';
 
-const LESSON = (lessons.lessons as unknown as Lesson[])[0];
+/** A demo entry: "C4" is one note, "C4+E4+G4" a chord. */
+const entryNotes = (e: string) => e.split('+').map(parseNote).filter((n): n is number => n !== null);
+/** How a demo entry is shown on the stage: a letter, or a chord name. */
+const entryLabel = (e: string) => {
+  const notes = entryNotes(e);
+  if (notes.length >= 3) {
+    const d = detectChord(notes);
+    return d ? chordName(d.chord) : e;
+  }
+  return pretty(e.replace(/-?\d+$/, ''));
+};
 
 /**
  * Learn: the app demos (plays and lights keys), then a "now you try" prompt. Not graded. The code only notes
@@ -12,13 +22,15 @@ const LESSON = (lessons.lessons as unknown as Lesson[])[0];
  * the keys), all white keys.
  */
 export function useLearn(ctx: ModeCtx): ModeParts {
-  const steps = LESSON.learn;
+  const steps = ctx.lesson.learn;
   const [i, setI] = useState(() => Math.min(ctx.learnStep, steps.length - 1));
   const [count, setCount] = useState(0);
   const [msg, setMsg] = useState<{ kind: 'good' | 'hint'; text: string } | null>(null);
-  const [demoLit, setDemoLit] = useState<number | null>(null);
+  /** The keys the demo is playing right now, and which demo entry that is. */
+  const [demoLit, setDemoLit] = useState<Set<number> | null>(null);
+  const [demoIdx, setDemoIdx] = useState(-1);
   const [demoing, setDemoing] = useState(false);
-  const step = steps[i];
+  const step = steps[Math.min(i, steps.length - 1)];
   const stepDone = !!step.show || count >= step.need;
   const last = i === steps.length - 1;
   const stepRef = useRef(step);
@@ -32,14 +44,28 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   const usedKeys = useRef(new Set<number>());
   const showMe = useCallback(async () => {
     const s = stepRef.current;
-    const notes = (s.demo ?? []).map(parseNote).filter((n): n is number => n !== null);
-    if (!notes.length) return;
+    const entries = (s.demo ?? []).map(entryNotes).filter((e) => e.length);
+    if (!entries.length) return;
     const run = ++demoRun.current;
     const stopped = () => demoRun.current !== run;
     setDemoing(true);
-    // Long show-and-tell runs (a whole octave or two) go a little quicker.
-    await ctx.engine.playDemo(notes, notes.length > 8 ? 420 : 560, (m) => !stopped() && setDemoLit(m), stopped);
+    await ctx.engine.unlock();
+    // Long runs of single notes go a little quicker; chords get time to ring.
+    const gap = entries.some((e) => e.length > 1) ? 950 : entries.length > 8 ? 420 : 560;
+    const wait = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
+    for (let k = 0; k < entries.length; k++) {
+      if (stopped()) return;
+      const notes = entries[k];
+      setDemoLit(new Set(notes));
+      setDemoIdx(k);
+      notes.forEach((n) => ctx.engine.noteOn(n, 0.75));
+      await wait(gap * 0.8);
+      notes.forEach((n) => ctx.engine.noteOff(n));
+      await wait(gap * 0.2);
+    }
     if (stopped()) return;
+    setDemoLit(null);
+    setDemoIdx(-1);
     setDemoing(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx.engine]);
@@ -52,6 +78,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     setMsg(null);
     demoRun.current++;
     setDemoLit(null);
+    setDemoIdx(-1);
     setDemoing(false);
     ctx.setLearnStep(next);
     // Show-and-tell steps always start their demo; other steps only when arriving with Next.
@@ -61,16 +88,34 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     }
   };
 
+  // A new lesson picked: go to where the student was in it.
+  useEffect(() => {
+    setI(Math.min(ctx.learnStep, steps.length - 1));
+    setCount(0);
+    usedKeys.current = new Set();
+    setMsg(null);
+    demoRun.current++;
+    setDemoLit(null);
+    setDemoIdx(-1);
+    setDemoing(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ctx.lesson.id]);
+
+  const lessonRef = useRef(ctx.lesson);
+  lessonRef.current = ctx.lesson;
+
+  // Single-note tries ("Play an F♯").
   useEffect(() => {
     return ctx.subscribe((midi) => {
       const s = stepRef.current;
       if (doneRef.current || s.show || !s.tryAnswer) return;
-      if (isBlack(midi)) {
+      const answers = s.tryAnswer.map(pcOf);
+      if (isBlack(midi) && !lessonRef.current.blackKeys && !answers.includes(pc(midi))) {
         setMsg({ kind: 'hint', text: 'That is a black key. Right now we only use white keys.' });
         return;
       }
-      const letter = letterOf(midi);
-      if (s.tryAnswer!.includes(letter)) {
+      const letter = pretty(letterOf(midi));
+      if (answers.includes(pc(midi))) {
         // "In a different place" means a different key: playing the same key again doesn't count.
         if (usedKeys.current.has(midi)) {
           setMsg({ kind: 'hint', text: `That is the same ${letter} again. Find a ${letter} in a different place on the keyboard.` });
@@ -90,6 +135,34 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     });
   }, [ctx]);
 
+  // Chord tries ("Play an F chord"): one chord (3+ keys together) = one answer.
+  useEffect(() => {
+    const w = chordWatcher(ctx.getHeld, (held) => {
+      const s = stepRef.current;
+      if (doneRef.current || s.show || !s.tryChord) return;
+      const ok = s.tryChord.some((c) => {
+        const ch = parseChord(c);
+        return ch && matchesChord(held, ch, s.tryInversion);
+      });
+      if (ok) {
+        setCount((c) => {
+          const n = c + 1;
+          setMsg({ kind: 'good', text: n >= s.need ? 'Yes! Nice work.' : 'Yes! Now play it somewhere else.' });
+          return n;
+        });
+        return;
+      }
+      const got = detectChord(held);
+      const rightChord = s.tryChord.some((c) => {
+        const ch = parseChord(c);
+        return ch && matchesChord(held, ch);
+      });
+      const why = rightChord && s.tryInversion !== undefined ? 'Right chord, but check which note is on the bottom.' : got ? `That is ${chordLongName(got.chord)}.` : 'Those keys don’t make that chord yet.';
+      setMsg({ kind: 'hint', text: `${why} ${s.hint ?? ''} Let go and try again.` });
+    });
+    return ctx.subscribeNotes(w.handle);
+  }, [ctx]);
+
   // Finishing the last step marks Learn done (this goes in the code).
   useEffect(() => {
     if (stepDone && last && !ctx.learnDone) ctx.setLearnDone(true);
@@ -101,8 +174,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   const left = (
     <div className="flex flex-col gap-3">
       <div>
-        <div className="h text-[11px] uppercase text-muted">Lesson {LESSON.number} · Learn</div>
-        <h2 className="h text-[22px] leading-tight text-wal3">{LESSON.title}</h2>
+        <div className="h text-[11px] uppercase text-muted">Lesson {ctx.lesson.number} · Learn</div>
+        <h2 className="h text-[22px] leading-tight text-wal3">{ctx.lesson.title}</h2>
       </div>
       <div className="card p-3">
         <div className="h text-[11px] uppercase text-brass3">{step.section}</div>
@@ -146,7 +219,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         )}
         {last && stepDone && (
           <button className="btn btn-brass flex-1" onClick={() => ctx.goTo('challenge')}>
-            Go to Challenge
+            Go to Challenges
           </button>
         )}
       </div>
@@ -159,7 +232,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     </button>
   ) : (
     <button className="btn btn-brass text-[18px]" data-testid="stage-next" onClick={() => ctx.goTo('challenge')}>
-      Go to Challenge ›
+      Go to Challenges ›
     </button>
   );
 
@@ -169,15 +242,12 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       <div className="h text-[34px] leading-tight text-panel" data-testid="learn-prompt">
         {step.title}
       </div>
-      <div className="h flex gap-2 text-[26px] tracking-wide text-line2" aria-hidden="true">
-        {(step.demo ?? []).map((n, k) => {
-          const m = parseNote(n);
-          return (
-            <span key={k} className={m !== null && m === demoLit ? 'text-brass' : ''}>
-              {n.replace(/\d+$/, '')}
-            </span>
-          );
-        })}
+      <div className="h flex flex-wrap justify-center gap-x-3 gap-y-1 text-[26px] tracking-wide text-line2" aria-hidden="true">
+        {(step.demo ?? []).map((n, k) => (
+          <span key={k} className={k === demoIdx ? 'text-brass' : ''}>
+            {entryLabel(n)}
+          </span>
+        ))}
       </div>
       <div className="flex gap-2">
         <button className="btn btn-dark text-[16px]" onClick={() => void showMe()} disabled={demoing}>
@@ -214,8 +284,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     // Nothing is lit or labelled while the student is working it out. Only the note the app is playing shows.
     // Show-and-tell steps put the names on every key (step.labels).
     labels: step.labels ?? 'off',
-    lit: demoLit !== null ? new Set([demoLit]) : undefined,
-    forceLabel: demoLit !== null ? new Set([demoLit]) : undefined,
+    lit: demoLit ?? undefined,
+    forceLabel: demoLit ?? undefined,
     start: step.demo?.length && !step.show ? { label: demoing ? 'Playing…' : 'Show me', onClick: () => void showMe(), disabled: demoing } : undefined,
     restart: { label: 'Restart step', onClick: () => goStep(i, false), disabled: demoing },
   };

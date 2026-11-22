@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { KEY_COUNT, isBlack, letterOf, octaveOf } from '../utils/music';
+import { BLACK_NAMES, KEY_COUNT, isBlack, letterOf, octaveOf } from '../utils/music';
 
 export type KeyMark = 'target' | 'ok' | 'bad';
 
@@ -12,12 +12,14 @@ interface Props {
   forceLabel?: Set<number>;
   marks?: Map<number, KeyMark>;
   labels: 'off' | 'c' | 'all';
+  /** Black keys get their names too (Lesson 4 on), when names are showing. */
+  blackNames?: boolean;
   onDown: (midi: number) => void;
   onUp: (midi: number) => void;
 }
 
 /** 25 keys, C to C. Mouse and multitouch both work: each finger is tracked by its own pointer id. */
-export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks, labels, onDown, onUp }) => {
+export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks, labels, blackNames, onDown, onUp }) => {
   const held = useRef(new Map<number, number>()); // pointerId -> midi
   const keys = Array.from({ length: KEY_COUNT }, (_, i) => start + i);
   const whites = keys.filter((m) => !isBlack(m));
@@ -51,9 +53,9 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
   };
 
   const label = (midi: number) => {
-    if (isBlack(midi)) return null;
-    const isC = letterOf(midi) === 'C';
     const forced = forceLabel?.has(midi) ?? false;
+    if (isBlack(midi)) return blackNames && (labels === 'all' || forced) ? BLACK_NAMES[((midi % 12) + 12) % 12] : null;
+    const isC = letterOf(midi) === 'C';
     if (!forced && (labels === 'off' || (labels === 'c' && !isC))) return null;
     return isC ? `C${octaveOf(midi)}` : letterOf(midi);
   };
@@ -78,7 +80,15 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
             className={`absolute top-0 ${black ? 'h-[62%] z-10 rounded-b-md shadow-[0_3px_4px_rgba(0,0,0,0.5)]' : 'h-full rounded-b-lg border border-line2'} ${cls(midi, black)} transition-colors duration-75`}
             style={{ left: `${left}%`, width: `${black ? wW * 0.6 : wW}%` }}
           >
-            {txt && (
+            {txt && black && (
+              // Both names, stacked: "C♯" over "D♭".
+              <span className="h pointer-events-none absolute bottom-1.5 left-0 right-0 flex flex-col items-center text-[10px] leading-[1.15] text-line">
+                {txt.split('/').map((t) => (
+                  <span key={t}>{t}</span>
+                ))}
+              </span>
+            )}
+            {txt && !black && (
               <span className={`pointer-events-none absolute bottom-2 left-0 right-0 text-center h text-[13px] ${letterOf(midi) === 'C' ? 'text-brass3' : 'text-muted'}`}>
                 {txt}
               </span>

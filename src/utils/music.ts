@@ -9,10 +9,27 @@ export const octaveOf = (midi: number) => Math.floor(midi / 12) - 1;
 export const noteName = (midi: number) => `${letterOf(midi)}${octaveOf(midi)}`;
 /** "C4" -> 60. Returns null if it isn't a note name. */
 export function parseNote(name: string): number | null {
-  const m = name.match(/^([A-G])(#?)(-?\d)$/);
+  const m = name.match(/^([A-G])([#b]?)(-?\d)$/);
   if (!m) return null;
-  return NOTE_NAMES.indexOf((m[1] + m[2]) as (typeof NOTE_NAMES)[number]) + (Number(m[3]) + 1) * 12;
+  const natural = NOTE_NAMES.indexOf(m[1] as (typeof NOTE_NAMES)[number]);
+  return natural + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) + (Number(m[3]) + 1) * 12;
 }
+
+/** Pitch class (0-11) of a note name with no octave: "C#" = "Db" = 1. Returns null if it isn't one. */
+export function pcOf(name: string): number | null {
+  const m = name.trim().match(/^([A-G])([#b♯♭]?)$/);
+  if (!m) return null;
+  const natural = NOTE_NAMES.indexOf(m[1] as (typeof NOTE_NAMES)[number]);
+  return (natural + (m[2] === '#' || m[2] === '♯' ? 1 : m[2] === 'b' || m[2] === '♭' ? -1 : 0) + 12) % 12;
+}
+
+export const pc = (midi: number) => ((midi % 12) + 12) % 12;
+
+/** Display names for black keys: both names, sharp first. */
+export const BLACK_NAMES: Record<number, string> = { 1: 'C♯/D♭', 3: 'D♯/E♭', 6: 'F♯/G♭', 8: 'G♯/A♭', 10: 'A♯/B♭' };
+
+/** "C#" -> "C♯", "Bb" -> "B♭" (for showing text). */
+export const pretty = (s: string) => s.replace(/#/g, '♯').replace(/(?<=[A-G])b/g, '♭');
 
 /** The 25-key default view: C3 to C5. */
 export const DEFAULT_START = 48;

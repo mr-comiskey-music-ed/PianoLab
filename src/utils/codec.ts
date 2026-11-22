@@ -15,6 +15,7 @@ import { LevelResult, Submission } from '../types';
  * The student's name (key `n`) lives ONLY inside the code, like SynthLab. The app never stores it in the browser.
  * Codes made before the name was added have no `n`; they still decode.
  * Key `p` (added later, still v1) carries a Sandbox performance; older codes simply don't have it.
+ * Key `L` (Phase 2, still v1) lists the lessons whose Learn is finished; `l` still means Lesson 1's Learn.
  */
 export const FORMAT_VERSION = 1;
 export const DEFAULT_ASSIGNMENT = 'open';
@@ -83,6 +84,7 @@ export async function encodeSubmission(sub: Submission): Promise<string> {
   if (sub.name?.trim()) packed.n = sub.name.trim().slice(0, 60);
   if (sub.assignment && sub.assignment !== DEFAULT_ASSIGNMENT) packed.a = sub.assignment;
   if (sub.learnDone) packed.l = 1;
+  if (sub.learned?.length) packed.L = sub.learned.slice(0, 40); // lesson ids whose Learn is finished (Phase 2)
   if (sub.take) packed.m = sub.take; // reserved for Play Along takes (later phase)
   if (sub.perf?.length) packed.p = sub.perf; // a Sandbox performance (packPerf)
   const json = JSON.stringify(packed);
@@ -116,7 +118,8 @@ async function decodeV1(body: string, sum: string): Promise<Submission | null> {
       ...(typeof d.n === 'string' && d.n.trim() ? { name: d.n.trim().slice(0, 60) } : {}),
       assignment: typeof d.a === 'string' ? d.a : DEFAULT_ASSIGNMENT,
       timestamp: at,
-      learnDone: d.l === 1,
+      learnDone: d.l === 1 || (Array.isArray(d.L) && d.L.includes('lesson-1')),
+      learned: Array.from(new Set([...(d.l === 1 ? ['lesson-1'] : []), ...(Array.isArray(d.L) ? (d.L as unknown[]).filter((x): x is string => typeof x === 'string').slice(0, 40) : [])])),
       results,
       ...(typeof d.m === 'string' ? { take: d.m } : {}),
       ...(Array.isArray(d.p) ? { perf: (d.p as unknown[]).map(Number).filter(Number.isFinite) } : {}),

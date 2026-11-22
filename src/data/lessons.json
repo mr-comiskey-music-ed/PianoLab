@@ -461,6 +461,1715 @@
           ],
           "labels": "off"
         }
+      ],
+      "practice": "Play anything you like. Notice the pattern of 2 and 3 black keys. Try to find every C, then every F, without looking at the labels."
+    },
+    {
+      "id": "lesson-2",
+      "number": 2,
+      "title": "White-key chords",
+      "key": "C",
+      "practice": "Play the seven chords in C by stacking every other white key. Watch the chord name change. Try A minor too.",
+      "learn": [
+        {
+          "id": "l2-thirds",
+          "section": "Stacking thirds",
+          "title": "Skip a key, play a key",
+          "say": "A chord is three notes played together. The simplest way to build one: play a white key, skip one, play one, skip one, play one. Each jump is called a third. C, E and G make a C chord.",
+          "need": 0,
+          "demo": [
+            "C4",
+            "E4",
+            "G4",
+            "C4+E4+G4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l2-try-c",
+          "section": "Stacking thirds",
+          "title": "Your first chord",
+          "say": "Hold C, E and G down together.",
+          "need": 1,
+          "tryText": "Play a C chord: C, E and G together.",
+          "tryChord": [
+            "C"
+          ],
+          "hint": "Start on C, skip D, play E, skip F, play G.",
+          "labels": "all"
+        },
+        {
+          "id": "l2-seven",
+          "section": "Chords in C major",
+          "title": "Seven chords",
+          "say": "Stack thirds on every white key and you get seven chords. In C major they are C, Dm, Em, F, G, Am, and B° (the odd one out). The little \"m\" means minor: a darker sound.",
+          "need": 0,
+          "demo": [
+            "C4+E4+G4",
+            "D4+F4+A4",
+            "E4+G4+B4",
+            "F4+A4+C5",
+            "G4+B4+D5",
+            "A3+C4+E4",
+            "B3+D4+F4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l2-try-f",
+          "section": "Chords in C major",
+          "title": "Now F",
+          "say": "F, A and C make an F chord.",
+          "need": 1,
+          "tryText": "Play an F chord.",
+          "tryChord": [
+            "F"
+          ],
+          "hint": "F, skip G, A, skip B, C."
+        },
+        {
+          "id": "l2-try-g",
+          "section": "Chords in C major",
+          "title": "Now G",
+          "say": "G, B and D make a G chord.",
+          "need": 1,
+          "tryText": "Play a G chord.",
+          "tryChord": [
+            "G"
+          ],
+          "hint": "G, skip A, B, skip C, D."
+        },
+        {
+          "id": "l2-try-dm",
+          "section": "Chords in C major",
+          "title": "A minor chord",
+          "say": "D, F and A make D minor (Dm).",
+          "need": 1,
+          "tryText": "Play D minor (Dm).",
+          "tryChord": [
+            "Dm"
+          ],
+          "hint": "D, skip E, F, skip G, A."
+        },
+        {
+          "id": "l2-aminor",
+          "section": "Chords in A minor",
+          "title": "Same keys, new home",
+          "say": "A minor uses the same white keys as C major, but A is home. Its chords are Am, B°, C, Dm, Em, F and G.",
+          "need": 0,
+          "demo": [
+            "A3+C4+E4",
+            "D4+F4+A4",
+            "E4+G4+B4",
+            "A3+C4+E4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l2-try-am",
+          "section": "Chords in A minor",
+          "title": "Home in A minor",
+          "say": "A, C and E make A minor (Am).",
+          "need": 1,
+          "tryText": "Play A minor (Am).",
+          "tryChord": [
+            "Am"
+          ],
+          "hint": "A, skip B, C, skip D, E."
+        },
+        {
+          "id": "l2-try-em",
+          "section": "Chords in A minor",
+          "title": "One more",
+          "say": "E, G and B make E minor.",
+          "need": 1,
+          "tryText": "Play E minor (Em).",
+          "tryChord": [
+            "Em"
+          ],
+          "hint": "E, skip F, G, skip A, B."
+        }
+      ],
+      "levels": [
+        {
+          "id": "l2-build-cfg",
+          "title": "Build C, F and G",
+          "blurb": "Play the chord. Any octave, any order of notes.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "all",
+          "prompts": [
+            {
+              "text": "Play C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Play F major.",
+              "chord": "F"
+            },
+            {
+              "text": "Play G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Play C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Play G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Play F major.",
+              "chord": "F"
+            },
+            {
+              "text": "Play C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Play G major.",
+              "chord": "G"
+            }
+          ]
+        },
+        {
+          "id": "l2-build-all",
+          "title": "Build all six chords",
+          "blurb": "Play the chord. Any octave, any order of notes.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Play D minor.",
+              "chord": "Dm"
+            },
+            {
+              "text": "Play E minor.",
+              "chord": "Em"
+            },
+            {
+              "text": "Play F major.",
+              "chord": "F"
+            },
+            {
+              "text": "Play G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Play A minor.",
+              "chord": "Am"
+            },
+            {
+              "text": "Play C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Play D minor.",
+              "chord": "Dm"
+            },
+            {
+              "text": "Play E minor.",
+              "chord": "Em"
+            },
+            {
+              "text": "Play F major.",
+              "chord": "F"
+            },
+            {
+              "text": "Play G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Play A minor.",
+              "chord": "Am"
+            }
+          ]
+        },
+        {
+          "id": "l2-name",
+          "title": "Name the chord",
+          "blurb": "A chord lights up. Which one is it?",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which chord is lit?",
+              "chord": "C",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "Dm",
+              "answer": [
+                "Dm"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "Em",
+              "answer": [
+                "Em"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "F",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "G",
+              "answer": [
+                "G"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "Am",
+              "answer": [
+                "Am"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "C",
+              "answer": [
+                "C"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "F",
+              "answer": [
+                "F"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "G",
+              "answer": [
+                "G"
+              ]
+            },
+            {
+              "text": "Which chord is lit?",
+              "chord": "Am",
+              "answer": [
+                "Am"
+              ]
+            }
+          ],
+          "choices": [
+            "C",
+            "Dm",
+            "Em",
+            "F",
+            "G",
+            "Am"
+          ]
+        },
+        {
+          "id": "l2-build-aminor",
+          "title": "Chords in A minor",
+          "blurb": "Play the chord. Any octave, any order of notes.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play A minor.",
+              "chord": "Am"
+            },
+            {
+              "text": "Play D minor.",
+              "chord": "Dm"
+            },
+            {
+              "text": "Play E minor.",
+              "chord": "Em"
+            },
+            {
+              "text": "Play F major.",
+              "chord": "F"
+            },
+            {
+              "text": "Play G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Play C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Play A minor.",
+              "chord": "Am"
+            },
+            {
+              "text": "Play E minor.",
+              "chord": "Em"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lesson-3",
+      "number": 3,
+      "title": "Roman numerals and function",
+      "key": "C",
+      "numerals": true,
+      "practice": "Play the chords of C major and watch their numerals and jobs (Home, Away, Tension). Try a loop like I – IV – V – I.",
+      "learn": [
+        {
+          "id": "l3-numerals",
+          "section": "Roman numerals",
+          "title": "Chords get numbers",
+          "say": "Each chord in a key gets a Roman numeral for its spot in the scale. Big numerals (I, IV, V) are major chords. Small ones (ii, iii, vi) are minor. In C: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am, vii° = B°.",
+          "need": 0,
+          "demo": [
+            "C4+E4+G4",
+            "D4+F4+A4",
+            "E4+G4+B4",
+            "F4+A4+C5",
+            "G4+B4+D5",
+            "A3+C4+E4",
+            "B3+D4+F4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l3-try-iv",
+          "section": "Roman numerals",
+          "title": "Play the IV",
+          "say": "IV is the fourth chord: count C, D, E, F.",
+          "need": 1,
+          "tryText": "Play the IV chord in C.",
+          "tryChord": [
+            "F"
+          ],
+          "hint": "Count up four from C: C (I), D (ii), E (iii), F (IV). Play an F chord."
+        },
+        {
+          "id": "l3-try-vi",
+          "section": "Roman numerals",
+          "title": "Play the vi",
+          "say": "vi is the sixth chord, and it is minor.",
+          "need": 1,
+          "tryText": "Play the vi chord in C.",
+          "tryChord": [
+            "Am"
+          ],
+          "hint": "The sixth note of C major is A. Play A minor."
+        },
+        {
+          "id": "l3-jobs",
+          "section": "Function",
+          "title": "Chords have jobs",
+          "say": "Home chords (I, iii, vi) feel at rest. Away chords (ii, IV) move away from home. Tension chords (V, vii°) want to go back home. Listen: Home, Away, Tension, Home.",
+          "need": 0,
+          "demo": [
+            "C4+E4+G4",
+            "F4+A4+C5",
+            "G4+B4+D5",
+            "C4+E4+G4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l3-try-tension",
+          "section": "Function",
+          "title": "Make some tension",
+          "say": "V and vii° are the Tension chords in C.",
+          "need": 1,
+          "tryText": "Play a Tension chord in C (V or vii°).",
+          "tryChord": [
+            "G",
+            "Bdim"
+          ],
+          "hint": "V in C is G: G, B, D."
+        },
+        {
+          "id": "l3-try-home",
+          "section": "Function",
+          "title": "Back home",
+          "say": "I, iii and vi are Home chords.",
+          "need": 1,
+          "tryText": "Now play a Home chord.",
+          "tryChord": [
+            "C",
+            "Em",
+            "Am"
+          ],
+          "hint": "I in C is C: C, E, G."
+        },
+        {
+          "id": "l3-minor",
+          "section": "Minor keys",
+          "title": "Numerals in A minor",
+          "say": "In A minor the numerals start on A: i = Am, iv = Dm, v = Em, VI = F, VII = G.",
+          "need": 0,
+          "demo": [
+            "A3+C4+E4",
+            "D4+F4+A4",
+            "E4+G4+B4",
+            "A3+C4+E4"
+          ],
+          "show": true,
+          "labels": "all"
+        }
+      ],
+      "levels": [
+        {
+          "id": "l3-play-numeral",
+          "title": "Play the numeral",
+          "blurb": "Play the chord for each numeral in C major.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the I chord in C.",
+              "chord": "C"
+            },
+            {
+              "text": "Play the IV chord in C.",
+              "chord": "F"
+            },
+            {
+              "text": "Play the V chord in C.",
+              "chord": "G"
+            },
+            {
+              "text": "Play the vi chord in C.",
+              "chord": "Am"
+            },
+            {
+              "text": "Play the ii chord in C.",
+              "chord": "Dm"
+            },
+            {
+              "text": "Play the iii chord in C.",
+              "chord": "Em"
+            },
+            {
+              "text": "Play the V chord in C.",
+              "chord": "G"
+            },
+            {
+              "text": "Play the IV chord in C.",
+              "chord": "F"
+            },
+            {
+              "text": "Play the I chord in C.",
+              "chord": "C"
+            },
+            {
+              "text": "Play the vi chord in C.",
+              "chord": "Am"
+            }
+          ]
+        },
+        {
+          "id": "l3-name-numeral",
+          "title": "Name the numeral",
+          "blurb": "A chord in C lights up. Which numeral is it?",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "C",
+              "answer": [
+                "I"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "F",
+              "answer": [
+                "IV"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "G",
+              "answer": [
+                "V"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "Am",
+              "answer": [
+                "vi"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "Dm",
+              "answer": [
+                "ii"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "Em",
+              "answer": [
+                "iii"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "G",
+              "answer": [
+                "V"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "F",
+              "answer": [
+                "IV"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "Am",
+              "answer": [
+                "vi"
+              ]
+            },
+            {
+              "text": "Which numeral is lit (in C)?",
+              "chord": "C",
+              "answer": [
+                "I"
+              ]
+            }
+          ],
+          "choices": [
+            "I",
+            "ii",
+            "iii",
+            "IV",
+            "V",
+            "vi"
+          ]
+        },
+        {
+          "id": "l3-function",
+          "title": "Home, Away or Tension?",
+          "blurb": "A chord in C lights up. What is its job?",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "C",
+              "answer": [
+                "Home"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "F",
+              "answer": [
+                "Away"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "G",
+              "answer": [
+                "Tension"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "Am",
+              "answer": [
+                "Home"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "Dm",
+              "answer": [
+                "Away"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "Em",
+              "answer": [
+                "Home"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "G",
+              "answer": [
+                "Tension"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "F",
+              "answer": [
+                "Away"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "C",
+              "answer": [
+                "Home"
+              ]
+            },
+            {
+              "text": "Home, Away or Tension?",
+              "chord": "Bdim",
+              "answer": [
+                "Tension"
+              ]
+            }
+          ],
+          "choices": [
+            "Home",
+            "Away",
+            "Tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lesson-4",
+      "number": 4,
+      "title": "Black keys and half steps",
+      "key": "C",
+      "numerals": true,
+      "blackKeys": true,
+      "practice": "Find every black key and say both of its names. Then walk up the keyboard in half steps, black and white.",
+      "learn": [
+        {
+          "id": "l4-names",
+          "section": "Black-key names",
+          "title": "Two names for one key",
+          "say": "Black keys are named from their white neighbors. Sharp (♯) means one key higher; flat (♭) means one key lower. The black key between C and D is C♯, and it is also D♭. Same key, two names.",
+          "need": 0,
+          "demo": [
+            "C4",
+            "C#4",
+            "D4",
+            "Db4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l4-try-fs",
+          "section": "Black-key names",
+          "title": "Find F♯",
+          "say": "F♯ is just above F: the first key of the group of 3 black keys.",
+          "need": 2,
+          "tryText": "Play an F♯ (also called G♭).",
+          "tryAnswer": [
+            "F#"
+          ],
+          "hint": "Find F, then play the black key just to its right."
+        },
+        {
+          "id": "l4-try-bb",
+          "section": "Black-key names",
+          "title": "Find B♭",
+          "say": "B♭ is just below B: the last key of the group of 3.",
+          "need": 2,
+          "tryText": "Play a B♭ (also called A♯).",
+          "tryAnswer": [
+            "A#"
+          ],
+          "hint": "Find B, then play the black key just to its left."
+        },
+        {
+          "id": "l4-half",
+          "section": "Half steps",
+          "title": "The smallest step",
+          "say": "A half step is a move to the very next key, up or down, black or white, with no skipping. E to F and B to C are half steps too: there is no black key between them.",
+          "need": 0,
+          "demo": [
+            "C4",
+            "C#4",
+            "D4",
+            "D#4",
+            "E4",
+            "F4",
+            "F#4",
+            "G4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l4-try-up",
+          "section": "Half steps",
+          "title": "A half step up",
+          "say": "Up means to the right.",
+          "need": 2,
+          "tryText": "Play the key a half step up from E.",
+          "tryAnswer": [
+            "F"
+          ],
+          "hint": "There is no black key right of E, so the next key up is F."
+        },
+        {
+          "id": "l4-try-down",
+          "section": "Half steps",
+          "title": "A half step down",
+          "say": "Down means to the left.",
+          "need": 2,
+          "tryText": "Play the key a half step down from D.",
+          "tryAnswer": [
+            "C#"
+          ],
+          "hint": "The very next key left of D is the black key C♯ (D♭)."
+        }
+      ],
+      "levels": [
+        {
+          "id": "l4-find-black",
+          "title": "Find the black keys",
+          "blurb": "Play the key you are asked for. Any octave counts.",
+          "type": "findIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "all",
+          "prompts": [
+            {
+              "text": "Play an F♯.",
+              "answer": [
+                "F#"
+              ]
+            },
+            {
+              "text": "Play a B♭.",
+              "answer": [
+                "A#"
+              ]
+            },
+            {
+              "text": "Play a C♯.",
+              "answer": [
+                "C#"
+              ]
+            },
+            {
+              "text": "Play an E♭.",
+              "answer": [
+                "D#"
+              ]
+            },
+            {
+              "text": "Play a G♯.",
+              "answer": [
+                "G#"
+              ]
+            },
+            {
+              "text": "Play a D♭.",
+              "answer": [
+                "C#"
+              ]
+            },
+            {
+              "text": "Play an A♯.",
+              "answer": [
+                "A#"
+              ]
+            },
+            {
+              "text": "Play a G♭.",
+              "answer": [
+                "F#"
+              ]
+            },
+            {
+              "text": "Play a D♯.",
+              "answer": [
+                "D#"
+              ]
+            },
+            {
+              "text": "Play an A♭.",
+              "answer": [
+                "G#"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "l4-name-black",
+          "title": "Name the black key",
+          "blurb": "A black key lights up. Pick its names.",
+          "type": "nameIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which black key is lit?",
+              "show": "F#",
+              "answer": [
+                "F♯/G♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "C#",
+              "answer": [
+                "C♯/D♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "A#",
+              "answer": [
+                "A♯/B♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "D#",
+              "answer": [
+                "D♯/E♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "G#",
+              "answer": [
+                "G♯/A♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "C#",
+              "answer": [
+                "C♯/D♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "F#",
+              "answer": [
+                "F♯/G♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "A#",
+              "answer": [
+                "A♯/B♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "G#",
+              "answer": [
+                "G♯/A♭"
+              ]
+            },
+            {
+              "text": "Which black key is lit?",
+              "show": "D#",
+              "answer": [
+                "D♯/E♭"
+              ]
+            }
+          ],
+          "choices": [
+            "C♯/D♭",
+            "D♯/E♭",
+            "F♯/G♭",
+            "G♯/A♭",
+            "A♯/B♭"
+          ]
+        },
+        {
+          "id": "l4-half-steps",
+          "title": "Half steps",
+          "blurb": "A key lights up. Play the key a half step away.",
+          "type": "halfStep",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the key a half step UP from the lit key.",
+              "show": "E",
+              "step": 1
+            },
+            {
+              "text": "Play the key a half step DOWN from the lit key.",
+              "show": "C",
+              "step": -1
+            },
+            {
+              "text": "Play the key a half step UP from the lit key.",
+              "show": "F",
+              "step": 1
+            },
+            {
+              "text": "Play the key a half step UP from the lit key.",
+              "show": "B",
+              "step": 1
+            },
+            {
+              "text": "Play the key a half step DOWN from the lit key.",
+              "show": "F",
+              "step": -1
+            },
+            {
+              "text": "Play the key a half step UP from the lit key.",
+              "show": "G",
+              "step": 1
+            },
+            {
+              "text": "Play the key a half step DOWN from the lit key.",
+              "show": "D",
+              "step": -1
+            },
+            {
+              "text": "Play the key a half step UP from the lit key.",
+              "show": "A",
+              "step": 1
+            },
+            {
+              "text": "Play the key a half step UP from the lit key.",
+              "show": "C",
+              "step": 1
+            },
+            {
+              "text": "Play the key a half step DOWN from the lit key.",
+              "show": "E",
+              "step": -1
+            },
+            {
+              "text": "Play the key a half step DOWN from the lit key.",
+              "show": "B",
+              "step": -1
+            },
+            {
+              "text": "Play the key a half step DOWN from the lit key.",
+              "show": "G",
+              "step": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lesson-5",
+      "number": 5,
+      "title": "Major and minor chords anywhere",
+      "key": "C",
+      "numerals": true,
+      "blackKeys": true,
+      "practice": "Pick any key as a root. Count up 4 half steps, then 3 more: major. Count 3, then 4: minor. Listen to the difference.",
+      "learn": [
+        {
+          "id": "l5-count",
+          "section": "Counting half steps",
+          "title": "Major = 4 + 3",
+          "say": "Any major chord: start on the root, count up 4 half steps, then 3 more. C major: C, up 4 to E, up 3 to G.",
+          "need": 0,
+          "demo": [
+            "C4",
+            "C#4",
+            "D4",
+            "D#4",
+            "E4",
+            "F4",
+            "F#4",
+            "G4",
+            "C4+E4+G4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l5-minor",
+          "section": "Counting half steps",
+          "title": "Minor = 3 + 4",
+          "say": "Minor flips it: up 3 half steps, then 4. C minor: C, up 3 to E♭, up 4 to G. Only the middle note moves.",
+          "need": 0,
+          "demo": [
+            "C4+E4+G4",
+            "C4+Eb4+G4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l5-try-d",
+          "section": "Build anywhere",
+          "title": "D major",
+          "say": "Count from D: up 4 to F♯, up 3 to A.",
+          "need": 1,
+          "tryText": "Play D major (D, F♯, A).",
+          "tryChord": [
+            "D"
+          ],
+          "hint": "D, up 4 half steps is F♯ (a black key), up 3 more is A."
+        },
+        {
+          "id": "l5-try-cm",
+          "section": "Build anywhere",
+          "title": "C minor",
+          "say": "Count from C: up 3 to E♭, up 4 to G.",
+          "need": 1,
+          "tryText": "Play C minor.",
+          "tryChord": [
+            "Cm"
+          ],
+          "hint": "C, up 3 half steps is E♭, up 4 more is G."
+        },
+        {
+          "id": "l5-hear",
+          "section": "Hearing it",
+          "title": "Bright and dark",
+          "say": "Major chords sound bright; minor chords sound darker. Listen: D major, D minor, A major, A minor.",
+          "need": 0,
+          "demo": [
+            "D4+F#4+A4",
+            "D4+F4+A4",
+            "A3+C#4+E4",
+            "A3+C4+E4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l5-try-a",
+          "section": "Build anywhere",
+          "title": "A major",
+          "say": "Count from A: up 4, then up 3.",
+          "need": 1,
+          "tryText": "Play A major.",
+          "tryChord": [
+            "A"
+          ],
+          "hint": "A, up 4 is C♯, up 3 more is E."
+        },
+        {
+          "id": "l5-try-fm",
+          "section": "Build anywhere",
+          "title": "F minor",
+          "say": "Count from F: up 3, then up 4.",
+          "need": 1,
+          "tryText": "Play F minor.",
+          "tryChord": [
+            "Fm"
+          ],
+          "hint": "F, up 3 is A♭, up 4 more is C."
+        }
+      ],
+      "levels": [
+        {
+          "id": "l5-build-major",
+          "title": "Build major chords",
+          "blurb": "Play the major chord. Count 4 + 3 half steps.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "all",
+          "prompts": [
+            {
+              "text": "Play D major.",
+              "chord": "D"
+            },
+            {
+              "text": "Play A major.",
+              "chord": "A"
+            },
+            {
+              "text": "Play E major.",
+              "chord": "E"
+            },
+            {
+              "text": "Play B♭ major.",
+              "chord": "Bb"
+            },
+            {
+              "text": "Play E♭ major.",
+              "chord": "Eb"
+            },
+            {
+              "text": "Play G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Play A♭ major.",
+              "chord": "Ab"
+            },
+            {
+              "text": "Play F♯ major.",
+              "chord": "F#"
+            },
+            {
+              "text": "Play D♭ major.",
+              "chord": "Db"
+            },
+            {
+              "text": "Play B major.",
+              "chord": "B"
+            }
+          ]
+        },
+        {
+          "id": "l5-build-minor",
+          "title": "Build minor chords",
+          "blurb": "Play the minor chord. Count 3 + 4 half steps.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play C minor.",
+              "chord": "Cm"
+            },
+            {
+              "text": "Play F minor.",
+              "chord": "Fm"
+            },
+            {
+              "text": "Play G minor.",
+              "chord": "Gm"
+            },
+            {
+              "text": "Play B minor.",
+              "chord": "Bm"
+            },
+            {
+              "text": "Play F♯ minor.",
+              "chord": "F#m"
+            },
+            {
+              "text": "Play C♯ minor.",
+              "chord": "C#m"
+            },
+            {
+              "text": "Play E♭ minor.",
+              "chord": "Ebm"
+            },
+            {
+              "text": "Play D minor.",
+              "chord": "Dm"
+            },
+            {
+              "text": "Play B♭ minor.",
+              "chord": "Bbm"
+            },
+            {
+              "text": "Play G♯ minor.",
+              "chord": "G#m"
+            }
+          ]
+        },
+        {
+          "id": "l5-ear",
+          "title": "Major or minor?",
+          "blurb": "Listen to the chord. Is it major or minor?",
+          "type": "earCheck",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Major or minor?",
+              "chord": "C",
+              "answer": [
+                "Major"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "Dm",
+              "answer": [
+                "Minor"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "E",
+              "answer": [
+                "Major"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "Fm",
+              "answer": [
+                "Minor"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "G",
+              "answer": [
+                "Major"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "Am",
+              "answer": [
+                "Minor"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "Bb",
+              "answer": [
+                "Major"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "C#m",
+              "answer": [
+                "Minor"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "D",
+              "answer": [
+                "Major"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "Em",
+              "answer": [
+                "Minor"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "F",
+              "answer": [
+                "Major"
+              ]
+            },
+            {
+              "text": "Major or minor?",
+              "chord": "Gm",
+              "answer": [
+                "Minor"
+              ]
+            }
+          ],
+          "choices": [
+            "Major",
+            "Minor"
+          ]
+        },
+        {
+          "id": "l5-build-mixed",
+          "title": "Major and minor mix",
+          "blurb": "Play the chord. Watch for the \"m\".",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play E major.",
+              "chord": "E"
+            },
+            {
+              "text": "Play E minor.",
+              "chord": "Em"
+            },
+            {
+              "text": "Play B♭ major.",
+              "chord": "Bb"
+            },
+            {
+              "text": "Play G minor.",
+              "chord": "Gm"
+            },
+            {
+              "text": "Play A♭ major.",
+              "chord": "Ab"
+            },
+            {
+              "text": "Play F minor.",
+              "chord": "Fm"
+            },
+            {
+              "text": "Play D major.",
+              "chord": "D"
+            },
+            {
+              "text": "Play B minor.",
+              "chord": "Bm"
+            },
+            {
+              "text": "Play E♭ major.",
+              "chord": "Eb"
+            },
+            {
+              "text": "Play C♯ minor.",
+              "chord": "C#m"
+            },
+            {
+              "text": "Play A major.",
+              "chord": "A"
+            },
+            {
+              "text": "Play F♯ minor.",
+              "chord": "F#m"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lesson-6",
+      "number": 6,
+      "title": "Inversions",
+      "key": "C",
+      "numerals": true,
+      "blackKeys": true,
+      "practice": "Play a chord, then move its bottom note up an octave: same chord, new inversion. Then try moving between chords with as little motion as you can.",
+      "learn": [
+        {
+          "id": "l6-what",
+          "section": "Inversions",
+          "title": "Same chord, new bottom",
+          "say": "An inversion is the same chord with a different note on the bottom. Root position: the root is lowest (C E G). 1st inversion: the 3rd is lowest (E G C). 2nd inversion: the 5th is lowest (G C E).",
+          "need": 0,
+          "demo": [
+            "C4+E4+G4",
+            "E4+G4+C5",
+            "G3+C4+E4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l6-try-c1",
+          "section": "Inversions",
+          "title": "C, 1st inversion",
+          "say": "Put E on the bottom.",
+          "need": 1,
+          "tryText": "Play C major in 1st inversion (E on the bottom).",
+          "tryChord": [
+            "C"
+          ],
+          "tryInversion": 1,
+          "hint": "E, G, then the C above them."
+        },
+        {
+          "id": "l6-try-f2",
+          "section": "Inversions",
+          "title": "F, 2nd inversion",
+          "say": "Put the 5th (C) on the bottom.",
+          "need": 1,
+          "tryText": "Play F major in 2nd inversion (C on the bottom).",
+          "tryChord": [
+            "F"
+          ],
+          "tryInversion": 2,
+          "hint": "C, then F and A above it."
+        },
+        {
+          "id": "l6-try-g1",
+          "section": "Inversions",
+          "title": "G, 1st inversion",
+          "say": "Put the 3rd (B) on the bottom.",
+          "need": 1,
+          "tryText": "Play G major in 1st inversion.",
+          "tryChord": [
+            "G"
+          ],
+          "tryInversion": 1,
+          "hint": "B, D, then the G above them."
+        },
+        {
+          "id": "l6-moves",
+          "section": "Smooth moves",
+          "title": "Move as little as possible",
+          "say": "Good players move between chords with as little motion as they can. C to F: keep C, move E up to F and G up to A. C to G: keep G, move C down to B and E down to D.",
+          "need": 0,
+          "demo": [
+            "C4+E4+G4",
+            "C4+F4+A4",
+            "C4+E4+G4",
+            "B3+D4+G4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l6-try-smooth",
+          "section": "Smooth moves",
+          "title": "Your turn",
+          "say": "From C (C E G), the smoothest F keeps C on the bottom.",
+          "need": 1,
+          "tryText": "Play F with C on the bottom (C, F, A).",
+          "tryChord": [
+            "F"
+          ],
+          "tryInversion": 2,
+          "hint": "Keep your thumb on C. Move the other two fingers up one white key each."
+        }
+      ],
+      "levels": [
+        {
+          "id": "l6-build-inv",
+          "title": "Build the inversion",
+          "blurb": "Play the chord with the right note on the bottom.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play C major, 1st inversion.",
+              "chord": "C",
+              "inv": 1
+            },
+            {
+              "text": "Play G major, 2nd inversion.",
+              "chord": "G",
+              "inv": 2
+            },
+            {
+              "text": "Play F major, 1st inversion.",
+              "chord": "F",
+              "inv": 1
+            },
+            {
+              "text": "Play A minor, 2nd inversion.",
+              "chord": "Am",
+              "inv": 2
+            },
+            {
+              "text": "Play D minor, 1st inversion.",
+              "chord": "Dm",
+              "inv": 1
+            },
+            {
+              "text": "Play C major, 2nd inversion.",
+              "chord": "C",
+              "inv": 2
+            },
+            {
+              "text": "Play G major, 1st inversion.",
+              "chord": "G",
+              "inv": 1
+            },
+            {
+              "text": "Play E minor, root position.",
+              "chord": "Em",
+              "inv": 0
+            },
+            {
+              "text": "Play F major, 2nd inversion.",
+              "chord": "F",
+              "inv": 2
+            },
+            {
+              "text": "Play A minor, 1st inversion.",
+              "chord": "Am",
+              "inv": 1
+            }
+          ]
+        },
+        {
+          "id": "l6-name-inv",
+          "title": "Name the inversion",
+          "blurb": "A chord lights up. Which inversion is it?",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which inversion is lit?",
+              "chord": "C",
+              "inv": 1,
+              "answer": [
+                "1st inversion"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "F",
+              "inv": 0,
+              "answer": [
+                "Root position"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "G",
+              "inv": 2,
+              "answer": [
+                "2nd inversion"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "Am",
+              "inv": 1,
+              "answer": [
+                "1st inversion"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "C",
+              "inv": 2,
+              "answer": [
+                "2nd inversion"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "Dm",
+              "inv": 0,
+              "answer": [
+                "Root position"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "Em",
+              "inv": 1,
+              "answer": [
+                "1st inversion"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "F",
+              "inv": 2,
+              "answer": [
+                "2nd inversion"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "G",
+              "inv": 0,
+              "answer": [
+                "Root position"
+              ]
+            },
+            {
+              "text": "Which inversion is lit?",
+              "chord": "Am",
+              "inv": 2,
+              "answer": [
+                "2nd inversion"
+              ]
+            }
+          ],
+          "choices": [
+            "Root position",
+            "1st inversion",
+            "2nd inversion"
+          ]
+        },
+        {
+          "id": "l6-smooth",
+          "title": "Smooth Mover",
+          "blurb": "Move to each new chord with as few half steps as you can. The last chord stays lit.",
+          "type": "smooth",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Smooth move to F major.",
+              "chord": "F"
+            },
+            {
+              "text": "Smooth move to C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Smooth move to G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Smooth move to C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Smooth move to A minor.",
+              "chord": "Am"
+            },
+            {
+              "text": "Smooth move to F major.",
+              "chord": "F"
+            },
+            {
+              "text": "Smooth move to G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Smooth move to C major.",
+              "chord": "C"
+            },
+            {
+              "text": "Smooth move to D minor.",
+              "chord": "Dm"
+            },
+            {
+              "text": "Smooth move to G major.",
+              "chord": "G"
+            },
+            {
+              "text": "Smooth move to C major.",
+              "chord": "C"
+            }
+          ],
+          "start": [
+            "C4",
+            "E4",
+            "G4"
+          ]
+        }
       ]
     }
   ]
