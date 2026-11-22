@@ -369,7 +369,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       )}
       <div className="flex gap-2">
         <button className="btn btn-dark text-[16px]" onClick={() => void showMe()} disabled={demoing}>
-          {demoing ? 'Playing…' : '▶ Play it again'}
+          {demoing ? 'Playing…' : '▶ Play example'}
         </button>
         {nextBtn}
       </div>

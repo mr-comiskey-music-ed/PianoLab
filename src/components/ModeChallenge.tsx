@@ -3,6 +3,7 @@ import { Level, Prompt } from '../types';
 import { KEY_COUNT, isBlack, parseNote, pc, pcOf, pretty } from '../utils/music';
 import { Chord, chordLongName, chordName, detectChord, matchesChord, moveDistance, parseChord, smoothestVoicing, voicing } from '../utils/chords';
 import { accuracy, credit, floored, passed } from '../utils/grading';
+import { shuffleNoRepeats } from '../utils/shuffle';
 import { loadBest, saveBest } from '../utils/autosave';
 import { KeyMark } from './Piano';
 import { LABEL_ORDER, Labels, ModeCtx, ModeParts } from './modeTypes';
@@ -10,14 +11,8 @@ import { useChordWatcher, useNoteListener } from './chordInput';
 
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
-const shuffle = <T,>(xs: T[]) => {
-  const a = [...xs];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-};
+/** Two questions are "the same" when they ask the same thing about the same note or chord. */
+const sameQuestion = (p: Prompt) => [p.text, p.chord ?? '', p.show ?? '', p.inv ?? '', p.step ?? '', (p.answer ?? []).join('/')].join('|');
 
 interface Run {
   level: Level;
@@ -89,6 +84,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     setRun(r);
   };
   const markTimer = useRef<number | undefined>(undefined);
+  /** The last question asked in each level, so a new try doesn't open with it. */
+  const lastAsked = useRef<Record<string, string>>({});
   const viewRef = useRef(ctx.viewStart);
   viewRef.current = ctx.viewStart;
 
@@ -130,7 +127,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const level = levelById(id);
     setFinished(null);
     setMsg('');
-    const prompts = shuffle(level.prompts);
+    // Never the same question twice in a row (and not a repeat of the one that ended the last try).
+    const prompts = shuffleNoRepeats(level.prompts, sameQuestion, lastAsked.current[level.id]);
     // Smooth Mover keeps its order: each chord follows the last one.
     const ordered = level.type === 'smooth' ? level.prompts : prompts;
     const prev = level.type === 'smooth' ? (level.start ?? ['C4', 'E4', 'G4']).map((n) => parseNote(n)!).filter((n) => n !== null) : undefined;
@@ -154,6 +152,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const idx = r.idx + 1;
     const next = { ...r, ...extra };
     if (idx >= r.prompts.length) {
+      lastAsked.current[r.level.id] = sameQuestion(r.prompts[r.idx]);
       const raw = accuracy(points, r.prompts.length);
       setRunNow(null);
       const prevBest = best[r.level.id] ?? 0;

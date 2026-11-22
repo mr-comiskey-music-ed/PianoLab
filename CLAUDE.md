@@ -89,6 +89,10 @@ lesson picker (all lessons open; later the teacher's assignment link can decide)
   before the next try. Mouse can't hold chords; MIDI, computer keys and touch can. **Listeners must be created once per
   screen (`useChordWatcher`, `useNoteListener`), never re-subscribed on every render**: that once let a real keyboard's
   separate note messages judge one chord twice ("That is C major, not G major" right after a correct C). `e16` tests it.
+- Challenge question order (`utils/shuffle.ts` `shuffleNoRepeats`): shuffled, but the same question never comes twice in a
+  row, and a new try doesn't open with the question the last try ended on. With only two answers (Lesson 1's F/C
+  levels) that means they alternate. Smooth Mover keeps its written order. `shuffle.test.ts` checks every level.
+- Learn show steps: the demo button says "▶ Play example".
 - Level types: findIt, nameIt, buildIt, nameChord (name / numeral / inversion via `choices`), halfStep,
   earCheck (major/minor, "Hear it again"), smooth (Smooth Mover: right chord AND fewest half steps from the lit chord;
   result shows half steps moved vs the smoothest possible). Choice-button answers don't flash the keys.
