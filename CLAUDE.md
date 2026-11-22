@@ -101,8 +101,16 @@ lesson picker (all lessons open; later the teacher's assignment link can decide)
   numerals always shown (no checkbox). Click a chord or press 1-7: one chord at a time (the last is cut off), voiced from
   a low I upward (I in octave 3, roots climbing) so there's no jump down. Strip chords go straight to the sound engine,
   not the piano: they never count in Learn/Practice/Challenges and the Sandbox doesn't record them.
-- Learn layout: the explanation ("say") sits in the centre stage right above "Now you try"; the left panel only has the
-  step list and Back/Next. Demos shift by whole octaves to stay on the keys on screen.
+- The middle area: suggested name **the Stage** (my suggestion, not yet confirmed by him; `data-testid="stage"`).
+- Learn layout: the explanation ("say") sits on the Stage right above "Now you try", **one sentence per line**
+  (`sentences()` in ModeLearn splits on sentence ends and on "\n"); the left panel only has the step list and Back/Next.
+  Demos shift by whole octaves to stay on the keys on screen.
+- Learn show steps can put chord strips on the Stage (`strip: ["C"]`, or two: `["C","G"]` with `demoKeys` saying which
+  strip each demo chord belongs to); the chord playing lights up; click a chord to hear it. Used in Lesson 2 (Chords in a
+  key, A minor) and Lesson 3 (numerals, I–V–vi–IV, the same in G, A minor). Strips are never on try steps (answers).
+- Progression tries (`tryProgression` + `tryKey`): play the chords one after another; numeral chips fill in; a wrong or
+  out-of-order chord is named with its numeral and the next numeral is given. Lesson 3: I–V–vi–IV, I–vi–IV–V in C, and
+  i–VI–III–VII in A minor.
 - Lesson 2 (now "White-key triads"): triad / third / root, 3rd, 5th language; "Build 4 triads" accepts any white-key
   stacked triad (root, skip, 3rd, skip, 5th; `tryTriad`), each on a different root; hints say "Find a D and build the
   triad up from there". Levels in order: Name C, F and G (`l2-name-cfg`) · Build C, F and G · Name all white-key triads ·

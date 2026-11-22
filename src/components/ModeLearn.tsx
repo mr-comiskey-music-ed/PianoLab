@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { KEY_COUNT, isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
-import { chordLongName, chordName, detectChord, matchesChord, parseChord } from '../utils/chords';
+import { chordName, degreeOf, detectChord, diatonic, keyById, matchesChord, parseChord, stripVoicing, KeyDef } from '../utils/chords';
+import { StripChips, textOn } from './ChordStrip';
 import { ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
 
@@ -17,6 +18,13 @@ export function isWhiteTriad(held: number[]): boolean {
   if (w.some((x) => x === null)) return false;
   return (w[1] as number) - (w[0] as number) === 2 && (w[2] as number) - (w[1] as number) === 2;
 }
+
+/** Split an explanation into sentences (and at any line break in the text), so each shows on its own line. */
+export const sentences = (text: string) =>
+  text
+    .split(/\n|(?<=[.!?])\s+(?=[A-Z"“(])/)
+    .map((t) => t.trim())
+    .filter(Boolean);
 
 /** A demo entry: "C4" is one note, "C4+E4+G4" a chord. */
 const entryNotes = (e: string) => e.split('+').map(parseNote).filter((n): n is number => n !== null);
@@ -39,6 +47,9 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   const steps = ctx.lesson.learn;
   const [i, setI] = useState(() => Math.min(ctx.learnStep, steps.length - 1));
   const [count, setCount] = useState(0);
+  /** Progression tries: how many chords of the progression have been played so far. */
+  const [progIdx, setProgIdx] = useState(0);
+  const progRef = useRef(0);
   const [msg, setMsg] = useState<{ kind: 'good' | 'hint'; text: string } | null>(null);
   /** The keys the demo is playing right now, and which demo entry that is. */
   const [demoLit, setDemoLit] = useState<Set<number> | null>(null);
@@ -95,10 +106,25 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx.engine]);
 
+  /** Clicking a chord on a Stage strip plays it (and lights its keys) for a moment. */
+  const playStrip = (k: KeyDef, degree: number) => {
+    demoRun.current++;
+    const notes = stripVoicing(k, degree);
+    void ctx.engine.unlock().then(() => notes.forEach((n) => ctx.engine.noteOn(n, 0.7)));
+    setDemoLit(new Set(notes));
+    setDemoing(false);
+    window.setTimeout(() => {
+      notes.forEach((n) => ctx.engine.noteOff(n));
+      setDemoLit((cur) => (cur && [...cur].join() === notes.join() ? null : cur));
+    }, 900);
+  };
+
   const goStep = (n: number, demo: boolean) => {
     const next = Math.max(0, Math.min(steps.length - 1, n));
     setI(next);
     setCount(0);
+    setProgIdx(0);
+    progRef.current = 0;
     usedKeys.current = new Set();
     setMsg(null);
     demoRun.current++;
@@ -117,6 +143,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   useEffect(() => {
     setI(Math.min(ctx.learnStep, steps.length - 1));
     setCount(0);
+    setProgIdx(0);
+    progRef.current = 0;
     usedKeys.current = new Set();
     setMsg(null);
     demoRun.current++;
@@ -181,6 +209,27 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           setMsg({ kind: 'good', text: n >= s.need ? `Yes! ${name}. That's four triads. Nice work.` : `Yes! That's a ${name} triad: ${pretty(letterOf(held[0]))} is the root. Now start on a different key.` });
           return n;
         });
+        return;
+      }
+      if (s.tryProgression) {
+        // A progression: each chord in turn, one after another.
+        const at = progRef.current;
+        const want = parseChord(s.tryProgression[at] ?? '');
+        if (!want) return;
+        const key = keyById(s.tryKey ?? 'C');
+        const num = diatonic(key).find((x) => x.chord.root === want.root && x.chord.quality === want.quality)?.numeral ?? '';
+        if (matchesChord(held, want)) {
+          const next = at + 1;
+          progRef.current = next;
+          setProgIdx(next);
+          if (next >= s.tryProgression.length) {
+            setCount(s.need);
+            setMsg({ kind: 'good', text: 'Yes! You played the whole progression. Nice work.' });
+          } else setMsg({ kind: 'good', text: `Yes, ${num}. Now the next one.` });
+          return;
+        }
+        const got = detectChord(held, key);
+        setMsg({ kind: 'hint', text: `${got ? `That is ${got.longName}${got.numeral ? ` (${got.numeral})` : ''}. ` : ''}The next chord is ${num} in ${key.label}. Let go and try again.` });
         return;
       }
       if (!s.tryChord) return;
@@ -279,7 +328,12 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       <div className="h text-[12px] uppercase tracking-wider text-brass">
         {step.section === step.title ? step.title : `${step.section} · ${step.title}`}
       </div>
-      <p className="mt-1 text-[18px] leading-snug text-line">{step.say}</p>
+      {/* One sentence per line, so each idea stands on its own. */}
+      <div className="mt-1 flex flex-col gap-1 text-[18px] leading-snug text-line">
+        {sentences(step.say).map((line, k) => (
+          <p key={k}>{line}</p>
+        ))}
+      </div>
     </div>
   );
 
@@ -289,13 +343,30 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       <div className="h text-[12px] uppercase tracking-wider text-brass" data-testid="learn-prompt">
         Watch and listen
       </div>
-      <div className="h flex flex-wrap justify-center gap-x-3 gap-y-1 text-[26px] tracking-wide text-line2" aria-hidden="true">
-        {(step.demo ?? []).map((n, k) => (
-          <span key={k} className={k === demoIdx ? 'text-brass' : ''}>
-            {entryLabel(n)}
-          </span>
-        ))}
-      </div>
+      {step.strip?.length ? (
+        // The chord strip on the Stage: the chord being played lights up.
+        <div className="flex w-full max-w-[820px] flex-col gap-1.5" data-testid="learn-strips">
+          {step.strip.map((id) => {
+            const k = keyById(id);
+            const mine = !step.demoKeys || step.demoKeys[demoIdx] === id;
+            const deg = demoLit && mine ? degreeOf(k, [...demoLit]) : -1;
+            return (
+              <div key={id} className="wood flex items-center gap-2 rounded-lg px-2 py-1.5">
+                <span className="h w-[86px] shrink-0 text-left text-[13px] text-line">{k.label}</span>
+                <StripChips keyDef={k} lit={(d) => d === deg} onPlay={(d) => playStrip(k, d)} testid={`learn-strip-${id}`} />
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="h flex flex-wrap justify-center gap-x-3 gap-y-1 text-[26px] tracking-wide text-line2" aria-hidden="true">
+          {(step.demo ?? []).map((n, k) => (
+            <span key={k} className={k === demoIdx ? 'text-brass' : ''}>
+              {entryLabel(n)}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="flex gap-2">
         <button className="btn btn-dark text-[16px]" onClick={() => void showMe()} disabled={demoing}>
           {demoing ? 'Playing…' : '▶ Play it again'}
@@ -312,7 +383,23 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           {step.tryText}
         </div>
       </div>
-      <div className="flex gap-1.5" aria-label={`${count} of ${step.need} done`}>
+      {step.tryProgression && (
+        // The progression as numerals; each lights up once it has been played.
+        <div className="flex gap-1.5" data-testid="prog-chips">
+          {step.tryProgression.map((c, k) => {
+            const key = keyById(step.tryKey ?? 'C');
+            const ch = parseChord(c);
+            const d = ch ? diatonic(key).find((x) => x.chord.root === ch.root && x.chord.quality === ch.quality) : undefined;
+            const done = k < progIdx || stepDone;
+            return (
+              <span key={k} className={`h rounded-md px-3 py-1 text-[22px] ${done ? '' : 'opacity-40'} ${k === progIdx && !stepDone ? 'ring-2 ring-panel' : ''}`} style={{ background: d?.color ?? '#66584a', color: textOn(d?.color ?? '#66584a') }}>
+                {d?.numeral ?? c}
+              </span>
+            );
+          })}
+        </div>
+      )}
+      <div className={`flex gap-1.5 ${step.tryProgression ? 'hidden' : ''}`} aria-label={`${count} of ${step.need} done`}>
         {Array.from({ length: step.need }, (_, k) => (
           <span key={k} className={`h-3 w-3 rounded-full border border-brass2 ${k < count ? 'bg-brass' : 'bg-transparent'}`} />
         ))}

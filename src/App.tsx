@@ -11,7 +11,7 @@ import { BatchModal, LatencyModal } from './components/Modals';
 import { GradeReport } from './components/GradeReport';
 import { LessonPicker } from './components/LessonPicker';
 import { ChordStrip } from './components/ChordStrip';
-import { INVERSION_NAMES, chordLongName, detectChord, diatonic, keyById, voicing } from './utils/chords';
+import { INVERSION_NAMES, detectChord, diatonic, keyById, stripVoicing } from './utils/chords';
 import { useSandbox } from './components/ModeSandbox';
 import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { useLearn } from './components/ModeLearn';
@@ -75,8 +75,7 @@ export default function App() {
       if (!d) return;
       stripNotes.current.forEach((n) => engine.noteOff(n));
       window.clearTimeout(stripTimer.current);
-      const rootMidi = 48 + stripKey.tonic + ((d.chord.root - stripKey.tonic + 12) % 12);
-      const notes = voicing(d.chord, 0, rootMidi);
+      const notes = stripVoicing(stripKey, degree);
       stripNotes.current = notes;
       setStripLit(new Set(notes));
       setStripActive(degree);

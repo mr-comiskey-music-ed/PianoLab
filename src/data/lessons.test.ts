@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import lessons from './lessons.json';
 import { Lesson } from '../types';
-import { parseChord } from '../utils/chords';
+import { KEYS, chordName, diatonic, keyById, parseChord } from '../utils/chords';
 import { parseNote, pcOf } from '../utils/music';
 
 const LESSONS = lessons.lessons as unknown as Lesson[];
@@ -15,9 +15,13 @@ describe('lesson content', () => {
     for (const l of LESSONS)
       for (const s of l.learn) {
         for (const d of s.demo ?? []) for (const n of d.split('+')) expect(parseNote(n), `${s.id} demo ${n}`).not.toBeNull();
-        if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0) + (s.tryTriad ? 1 : 0), `${s.id} has an answer`).toBeGreaterThan(0);
+        if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0) + (s.tryTriad ? 1 : 0) + (s.tryProgression?.length ?? 0), `${s.id} has an answer`).toBeGreaterThan(0);
         for (const a of s.tryAnswer ?? []) expect(pcOf(a), `${s.id} answer ${a}`).not.toBeNull();
-        for (const c of s.tryChord ?? []) expect(parseChord(c), `${s.id} chord ${c}`).not.toBeNull();
+        for (const c of [...(s.tryChord ?? []), ...(s.tryProgression ?? [])]) expect(parseChord(c), `${s.id} chord ${c}`).not.toBeNull();
+        // Every progression chord belongs to its key, and every strip/demoKeys key exists.
+        if (s.tryProgression) for (const c of s.tryProgression) expect(diatonic(keyById(s.tryKey ?? 'C')).some((d) => chordName(d.chord) === chordName(parseChord(c)!)), `${s.id}: ${c} in ${s.tryKey}`).toBe(true);
+        for (const k of [...(s.strip ?? []), ...(s.demoKeys ?? [])]) expect(KEYS.some((x) => x.id === k), `${s.id} key ${k}`).toBe(true);
+        if (s.demoKeys) expect(s.demoKeys.length, `${s.id} demoKeys`).toBe(s.demo?.length);
       }
   });
   it('every level prompt makes sense for its type', () => {

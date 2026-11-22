@@ -240,6 +240,20 @@ export function detectChord(held: number[], k?: KeyDef): Detected | null {
   };
 }
 
+/**
+ * How a strip chord is played: root position, the key's I in octave 3 and each chord's root climbing the scale from it,
+ * so going I to vii never jumps down an octave.
+ */
+export function stripVoicing(k: KeyDef, degree: number): number[] {
+  const d = diatonic(k)[degree];
+  return voicing(d.chord, 0, 48 + k.tonic + ((d.chord.root - k.tonic + 12) % 12));
+}
+
+/** Which of the key's seven chords these keys make (any octave/inversion), or -1. */
+export function degreeOf(k: KeyDef, held: number[]): number {
+  return diatonic(k).findIndex((d) => matchesChord(held, d.chord));
+}
+
 // ---------- Smooth Mover ----------
 /** Half steps moved from one voicing to another: pair the notes low-to-high (both are 3 notes). */
 export const moveDistance = (from: number[], to: number[]) => {

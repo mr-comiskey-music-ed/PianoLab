@@ -2,7 +2,7 @@ import React from 'react';
 import { Detected, KEYS, KeyDef, chordName, diatonic } from '../utils/chords';
 
 /** Dark text on the light colours (yellow, lime, orange), light text on the rest. */
-const textOn = (hex: string) => {
+export const textOn = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);
   const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
   return lum > 150 ? '#2a1e08' : '#fff8ea';
@@ -35,24 +35,30 @@ export const ChordStrip: React.FC<{
         </option>
       ))}
     </select>
-    <div className="flex min-w-0 flex-1 gap-1">
-      {diatonic(keyDef).map((d) => {
-        const on = playing === d.degree || (!!active && active.chord.root === d.chord.root && active.chord.quality === d.chord.quality);
-        return (
-          <button
-            key={d.degree}
-            onClick={() => onPlay(d.degree)}
-            data-testid={`strip-${d.degree}`}
-            title={`${chordName(d.chord)} (${d.numeral}). Click or press ${d.degree + 1} to hear it.`}
-            className={`h relative flex min-w-0 flex-1 flex-col items-center rounded-md px-1 py-0.5 leading-tight transition-transform ${on ? 'scale-105 ring-2 ring-panel' : 'opacity-90 hover:opacity-100'}`}
-            style={{ background: d.color, color: textOn(d.color) }}
-          >
-            <span className="absolute left-1 top-0.5 text-[9px] opacity-60">{d.degree + 1}</span>
-            <span className="truncate text-[15px]">{chordName(d.chord)}</span>
-            <span className="truncate text-[12px] opacity-90">{d.numeral}</span>
-          </button>
-        );
-      })}
-    </div>
+    <StripChips keyDef={keyDef} lit={(d) => playing === d || (!!active && diatonic(keyDef)[d].chord.root === active.chord.root && diatonic(keyDef)[d].chord.quality === active.chord.quality)} onPlay={onPlay} />
+  </div>
+);
+
+/** The seven coloured chord buttons of a key (used by the chord strip, and on the Stage in Learn). */
+export const StripChips: React.FC<{ keyDef: KeyDef; lit: (degree: number) => boolean; onPlay?: (degree: number) => void; testid?: string }> = ({ keyDef, lit, onPlay, testid }) => (
+  <div className="flex min-w-0 flex-1 gap-1" data-testid={testid}>
+    {diatonic(keyDef).map((d) => {
+      const on = lit(d.degree);
+      return (
+        <button
+          key={d.degree}
+          onClick={() => onPlay?.(d.degree)}
+          data-testid={`strip-${d.degree}`}
+          data-on={on ? 'yes' : undefined}
+          title={`${chordName(d.chord)} (${d.numeral}). Click${onPlay ? '' : ''} to hear it.`}
+          className={`h relative flex min-w-0 flex-1 flex-col items-center rounded-md px-1 py-0.5 leading-tight transition-transform ${on ? 'scale-105 ring-2 ring-panel' : 'opacity-90 hover:opacity-100'}`}
+          style={{ background: d.color, color: textOn(d.color) }}
+        >
+          <span className="absolute left-1 top-0.5 text-[9px] opacity-60">{d.degree + 1}</span>
+          <span className="truncate text-[15px]">{chordName(d.chord)}</span>
+          <span className="truncate text-[12px] opacity-90">{d.numeral}</span>
+        </button>
+      );
+    })}
   </div>
 );

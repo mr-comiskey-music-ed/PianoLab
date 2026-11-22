@@ -516,6 +516,9 @@
             "B3+D4+F4",
             "C4+E4+G4"
           ],
+          "strip": [
+            "C"
+          ],
           "show": true,
           "labels": "all"
         },
@@ -566,6 +569,9 @@
             "D3+F3+A3",
             "E3+G3+B3",
             "A3+C4+E4"
+          ],
+          "strip": [
+            "Am"
           ],
           "show": true,
           "labels": "all"
@@ -873,7 +879,7 @@
           "id": "l3-numerals",
           "section": "Roman numerals",
           "title": "Chords get numbers",
-          "say": "Each triad in a key gets a Roman numeral for the scale note it is built on. Capital numerals (I, IV, V) are major. Lower-case ones (ii, iii, vi) are minor. In C: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am, vii° = B°.",
+          "say": "Each triad in a key gets a Roman numeral for the scale note it is built on. Capital numerals (I, IV, V) are major. Lower-case numerals (ii, iii, vi) are minor. In C major: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am, vii° = B°.",
           "need": 0,
           "demo": [
             "C3+E3+G3",
@@ -882,8 +888,10 @@
             "F3+A3+C4",
             "G3+B3+D4",
             "A3+C4+E4",
-            "B3+D4+F4",
-            "C4+E4+G4"
+            "B3+D4+F4"
+          ],
+          "strip": [
+            "C"
           ],
           "show": true,
           "labels": "all"
@@ -916,55 +924,123 @@
           "id": "l3-loop",
           "section": "Progressions",
           "title": "Numerals tell a story",
-          "say": "Songs move between chords. Written as numerals, a progression works in any key. Listen to I – V – vi – IV, one of the most-used progressions in pop music.",
+          "say": "Songs move from chord to chord. That pattern is called a progression. I – V – vi – IV is one of the most-used progressions in pop music. Listen to it in C major.",
           "need": 0,
           "demo": [
             "C3+E3+G3",
             "G3+B3+D4",
             "A3+C4+E4",
-            "F3+A3+C4"
+            "F3+A3+C4",
+            "C3+E3+G3"
+          ],
+          "strip": [
+            "C"
           ],
           "show": true,
           "labels": "all"
         },
         {
-          "id": "l3-try-v",
+          "id": "l3-loop-g",
           "section": "Progressions",
-          "title": "Play the V",
-          "say": "V is built on the 5th note of the scale.",
-          "need": 1,
-          "tryText": "Play the V chord in C.",
-          "tryChord": [
+          "title": "Same numerals, new key",
+          "say": "Now the same I – V – vi – IV in G major: G, D, Em, C. The chords are different, but the pattern is the same. In both keys, I is home: the progression keeps coming back to it.",
+          "need": 0,
+          "demo": [
+            "C3+E3+G3",
+            "G3+B3+D4",
+            "A3+C4+E4",
+            "F3+A3+C4",
+            "G3+B3+D4",
+            "D4+F#4+A4",
+            "E3+G3+B3",
+            "C4+E4+G4"
+          ],
+          "demoKeys": [
+            "C",
+            "C",
+            "C",
+            "C",
+            "G",
+            "G",
+            "G",
             "G"
           ],
-          "hint": "Count up five from C: C, D, E, F, G. Find a G and build the triad up from there."
+          "strip": [
+            "C",
+            "G"
+          ],
+          "show": true,
+          "labels": "all"
         },
         {
-          "id": "l3-try-ii",
+          "id": "l3-try-prog",
           "section": "Progressions",
-          "title": "Play the ii",
-          "say": "ii is built on the 2nd note of the scale, and it is minor.",
+          "title": "Play the progression",
+          "say": "Play each chord, let go, then play the next.",
           "need": 1,
-          "tryText": "Play the ii chord in C.",
-          "tryChord": [
-            "Dm"
+          "tryText": "Play I – V – vi – IV in C, one chord after another.",
+          "tryProgression": [
+            "C",
+            "G",
+            "Am",
+            "F"
           ],
-          "hint": "The 2nd note of C major is D. Find a D and build the triad up from there."
+          "tryKey": "C",
+          "hint": "In C: I = C, V = G, vi = Am, IV = F."
+        },
+        {
+          "id": "l3-try-prog2",
+          "section": "Progressions",
+          "title": "Another favorite",
+          "say": "I – vi – IV – V is the sound of 1950s doo-wop and lots of songs since.",
+          "need": 1,
+          "tryText": "Play I – vi – IV – V in C, one chord after another.",
+          "tryProgression": [
+            "C",
+            "Am",
+            "F",
+            "G"
+          ],
+          "tryKey": "C",
+          "hint": "In C: I = C, vi = Am, IV = F, V = G."
         },
         {
           "id": "l3-minor",
           "section": "Minor keys",
           "title": "Numerals in A minor",
-          "say": "In A minor the numerals count from A: i = Am, ii° = B°, III = C, iv = Dm, v = Em, VI = F, VII = G.",
+          "say": "In a minor key the numerals count from the minor home chord. In A minor: i = Am, ii° = B°, III = C, iv = Dm, v = Em, VI = F, VII = G. Same white keys as C major, but now Am is home.",
           "need": 0,
           "demo": [
             "A3+C4+E4",
+            "B3+D4+F4",
+            "C3+E3+G3",
             "D3+F3+A3",
             "E3+G3+B3",
+            "F3+A3+C4",
+            "G3+B3+D4",
             "A3+C4+E4"
+          ],
+          "strip": [
+            "Am"
           ],
           "show": true,
           "labels": "all"
+        },
+        {
+          "id": "l3-try-minor-prog",
+          "section": "Minor keys",
+          "title": "A minor progression",
+          "say": "i – VI – III – VII is a favorite in minor keys: dark, then lifting.",
+          "need": 1,
+          "tryText": "Play i – VI – III – VII in A minor, one chord after another.",
+          "tryProgression": [
+            "Am",
+            "F",
+            "C",
+            "G"
+          ],
+          "tryKey": "Am",
+          "hint": "In A minor: i = Am, VI = F, III = C, VII = G."
         }
       ],
       "levels": [

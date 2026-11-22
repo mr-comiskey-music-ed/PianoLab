@@ -97,6 +97,13 @@ export interface LearnStep {
   /** Or: chords that count as right ("F", "Dm"). Any octave/inversion unless `tryInversion` is set. */
   tryChord?: string[];
   tryInversion?: number;
+  /** Or: a progression, played one chord after another ("C", "G", "Am", "F"), in the key `tryKey` (for the numerals shown). */
+  tryProgression?: string[];
+  tryKey?: string;
+  /** Show-and-tell: chord strips on the Stage (key ids, e.g. ["C"] or ["C", "G"]) in place of the chord names. */
+  strip?: string[];
+  /** With two strips: which strip each demo entry belongs to (key id per entry), so only that strip lights up. */
+  demoKeys?: string[];
   /** How many correct answers finish the step (0 for show-and-tell). Notes must be in different places. */
   need: number;
   hint?: string;
