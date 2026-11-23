@@ -12,6 +12,8 @@ interface Props {
   forceLabel?: Set<number>;
   marks?: Map<number, KeyMark>;
   labels: 'off' | 'c' | 'all';
+  /** Words to show on particular keys ("Root", "3rd", "5th"), whatever the note-name setting. */
+  keyText?: Map<number, string>;
   /** Black keys get their names too (Lesson 4 on), when names are showing. */
   blackNames?: boolean;
   onDown: (midi: number) => void;
@@ -19,7 +21,7 @@ interface Props {
 }
 
 /** 25 keys, C to C. Mouse and multitouch both work: each finger is tracked by its own pointer id. */
-export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks, labels, blackNames, onDown, onUp }) => {
+export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks, labels, keyText, blackNames, onDown, onUp }) => {
   const held = useRef(new Map<number, number>()); // pointerId -> midi
   const keys = Array.from({ length: KEY_COUNT }, (_, i) => start + i);
   const whites = keys.filter((m) => !isBlack(m));
@@ -67,6 +69,7 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
         const black = isBlack(midi);
         if (!black) wi++;
         const left = black ? (wi + 1) * wW - wW * 0.3 : wi * wW;
+        const tag = keyText?.get(midi);
         const txt = label(midi);
         return (
           <div
@@ -80,6 +83,12 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
             className={`absolute top-0 ${black ? 'h-[62%] z-10 rounded-b-md shadow-[0_3px_4px_rgba(0,0,0,0.5)]' : 'h-full rounded-b-lg border border-line2'} ${cls(midi, black)} transition-colors duration-75`}
             style={{ left: `${left}%`, width: `${black ? wW * 0.6 : wW}%` }}
           >
+            {tag && (
+              // A word on the key (Root / 3rd / 5th), above where the note name goes.
+              <span className={`h pointer-events-none absolute left-0 right-0 text-center ${black ? 'top-1 text-[9px] text-brass' : 'bottom-7 text-[12px] text-brass3'}`} data-testid="key-tag">
+                {tag}
+              </span>
+            )}
             {txt && black && (
               // Both names, stacked: "C♯" over "D♭".
               <span className="h pointer-events-none absolute bottom-1.5 left-0 right-0 flex flex-col items-center text-[10px] leading-[1.15] text-line">

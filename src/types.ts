@@ -80,7 +80,8 @@ export interface LearnStep {
   /** What the app says. */
   say: string;
   /**
-   * Notes the app plays as a demo, one after another. "C4" is one note; "C4+E4+G4" is a chord (played together).
+   * Notes the app plays as a demo, one after another. "C4" is one note; "C4+E4+G4" is a chord (played together);
+   * "E4*2" is held twice as long (a note the counting stops on).
    * Leave out when a demo would not teach anything.
    */
   demo?: string[];
@@ -97,6 +98,10 @@ export interface LearnStep {
   /** Or: chords that count as right ("F", "Dm"). Any octave/inversion unless `tryInversion` is set. */
   tryChord?: string[];
   tryInversion?: number;
+  /** Or: an interval, two piano keys held together this many half steps apart (4 = major 3rd), each on a different bottom note. */
+  tryInterval?: number;
+  /** Words shown on piano keys during the step, by note ("C4": "Root", "E4": "3rd"). Moves with the demo if it shifts octave. */
+  tags?: Record<string, string>;
   /** Or: a progression, played one chord after another ("C", "G", "Am", "F"), in the key `tryKey` (for the numerals shown). */
   tryProgression?: string[];
   tryKey?: string;

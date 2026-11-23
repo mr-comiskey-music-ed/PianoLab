@@ -32,7 +32,7 @@ The app follows the order Mr. Comiskey teaches in. Each lesson has levels.
 | 2 | White-key triads | Stacking **thirds** by skipping a white key makes a **triad** (root, 3rd, 5th); students build any four themselves. Then the chords in a key (C major, A minor). |
 | 3 | Roman numerals | Once chords make sense, introduce numerals (Home/Away/Tension function labels were dropped). Same white-key chords, new language. |
 | 4 | Black-key names and half steps | Sharps and flats, two names for one key, and the **half step** (any key to its nearest neighbor, black or white). |
-| 5 | Major and minor chords anywhere | The real work on **major and minor 3rds**: counting half steps. Major = 4 + 3, and minor = 3 + 4. Build major and minor chords on any root, black keys included. |
+| 5 | Major and minor chords anywhere | Starts by building **major 3rds (4 half steps) and minor 3rds (3 half steps)** on their own, then stacks them: major = major 3rd + minor 3rd (4 + 3), minor = minor 3rd + major 3rd (3 + 4). Build major and minor chords on any root, black keys included. |
 | 6 | Inversions | Show-and-tell plus lots of repetition. Smooth Mover lives here. |
 | 7 | Scales around the circle of 5ths | Start with C, G, F, and D, and keep going as far as the class gets. Includes fingering hints. |
 | Bonus | 7th chords | A bonus level, not a full lesson. |

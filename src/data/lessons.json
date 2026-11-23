@@ -481,12 +481,13 @@
             "C3",
             "E3",
             "G3",
-            "C3+E3+G3",
-            "D3",
-            "F3",
-            "A3",
-            "D3+F3+A3"
+            "C3+E3+G3"
           ],
+          "tags": {
+            "C3": "Root",
+            "E3": "3rd",
+            "G3": "5th"
+          },
           "show": true,
           "labels": "all"
         },
@@ -1244,13 +1245,13 @@
       "key": "C",
       "numerals": true,
       "blackKeys": true,
-      "practice": "Find every black key and say both of its names. Then walk up the keyboard in half steps, black and white.",
+      "practice": "Find every black piano key and say both of its names. Then walk up the keyboard in half steps, black and white.",
       "learn": [
         {
           "id": "l4-names",
           "section": "Black-key names",
-          "title": "Two names for one key",
-          "say": "Black keys are named from their white neighbors. Sharp (♯) means one key higher; flat (♭) means one key lower. The black key between C and D is C♯, and it is also D♭. Same key, two names.",
+          "title": "Two names for one piano key",
+          "say": "Black piano keys are named after the white piano keys on either side of them: the one to the left or the one to the right, depending on the music. Sharp (♯) means one piano key higher. Flat (♭) means one piano key lower. The black piano key between C and D is C♯, and it is also D♭. Same piano key, two names.",
           "need": 0,
           "demo": [
             "C4",
@@ -1265,31 +1266,31 @@
           "id": "l4-try-fs",
           "section": "Black-key names",
           "title": "Find F♯",
-          "say": "F♯ is just above F: the first key of the group of 3 black keys.",
+          "say": "F♯ is one piano key above F: the first black key of the group of 3.",
           "need": 2,
           "tryText": "Play an F♯ (also called G♭).",
           "tryAnswer": [
             "F#"
           ],
-          "hint": "Find F, then play the black key just to its right."
+          "hint": "Find F, then play the black piano key just to its right."
         },
         {
           "id": "l4-try-bb",
           "section": "Black-key names",
           "title": "Find B♭",
-          "say": "B♭ is just below B: the last key of the group of 3.",
+          "say": "B♭ is one piano key below B: the last black key of the group of 3.",
           "need": 2,
           "tryText": "Play a B♭ (also called A♯).",
           "tryAnswer": [
             "A#"
           ],
-          "hint": "Find B, then play the black key just to its left."
+          "hint": "Find B, then play the black piano key just to its left."
         },
         {
           "id": "l4-half",
           "section": "Half steps",
           "title": "The smallest step",
-          "say": "A half step is a move to the very next key, up or down, black or white, with no skipping. E to F and B to C are half steps too: there is no black key between them.",
+          "say": "A half step is a move to the very next piano key, up or down, black or white, with no skipping. E to F and B to C are half steps too: there is no black key between them.",
           "need": 0,
           "demo": [
             "C4",
@@ -1310,11 +1311,11 @@
           "title": "A half step up",
           "say": "Up means to the right.",
           "need": 2,
-          "tryText": "Play the key a half step up from E.",
+          "tryText": "Play the piano key a half step up from E.",
           "tryAnswer": [
             "F"
           ],
-          "hint": "There is no black key right of E, so the next key up is F."
+          "hint": "There is no black key right of E, so the next piano key up is F."
         },
         {
           "id": "l4-try-down",
@@ -1322,22 +1323,93 @@
           "title": "A half step down",
           "say": "Down means to the left.",
           "need": 2,
-          "tryText": "Play the key a half step down from D.",
+          "tryText": "Play the piano key a half step down from D.",
           "tryAnswer": [
             "C#"
           ],
-          "hint": "The very next key left of D is the black key C♯ (D♭)."
+          "hint": "The very next piano key left of D is the black key C♯ (D♭)."
         }
       ],
       "levels": [
         {
+          "id": "l4-half-steps",
+          "title": "Half steps",
+          "blurb": "A piano key lights up. Play the piano key a half step away.",
+          "type": "halfStep",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the piano key a half step UP from the lit key.",
+              "show": "E",
+              "step": 1
+            },
+            {
+              "text": "Play the piano key a half step DOWN from the lit key.",
+              "show": "C",
+              "step": -1
+            },
+            {
+              "text": "Play the piano key a half step UP from the lit key.",
+              "show": "F",
+              "step": 1
+            },
+            {
+              "text": "Play the piano key a half step UP from the lit key.",
+              "show": "B",
+              "step": 1
+            },
+            {
+              "text": "Play the piano key a half step DOWN from the lit key.",
+              "show": "F",
+              "step": -1
+            },
+            {
+              "text": "Play the piano key a half step UP from the lit key.",
+              "show": "G",
+              "step": 1
+            },
+            {
+              "text": "Play the piano key a half step DOWN from the lit key.",
+              "show": "D",
+              "step": -1
+            },
+            {
+              "text": "Play the piano key a half step UP from the lit key.",
+              "show": "A",
+              "step": 1
+            },
+            {
+              "text": "Play the piano key a half step UP from the lit key.",
+              "show": "C",
+              "step": 1
+            },
+            {
+              "text": "Play the piano key a half step DOWN from the lit key.",
+              "show": "E",
+              "step": -1
+            },
+            {
+              "text": "Play the piano key a half step DOWN from the lit key.",
+              "show": "B",
+              "step": -1
+            },
+            {
+              "text": "Play the piano key a half step DOWN from the lit key.",
+              "show": "G",
+              "step": -1
+            }
+          ]
+        },
+        {
           "id": "l4-find-black",
           "title": "Find the black keys",
-          "blurb": "Play the key you are asked for. Any octave counts.",
+          "blurb": "Play the piano key you are asked for. Any octave counts.",
           "type": "findIt",
           "octave": "any",
           "pass": 80,
-          "labels": "all",
+          "labels": "c",
           "prompts": [
             {
               "text": "Play an F♯.",
@@ -1404,7 +1476,7 @@
         {
           "id": "l4-name-black",
           "title": "Name the black key",
-          "blurb": "A black key lights up. Pick its names.",
+          "blurb": "A black piano key lights up. Pick its names.",
           "type": "nameIt",
           "octave": "any",
           "pass": 80,
@@ -1488,77 +1560,6 @@
             "G♯/A♭",
             "A♯/B♭"
           ]
-        },
-        {
-          "id": "l4-half-steps",
-          "title": "Half steps",
-          "blurb": "A key lights up. Play the key a half step away.",
-          "type": "halfStep",
-          "octave": "any",
-          "pass": 80,
-          "labels": "c",
-          "prompts": [
-            {
-              "text": "Play the key a half step UP from the lit key.",
-              "show": "E",
-              "step": 1
-            },
-            {
-              "text": "Play the key a half step DOWN from the lit key.",
-              "show": "C",
-              "step": -1
-            },
-            {
-              "text": "Play the key a half step UP from the lit key.",
-              "show": "F",
-              "step": 1
-            },
-            {
-              "text": "Play the key a half step UP from the lit key.",
-              "show": "B",
-              "step": 1
-            },
-            {
-              "text": "Play the key a half step DOWN from the lit key.",
-              "show": "F",
-              "step": -1
-            },
-            {
-              "text": "Play the key a half step UP from the lit key.",
-              "show": "G",
-              "step": 1
-            },
-            {
-              "text": "Play the key a half step DOWN from the lit key.",
-              "show": "D",
-              "step": -1
-            },
-            {
-              "text": "Play the key a half step UP from the lit key.",
-              "show": "A",
-              "step": 1
-            },
-            {
-              "text": "Play the key a half step UP from the lit key.",
-              "show": "C",
-              "step": 1
-            },
-            {
-              "text": "Play the key a half step DOWN from the lit key.",
-              "show": "E",
-              "step": -1
-            },
-            {
-              "text": "Play the key a half step DOWN from the lit key.",
-              "show": "B",
-              "step": -1
-            },
-            {
-              "text": "Play the key a half step DOWN from the lit key.",
-              "show": "G",
-              "step": -1
-            }
-          ]
         }
       ]
     },
@@ -1569,38 +1570,116 @@
       "key": "C",
       "numerals": true,
       "blackKeys": true,
-      "practice": "Pick any key as a root. Count up 4 half steps, then 3 more: major. Count 3, then 4: minor. Listen to the difference.",
+      "practice": "Pick any piano key as a root. Count up 4 half steps, then 3 more: major. Count 3, then 4: minor. Listen to the difference.",
       "learn": [
         {
-          "id": "l5-count",
-          "section": "Counting half steps",
-          "title": "Major = 4 + 3",
-          "say": "Any major chord: start on the root, count up 4 half steps, then 3 more. C major: C, up 4 to E, up 3 to G.",
+          "id": "l5-maj3",
+          "section": "Major and minor 3rds",
+          "title": "Major 3rd = 4 half steps",
+          "say": "A 3rd is the distance from a chord's root up to its 3rd. Count it in half steps: every piano key, black and white. A major 3rd is 4 half steps. From C: C♯, D, D♯, E. So C up to E is a major 3rd.",
           "need": 0,
           "demo": [
             "C4",
             "C#4",
             "D4",
             "D#4",
-            "E4",
+            "E4*2",
+            "C4+E4"
+          ],
+          "tags": {
+            "C4": "Root",
+            "E4": "3rd"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l5-try-maj3",
+          "section": "Major and minor 3rds",
+          "title": "Play major 3rds",
+          "say": "Pick any piano key. Count up 4 half steps and play both keys together.",
+          "need": 2,
+          "tryText": "Play a major 3rd (4 half steps) on two different piano keys.",
+          "tryInterval": 4,
+          "hint": "Count 4 half steps up from your bottom note, black keys included."
+        },
+        {
+          "id": "l5-min3",
+          "section": "Major and minor 3rds",
+          "title": "Minor 3rd = 3 half steps",
+          "say": "A minor 3rd is one half step smaller: 3 half steps. From C: C♯, D, E♭. So C up to E♭ is a minor 3rd.",
+          "need": 0,
+          "demo": [
+            "C4",
+            "C#4",
+            "D4",
+            "Eb4*2",
+            "C4+Eb4"
+          ],
+          "tags": {
+            "C4": "Root",
+            "Eb4": "3rd"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l5-try-min3",
+          "section": "Major and minor 3rds",
+          "title": "Play minor 3rds",
+          "say": "Pick any piano key. Count up 3 half steps and play both keys together.",
+          "need": 2,
+          "tryText": "Play a minor 3rd (3 half steps) on two different piano keys.",
+          "tryInterval": 3,
+          "hint": "Count 3 half steps up from your bottom note, black keys included."
+        },
+        {
+          "id": "l5-count",
+          "section": "Building chords",
+          "title": "Major = 4 + 3",
+          "say": "Stack the two 3rds to build a chord. Major: a major 3rd on the bottom (4 half steps), then a minor 3rd on top (3 more). C major: C, up 4 to E, up 3 to G.",
+          "need": 0,
+          "demo": [
+            "C4",
+            "C#4",
+            "D4",
+            "D#4",
+            "E4*2",
             "F4",
             "F#4",
-            "G4",
+            "G4*2",
             "C4+E4+G4"
           ],
+          "tags": {
+            "C4": "Root",
+            "E4": "3rd",
+            "G4": "5th"
+          },
           "show": true,
           "labels": "all"
         },
         {
           "id": "l5-minor",
-          "section": "Counting half steps",
+          "section": "Building chords",
           "title": "Minor = 3 + 4",
-          "say": "Minor flips it: up 3 half steps, then 4. C minor: C, up 3 to E♭, up 4 to G. Only the middle note moves.",
+          "say": "Minor flips it: a minor 3rd on the bottom (3 half steps), then a major 3rd on top (4 more). C minor: C, up 3 to E♭, up 4 to G. Only the middle note moves.",
           "need": 0,
           "demo": [
-            "C4+E4+G4",
+            "C4",
+            "C#4",
+            "D4",
+            "Eb4*2",
+            "E4",
+            "F4",
+            "F#4",
+            "G4*2",
             "C4+Eb4+G4"
           ],
+          "tags": {
+            "C4": "Root",
+            "Eb4": "3rd",
+            "G4": "5th"
+          },
           "show": true,
           "labels": "all"
         },
@@ -1632,7 +1711,7 @@
           "id": "l5-hear",
           "section": "Hearing it",
           "title": "Bright and dark",
-          "say": "Major chords sound bright; minor chords sound darker. Listen: D major, D minor, A major, A minor.",
+          "say": "Major chords sound bright. Minor chords sound darker. Listen: D major, D minor, A major, A minor.",
           "need": 0,
           "demo": [
             "D4+F#4+A4",
@@ -1645,7 +1724,7 @@
         },
         {
           "id": "l5-try-a",
-          "section": "Build anywhere",
+          "section": "More chords",
           "title": "A major",
           "say": "Count from A: up 4, then up 3.",
           "need": 1,
@@ -1657,7 +1736,7 @@
         },
         {
           "id": "l5-try-fm",
-          "section": "Build anywhere",
+          "section": "More chords",
           "title": "F minor",
           "say": "Count from F: up 3, then up 4.",
           "need": 1,
@@ -1669,6 +1748,67 @@
         }
       ],
       "levels": [
+        {
+          "id": "l5-thirds",
+          "title": "Major and minor 3rds",
+          "blurb": "A piano key lights up. Play the piano key a major or minor 3rd above it.",
+          "type": "halfStep",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play a major 3rd (4 half steps) UP from the lit key.",
+              "show": "C",
+              "step": 4
+            },
+            {
+              "text": "Play a minor 3rd (3 half steps) UP from the lit key.",
+              "show": "D",
+              "step": 3
+            },
+            {
+              "text": "Play a major 3rd (4 half steps) UP from the lit key.",
+              "show": "F",
+              "step": 4
+            },
+            {
+              "text": "Play a minor 3rd (3 half steps) UP from the lit key.",
+              "show": "E",
+              "step": 3
+            },
+            {
+              "text": "Play a major 3rd (4 half steps) UP from the lit key.",
+              "show": "G",
+              "step": 4
+            },
+            {
+              "text": "Play a minor 3rd (3 half steps) UP from the lit key.",
+              "show": "A",
+              "step": 3
+            },
+            {
+              "text": "Play a major 3rd (4 half steps) UP from the lit key.",
+              "show": "D",
+              "step": 4
+            },
+            {
+              "text": "Play a minor 3rd (3 half steps) UP from the lit key.",
+              "show": "B",
+              "step": 3
+            },
+            {
+              "text": "Play a major 3rd (4 half steps) UP from the lit key.",
+              "show": "A",
+              "step": 4
+            },
+            {
+              "text": "Play a minor 3rd (3 half steps) UP from the lit key.",
+              "show": "C",
+              "step": 3
+            }
+          ]
+        },
         {
           "id": "l5-build-major",
           "title": "Build major chords",

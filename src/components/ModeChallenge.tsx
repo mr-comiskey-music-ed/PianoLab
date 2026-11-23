@@ -188,7 +188,14 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         const from = litKey(viewRef.current, p.show ?? 'C', r.idx, p.step ?? 1);
         if (from === null) return;
         const target = from + (p.step ?? 1);
-        answer(midi === target, [midi], midi === from ? 'That is the lit key itself. Move one key.' : 'Not quite. A half step is the very next key, black or white.');
+        const n = Math.abs(p.step ?? 1);
+        const why =
+          midi === from
+            ? 'That is the lit key itself. Count up from it.'
+            : n === 1
+              ? 'Not quite. A half step is the very next piano key, black or white.'
+              : `Not quite: that is ${Math.abs(midi - from)} half step${Math.abs(midi - from) === 1 ? '' : 's'} away. Count ${n}, black keys included.`;
+        answer(midi === target, [midi], why);
       }
   });
 
@@ -352,6 +359,9 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         <div className="h-2 w-64 overflow-hidden rounded-full bg-wal2">
           <div className="h-full bg-brass transition-all" style={{ width: `${(run.idx / run.prompts.length) * 100}%` }} />
         </div>
+        <button className="btn btn-dark px-3 py-1 text-[13px]" onClick={() => start(run.level.id)} data-testid="restart">
+          Restart
+        </button>
       </div>
     );
   } else {

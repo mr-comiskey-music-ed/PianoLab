@@ -14,8 +14,10 @@ describe('lesson content', () => {
   it('every Learn step can be played', () => {
     for (const l of LESSONS)
       for (const s of l.learn) {
-        for (const d of s.demo ?? []) for (const n of d.split('+')) expect(parseNote(n), `${s.id} demo ${n}`).not.toBeNull();
-        if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0) + (s.tryTriad ? 1 : 0) + (s.tryProgression?.length ?? 0), `${s.id} has an answer`).toBeGreaterThan(0);
+        for (const d of s.demo ?? []) for (const n of d.replace(/\*\d+(\.\d+)?$/, '').split('+')) expect(parseNote(n), `${s.id} demo ${n}`).not.toBeNull();
+        for (const n of Object.keys(s.tags ?? {})) expect(parseNote(n), `${s.id} tag ${n}`).not.toBeNull();
+        if (s.tryInterval !== undefined) expect(s.tryInterval, `${s.id} interval`).toBeGreaterThan(0);
+        if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0) + (s.tryTriad ? 1 : 0) + (s.tryProgression?.length ?? 0) + (s.tryInterval ? 1 : 0), `${s.id} has an answer`).toBeGreaterThan(0);
         for (const a of s.tryAnswer ?? []) expect(pcOf(a), `${s.id} answer ${a}`).not.toBeNull();
         for (const c of [...(s.tryChord ?? []), ...(s.tryProgression ?? [])]) expect(parseChord(c), `${s.id} chord ${c}`).not.toBeNull();
         // Every progression chord belongs to its key, and every strip/demoKeys key exists.
@@ -23,6 +25,12 @@ describe('lesson content', () => {
         for (const k of [...(s.strip ?? []), ...(s.demoKeys ?? [])]) expect(KEYS.some((x) => x.id === k), `${s.id} key ${k}`).toBe(true);
         if (s.demoKeys) expect(s.demoKeys.length, `${s.id} demoKeys`).toBe(s.demo?.length);
       }
+  });
+  it('Learn sections come in one run each (the step list groups them)', () => {
+    for (const l of LESSONS) {
+      const runs = l.learn.map((s) => s.section).filter((sec, i, all) => i === 0 || all[i - 1] !== sec);
+      expect(new Set(runs).size, `${l.id} sections: ${runs.join(' > ')}`).toBe(runs.length);
+    }
   });
   it('every level prompt makes sense for its type', () => {
     for (const l of LESSONS)
@@ -33,7 +41,7 @@ describe('lesson content', () => {
           if (['nameChord', 'earCheck', 'nameIt'].includes(v.type) && v.choices) for (const a of p.answer ?? []) expect(v.choices, where).toContain(a);
           if (v.type === 'findIt') for (const a of p.answer ?? []) expect(pcOf(a), where).not.toBeNull();
           if (v.type === 'nameIt' || v.type === 'halfStep') expect(pcOf(p.show ?? ''), where).not.toBeNull();
-          if (v.type === 'halfStep') expect(Math.abs(p.step ?? 0), where).toBe(1);
+          if (v.type === 'halfStep') expect(Math.abs(p.step ?? 0), where).toBeGreaterThan(0);
         }
   });
 });

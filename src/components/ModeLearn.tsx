@@ -26,8 +26,23 @@ export const sentences = (text: string) =>
     .map((t) => t.trim())
     .filter(Boolean);
 
-/** A demo entry: "C4" is one note, "C4+E4+G4" a chord. */
-const entryNotes = (e: string) => e.split('+').map(parseNote).filter((n): n is number => n !== null);
+/** A demo entry: "C4" is one note, "C4+E4+G4" a chord, "E4*2" held twice as long. */
+const entryNotes = (e: string) => e.replace(/\*\d+(\.\d+)?$/, '').split('+').map(parseNote).filter((n): n is number => n !== null);
+const entryLength = (e: string) => Number(e.match(/\*(\d+(\.\d+)?)$/)?.[1] ?? 1);
+
+/**
+ * How many half steps to move a step's demo (and its key tags) so it stays on the keys on screen: whole octaves, and only
+ * when it would run off either end.
+ */
+function demoShift(demo: string[] | undefined, start: number): number {
+  const all = (demo ?? []).flatMap(entryNotes);
+  if (!all.length) return 0;
+  const lo = Math.min(...all);
+  const hi = Math.max(...all);
+  if (lo >= start && hi <= start + KEY_COUNT - 1) return 0;
+  const shift = 12 * Math.ceil((start - lo) / 12);
+  return hi + shift <= start + KEY_COUNT - 1 ? shift : 0;
+}
 /** How a demo entry is shown on the stage: a letter, or a chord name. */
 const entryLabel = (e: string) => {
   const notes = entryNotes(e);
@@ -35,7 +50,7 @@ const entryLabel = (e: string) => {
     const d = detectChord(notes);
     return d ? chordName(d.chord) : e;
   }
-  return pretty(e.replace(/-?\d+$/, ''));
+  return pretty(e.replace(/\*\d+(\.\d+)?$/, '').replace(/-?\d+$/, ''));
 };
 
 /**
@@ -71,27 +86,21 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   const usedKeys = useRef(new Set<number>());
   const showMe = useCallback(async () => {
     const s = stepRef.current;
-    let entries = (s.demo ?? []).map(entryNotes).filter((e) => e.length);
-    if (!entries.length) return;
     // Keep the demo on the keys you can see: move it by whole octaves if it would run off either end.
-    const all = entries.flat();
-    const lo = Math.min(...all);
-    const hi = Math.max(...all);
-    const start = viewRef.current;
-    if (lo < start || hi > start + KEY_COUNT - 1) {
-      const shift = 12 * Math.ceil((start - lo) / 12);
-      if (hi + shift <= start + KEY_COUNT - 1) entries = entries.map((e) => e.map((n) => n + shift));
-    }
+    const shift = demoShift(s.demo, viewRef.current);
+    const entries = (s.demo ?? []).map((e) => ({ notes: entryNotes(e).map((n) => n + shift), len: entryLength(e) })).filter((e) => e.notes.length);
+    if (!entries.length) return;
     const run = ++demoRun.current;
     const stopped = () => demoRun.current !== run;
     setDemoing(true);
     await ctx.engine.unlock();
-    // Long runs of single notes go a little quicker; chords get time to ring.
-    const gap = entries.some((e) => e.length > 1) ? 950 : entries.length > 8 ? 420 : 560;
+    // Chords get time to ring; single notes move along (a little quicker in long runs). "*2" holds an entry twice as long.
+    const singles = entries.filter((e) => e.notes.length === 1).length;
     const wait = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
     for (let k = 0; k < entries.length; k++) {
       if (stopped()) return;
-      const notes = entries[k];
+      const { notes, len } = entries[k];
+      const gap = (notes.length > 1 ? 950 : singles > 8 ? 420 : 560) * len;
       setDemoLit(new Set(notes));
       setDemoIdx(k);
       notes.forEach((n) => ctx.engine.noteOn(n, 0.75));
@@ -190,6 +199,29 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   useChordWatcher(ctx.getHeld, ctx.subscribeNotes, (held) => {
       const s = stepRef.current;
       if (doneRef.current || s.show) return;
+      if (s.tryInterval !== undefined) {
+        // An interval: two piano keys held together, the right number of half steps apart, each on a new bottom note.
+        if (held.length !== 2) {
+          setMsg({ kind: 'hint', text: `Play just two piano keys together. ${s.hint ?? ''}` });
+          return;
+        }
+        const gap = held[1] - held[0];
+        if (gap !== s.tryInterval) {
+          setMsg({ kind: 'hint', text: `Those are ${gap} half step${gap === 1 ? '' : 's'} apart. ${s.hint ?? ''} Let go and try again.` });
+          return;
+        }
+        if (usedKeys.current.has(pc(held[0]))) {
+          setMsg({ kind: 'hint', text: `You already started on ${pretty(letterOf(held[0]))}. Try a different bottom note.` });
+          return;
+        }
+        usedKeys.current.add(pc(held[0]));
+        setCount((c) => {
+          const n = c + 1;
+          setMsg({ kind: 'good', text: n >= s.need ? `Yes! ${pretty(letterOf(held[0]))} up to ${pretty(letterOf(held[1]))}: ${gap} half steps. Nice work.` : `Yes! ${pretty(letterOf(held[0]))} up to ${pretty(letterOf(held[1]))} is ${gap} half steps. Now start on a different piano key.` });
+          return n;
+        });
+        return;
+      }
       if (s.tryTriad) {
         // Any white-key triad: root, skip a white key, 3rd, skip a white key, 5th. Each on a different root.
         const triad = isWhiteTriad(held);
@@ -252,13 +284,22 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       });
       const why = rightChord && s.tryInversion !== undefined ? 'Right chord, but check which note is on the bottom.' : got ? `That is ${got.longName}.` : 'Those keys don’t make that chord yet.';
       setMsg({ kind: 'hint', text: `${why} ${s.hint ?? ''} Let go and try again.` });
-  });
+  }, () => (stepRef.current.tryInterval !== undefined ? 2 : 3)); // intervals are judged on 2 keys, chords on 3
 
   // Finishing the last step marks Learn done (this goes in the code).
   useEffect(() => {
     if (stepDone && last && !ctx.learnDone) ctx.setLearnDone(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepDone, last]);
+
+  // Words on the keys for this step (Root / 3rd / 5th), moved with the demo if it shifted octave.
+  const keyText = step.tags
+    ? new Map(
+        Object.entries(step.tags)
+          .map(([n, word]) => [(parseNote(n) ?? -99) + demoShift(step.demo, ctx.viewStart), word] as [number, string])
+          .filter(([m]) => m >= 0),
+      )
+    : undefined;
 
   const sections = Array.from(new Set(steps.map((s) => s.section)));
 
@@ -410,7 +451,14 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       >
         {msg?.text ?? '.'}
       </div>
-      {stepDone && nextBtn}
+      {stepDone ? (
+        nextBtn
+      ) : step.demo?.length ? (
+        // A demo that teaches something before you try (Start / Restart no longer sit above the piano).
+        <button className="btn btn-dark text-[15px]" onClick={() => void showMe()} disabled={demoing} data-testid="show-me">
+          {demoing ? 'Playing…' : '▶ Show me'}
+        </button>
+      ) : null}
       {ctx.learnDone && last && stepDone && <div className="h text-[16px] text-brass">Learn complete. Your code will say so.</div>}
     </div>
   );
@@ -423,7 +471,6 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     labels: step.labels ?? 'off',
     lit: demoLit ?? undefined,
     forceLabel: demoLit ?? undefined,
-    start: step.demo?.length && !step.show ? { label: demoing ? 'Playing…' : 'Show me', onClick: () => void showMe(), disabled: demoing } : undefined,
-    restart: { label: 'Restart step', onClick: () => goStep(i, false), disabled: demoing },
+    keyText,
   };
 }

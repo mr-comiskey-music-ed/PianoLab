@@ -56,6 +56,8 @@ export interface ModeParts {
   /** Keys that get a label even when labels are off (the note the app is demoing). */
   forceLabel?: Set<number>;
   marks?: Map<number, KeyMark>;
+  /** Words on particular keys (Learn: Root / 3rd / 5th). */
+  keyText?: Map<number, string>;
   start?: { label: string; onClick: () => void; disabled?: boolean };
   restart?: { label: string; onClick: () => void; disabled?: boolean };
   /** A pop-up the mode wants shown (e.g. Save performance). */

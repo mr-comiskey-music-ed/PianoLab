@@ -92,7 +92,18 @@ lesson picker (all lessons open; later the teacher's assignment link can decide)
 - Challenge question order (`utils/shuffle.ts` `shuffleNoRepeats`): shuffled, but the same question never comes twice in a
   row, and a new try doesn't open with the question the last try ended on. With only two answers (Lesson 1's F/C
   levels) that means they alternate. Smooth Mover keeps its written order. `shuffle.test.ts` checks every level.
-- Learn show steps: the demo button says "▶ Play example".
+- Learn show steps: the demo button says "▶ Play example". Try steps with a demo have "▶ Show me" on the Stage.
+- No Start / Restart / Show me buttons above the piano (removed at his request): Challenges' Start and Restart are on the
+  Stage (Restart under the progress bar during a run); Learn's Show me is on the Stage. `ModeParts.start/restart` are unused.
+- Demos: an entry ending "*2" is held twice as long (the note the counting stops on). Steps can write words on keys
+  (`tags: {"C4": "Root", "E4": "3rd", "G4": "5th"}`; `keyText` on the Piano), moved with the demo's octave shift.
+- Interval tries (`tryInterval: 4`): two piano keys held together that many half steps apart, each on a new bottom note
+  (the chord listener judges at 2 keys for these steps). Lesson 5 starts with major 3rd (4) and minor 3rd (3) steps, then
+  builds chords as "major 3rd + minor 3rd" / "minor 3rd + major 3rd" with Root / 3rd / 5th on the keys.
+- Wording: "piano key" wherever "key" could mean a musical key (Lesson 4 especially).
+- Lesson 4 levels: Half steps · Find the black keys (starts at Cs only) · Name the black key. Lesson 5 levels: Major and
+  minor 3rds (`l5-thirds`, halfStep type with step 3/4) · Build major · Build minor · Major or minor? · Mix.
+- `lessons.test.ts` also checks each lesson's Learn sections come in one run (the step list groups by section).
 - Level types: findIt, nameIt, buildIt, nameChord (name / numeral / inversion via `choices`), halfStep,
   earCheck (major/minor, "Hear it again"), smooth (Smooth Mover: right chord AND fewest half steps from the lit chord;
   result shows half steps moved vs the smoothest possible). Choice-button answers don't flash the keys.

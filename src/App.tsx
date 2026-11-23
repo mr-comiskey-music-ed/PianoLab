@@ -381,18 +381,7 @@ export default function App() {
                 )}
               </span>
             )}
-            <span className="ml-auto flex gap-2">
-              {parts.restart && (
-                <button className="btn btn-dark" onClick={parts.restart.onClick} disabled={parts.restart.disabled}>
-                  {parts.restart.label}
-                </button>
-              )}
-              {parts.start && (
-                <button className="btn btn-brass" onClick={parts.start.onClick} disabled={parts.start.disabled} data-testid="start-btn">
-                  {parts.start.label}
-                </button>
-              )}
-            </span>
+
           </div>
           <div className="flex h-[clamp(150px,24vh,210px)] shrink-0">
             <div className="wood-v w-3 rounded-bl-lg" />
@@ -403,6 +392,7 @@ export default function App() {
                 lit={stripLit && !parts.lit ? stripLit : parts.lit}
                 forceLabel={parts.forceLabel}
                 marks={parts.marks}
+                keyText={parts.keyText}
                 labels={parts.labels}
                 blackNames={!!lesson.blackKeys || mode === 'sandbox'}
                 onDown={(m) => noteOn(m, 0.8, 'touch')}
