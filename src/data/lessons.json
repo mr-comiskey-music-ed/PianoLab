@@ -1924,9 +1924,9 @@
           ]
         },
         {
-          "id": "l5-name-heard",
-          "title": "Name the chord",
-          "blurb": "A chord plays and lights up. Which one is it?",
+          "id": "l5-name-major",
+          "title": "Name major chords",
+          "blurb": "A major chord plays and lights up. Which one is it?",
           "type": "nameChord",
           "octave": "any",
           "pass": 80,
@@ -1939,53 +1939,10 @@
                 "D"
               ],
               "choices": [
-                "B",
                 "A",
-                "Dm",
-                "D",
-                "B♭m"
-              ]
-            },
-            {
-              "text": "Which chord is this?",
-              "chord": "Em",
-              "answer": [
-                "Em"
-              ],
-              "choices": [
-                "Cm",
-                "Fm",
-                "E",
-                "Bm",
-                "Em"
-              ]
-            },
-            {
-              "text": "Which chord is this?",
-              "chord": "Bb",
-              "answer": [
-                "B♭"
-              ],
-              "choices": [
-                "A♭m",
-                "E♭",
                 "B♭",
-                "B♭m",
-                "Dm"
-              ]
-            },
-            {
-              "text": "Which chord is this?",
-              "chord": "F#m",
-              "answer": [
-                "F♯m"
-              ],
-              "choices": [
-                "Em",
-                "B♭m",
-                "F♯m",
-                "F♯",
-                "G"
+                "D",
+                "F"
               ]
             },
             {
@@ -1995,52 +1952,9 @@
                 "A"
               ],
               "choices": [
-                "Bm",
-                "B",
                 "A",
-                "F♯",
-                "Am"
-              ]
-            },
-            {
-              "text": "Which chord is this?",
-              "chord": "Cm",
-              "answer": [
-                "Cm"
-              ],
-              "choices": [
-                "Bm",
-                "Cm",
-                "Fm",
-                "G",
-                "C"
-              ]
-            },
-            {
-              "text": "Which chord is this?",
-              "chord": "Eb",
-              "answer": [
-                "E♭"
-              ],
-              "choices": [
-                "A♭m",
+                "B♭",
                 "E♭",
-                "Em",
-                "F",
-                "E♭m"
-              ]
-            },
-            {
-              "text": "Which chord is this?",
-              "chord": "Gm",
-              "answer": [
-                "Gm"
-              ],
-              "choices": [
-                "E♭m",
-                "Em",
-                "Gm",
-                "B♭m",
                 "G"
               ]
             },
@@ -2051,25 +1965,75 @@
                 "E"
               ],
               "choices": [
-                "B",
-                "Em",
-                "C♯m",
-                "Am",
-                "E"
+                "C",
+                "D",
+                "E",
+                "G"
               ]
             },
             {
               "text": "Which chord is this?",
-              "chord": "Bm",
+              "chord": "Bb",
               "answer": [
-                "Bm"
+                "B♭"
               ],
               "choices": [
-                "Bm",
-                "E♭m",
-                "Gm",
-                "B",
-                "Am"
+                "A",
+                "B♭",
+                "C",
+                "D"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "F",
+              "answer": [
+                "F"
+              ],
+              "choices": [
+                "C",
+                "E",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "G",
+              "answer": [
+                "G"
+              ],
+              "choices": [
+                "D",
+                "E♭",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Eb",
+              "answer": [
+                "E♭"
+              ],
+              "choices": [
+                "B♭",
+                "C",
+                "E♭",
+                "G"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "C",
+              "answer": [
+                "C"
+              ],
+              "choices": [
+                "C",
+                "D",
+                "E♭",
+                "E"
               ]
             }
           ],
@@ -2127,6 +2091,122 @@
           ]
         },
         {
+          "id": "l5-name-minor",
+          "title": "Name minor chords",
+          "blurb": "A minor chord plays and lights up. Which one is it?",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which chord is this?",
+              "chord": "Am",
+              "answer": [
+                "Am"
+              ],
+              "choices": [
+                "Am",
+                "Dm",
+                "Em",
+                "Fm"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Dm",
+              "answer": [
+                "Dm"
+              ],
+              "choices": [
+                "Dm",
+                "Em",
+                "F♯m",
+                "Gm"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Em",
+              "answer": [
+                "Em"
+              ],
+              "choices": [
+                "Cm",
+                "Dm",
+                "Em",
+                "F♯m"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Gm",
+              "answer": [
+                "Gm"
+              ],
+              "choices": [
+                "Am",
+                "Fm",
+                "F♯m",
+                "Gm"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Cm",
+              "answer": [
+                "Cm"
+              ],
+              "choices": [
+                "Cm",
+                "Dm",
+                "Em",
+                "F♯m"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Bm",
+              "answer": [
+                "Bm"
+              ],
+              "choices": [
+                "Bm",
+                "Cm",
+                "Dm",
+                "F♯m"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Fm",
+              "answer": [
+                "Fm"
+              ],
+              "choices": [
+                "Bm",
+                "Dm",
+                "Fm",
+                "F♯m"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "F#m",
+              "answer": [
+                "F♯m"
+              ],
+              "choices": [
+                "Bm",
+                "Dm",
+                "Em",
+                "F♯m"
+              ]
+            }
+          ],
+          "playChord": true
+        },
+        {
           "id": "l5-build-minor",
           "title": "Build minor chords",
           "blurb": "Play the minor chord. Count 3 + 4 half steps.",
@@ -2178,8 +2258,150 @@
           ]
         },
         {
+          "id": "l5-name-heard",
+          "title": "Name major and minor chords",
+          "blurb": "A chord plays and lights up. Which one is it? Listen for major or minor.",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which chord is this?",
+              "chord": "D",
+              "answer": [
+                "D"
+              ],
+              "choices": [
+                "B♭",
+                "D",
+                "Dm",
+                "G"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Em",
+              "answer": [
+                "Em"
+              ],
+              "choices": [
+                "Dm",
+                "E",
+                "Em",
+                "Gm"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Bb",
+              "answer": [
+                "B♭"
+              ],
+              "choices": [
+                "B♭",
+                "B♭m",
+                "F",
+                "Fm"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "F#m",
+              "answer": [
+                "F♯m"
+              ],
+              "choices": [
+                "E",
+                "Fm",
+                "F♯",
+                "F♯m"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "A",
+              "answer": [
+                "A"
+              ],
+              "choices": [
+                "A",
+                "Am",
+                "E♭",
+                "F"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Cm",
+              "answer": [
+                "Cm"
+              ],
+              "choices": [
+                "A",
+                "C",
+                "Cm",
+                "D"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Eb",
+              "answer": [
+                "E♭"
+              ],
+              "choices": [
+                "A",
+                "B♭",
+                "E♭",
+                "E♭m"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Gm",
+              "answer": [
+                "Gm"
+              ],
+              "choices": [
+                "E",
+                "F♯m",
+                "G",
+                "Gm"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "E",
+              "answer": [
+                "E"
+              ],
+              "choices": [
+                "A",
+                "D",
+                "E",
+                "Em"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Bm",
+              "answer": [
+                "Bm"
+              ],
+              "choices": [
+                "A",
+                "B",
+                "Bm",
+                "G"
+              ]
+            }
+          ],
+          "playChord": true
+        },
+        {
           "id": "l5-build-mixed",
-          "title": "Major and minor mix",
+          "title": "Play major and minor chords",
           "blurb": "Play each chord. A letter on its own is major; a letter with \"m\" is minor.",
           "type": "buildIt",
           "octave": "any",
@@ -2254,10 +2476,17 @@
           "say": "An inversion is the same chord with a different note on the bottom. Root position: the root is lowest (C E G). 1st inversion: the 3rd is lowest (E G C). 2nd inversion: the 5th is lowest (G C E).",
           "need": 0,
           "demo": [
-            "C4+E4+G4",
-            "E4+G4+C5",
-            "G3+C4+E4"
+            "C3+E3+G3*1.5",
+            "E3+G3+C4*1.5",
+            "G3+C4+E4*1.5"
           ],
+          "tags": {
+            "C3": "Root",
+            "E3": "3rd",
+            "G3": "5th",
+            "C4": "Root",
+            "E4": "3rd"
+          },
           "show": true,
           "labels": "all"
         },

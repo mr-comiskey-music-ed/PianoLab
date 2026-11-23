@@ -302,7 +302,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     <div className="flex flex-col gap-2">
       <div>
         <div className="h text-[11px] uppercase text-muted">Lesson {ctx.lesson.number} · Challenges</div>
-        <h2 className="h text-[22px] leading-tight text-wal3">{ctx.lesson.title}</h2>
+        <h2 className="h text-[19px] leading-tight text-wal3">{ctx.lesson.title}</h2>
       </div>
       <div className="flex flex-col gap-1">
         {levels.map((l, k) => {
@@ -318,7 +318,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
                 setFinished(null);
                 setMsg('');
               }}
-              className={`flex items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-left ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
+              className={`flex items-center justify-between gap-2 rounded-lg border px-2.5 py-1 text-left ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
             >
               {/* One line per level ("1 · Name C, F and G"), so a lesson with 6 levels still fits a Chromebook screen. */}
               <span className="min-w-0 text-[14px] font-semibold leading-tight text-wal3">

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { pitchColor } from '../utils/colors';
 import { KEY_COUNT, isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
-import { chordName, degreeOf, detectChord, diatonic, keyById, matchesChord, parseChord, stripVoicing, KeyDef } from '../utils/chords';
+import { INVERSION_NAMES, chordName, degreeOf, detectChord, diatonic, keyById, matchesChord, parseChord, stripVoicing, KeyDef } from '../utils/chords';
 import { StripChips, textOn } from './ChordStrip';
 import { ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
@@ -23,7 +23,7 @@ export function isWhiteTriad(held: number[]): boolean {
 /** Split an explanation into sentences (and at any line break in the text), so each shows on its own line. */
 export const sentences = (text: string) =>
   text
-    .split(/\n|(?<=[.!?])\s+(?=[A-Z"“(])/)
+    .split(/\n|(?<=[.!?])\s+(?=[A-Z0-9"“(])/)
     .map((t) => t.trim())
     .filter(Boolean);
 
@@ -87,7 +87,12 @@ const DemoRow: React.FC<{ demo: string[]; current: number; tags?: Record<string,
         return (
           <span key={k} className={`${cls} ${gap}`} data-testid="demo-chord">
             <span>{d ? d.symbol : notes.map(letter).join(' ')}</span>
-            {d && <span className="mt-1 text-[13px] tracking-normal opacity-80">{d.longName}</span>}
+            {d && (
+              <span className="mt-1 text-[13px] tracking-normal opacity-80">
+                {d.longName}
+                {d.triad && d.inversion > 0 ? `, ${INVERSION_NAMES[d.inversion].toLowerCase()}` : ''}
+              </span>
+            )}
           </span>
         );
       })}

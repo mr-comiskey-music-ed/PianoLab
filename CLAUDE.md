@@ -111,12 +111,17 @@ lesson picker (all lessons open; later the teacher's assignment link can decide)
   playing; Ear Check shows and plays the right answer for ~1.8 s before the next question (buttons closed meanwhile).
   Questions can carry their own `choices` (Lesson 5 "Name the chord": 5 per question).
 - Lesson 5 Learn order: major 3rd, try, minor 3rd, try · Chord names (D vs Dm) · Hearing it (long chords, pause between
-  the D pair and the A pair) · Building chords · Build anywhere · More chords. Lesson 5 Challenges: Major and minor 3rds ·
-  Major or minor? · Name the chord (`l5-name-heard`) · Build major · Build minor · Mix, all with short names ("Play Dm.").
+  the D pair and the A pair) · Building chords · Build anywhere · More chords. Lesson 5 Challenges (8): Major and minor
+  3rds · Major or minor? · Name major chords (`l5-name-major`) · Build major · Name minor chords (`l5-name-minor`) · Build
+  minor · Name major and minor chords (`l5-name-heard`) · Play major and minor chords (`l5-build-mixed`). Short names
+  ("Play Dm."). Name levels: the chord plays and lights up; 4 choices (kept easy: common chords) in A-G order
+  (A, B♭, B, C, C♯...; major before minor on the same root); the mixed one always includes the same root's other quality.
+- Lesson 6 Learn step 1: inversions shown low on the keyboard (C3 up), climbing, with coloured Root/3rd/5th tags; the
+  Stage names each one ("C major, 1st inversion"). Sentences starting with a number ("1st inversion…") get their own line.
 - Chord strip chords (Practice, Sandbox, Learn Stage strips) sound only while held: pointer down/up on a chord, or
   number keys 1-7 down/up (20 s safety cut-off).
-- Lesson 4 levels: Half steps · Find the black keys (starts at Cs only) · Name the black key. Lesson 5 levels: Major and
-  minor 3rds (`l5-thirds`, halfStep type with step 3/4) · Build major · Build minor · Major or minor? · Mix.
+- Lesson 4 levels: Half steps · Find the black keys (starts at Cs only) · Name the black key. (`l5-thirds` is a halfStep
+  level with step 3/4.)
 - `lessons.test.ts` also checks each lesson's Learn sections come in one run (the step list groups by section).
 - Level types: findIt, nameIt, buildIt, nameChord (name / numeral / inversion via `choices`), halfStep,
   earCheck (major/minor, "Hear it again"), smooth (Smooth Mover: right chord AND fewest half steps from the lit chord;
