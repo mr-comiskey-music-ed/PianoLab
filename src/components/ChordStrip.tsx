@@ -1,12 +1,8 @@
 import React from 'react';
 import { Detected, KEYS, KeyDef, chordName, diatonic } from '../utils/chords';
 
-/** Dark text on the light colours (yellow, lime, orange), light text on the rest. */
-export const textOn = (hex: string) => {
-  const n = parseInt(hex.slice(1), 16);
-  const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
-  return lum > 150 ? '#2a1e08' : '#fff8ea';
-};
+export { textOn } from '../utils/colors';
+import { textOn } from '../utils/colors';
 
 /**
  * The chord strip (SPEC section 14): the key's seven chords in scale-degree colours, with Roman numerals. Click one (or
@@ -19,7 +15,8 @@ export const ChordStrip: React.FC<{
   /** The strip chord sounding right now (clicked or 1-7). */
   playing: number | null;
   onPlay: (degree: number) => void;
-}> = ({ keyDef, onKey, active, playing, onPlay }) => (
+  onRelease: (degree: number) => void;
+}> = ({ keyDef, onKey, active, playing, onPlay, onRelease }) => (
   <div className="wood flex items-center gap-1.5 rounded-t-lg px-2 py-1.5" data-testid="chord-strip">
     <select
       value={keyDef.id}
@@ -35,22 +32,35 @@ export const ChordStrip: React.FC<{
         </option>
       ))}
     </select>
-    <StripChips keyDef={keyDef} lit={(d) => playing === d || (!!active && diatonic(keyDef)[d].chord.root === active.chord.root && diatonic(keyDef)[d].chord.quality === active.chord.quality)} onPlay={onPlay} />
+    <StripChips keyDef={keyDef} lit={(d) => playing === d || (!!active && diatonic(keyDef)[d].chord.root === active.chord.root && diatonic(keyDef)[d].chord.quality === active.chord.quality)} onPlay={onPlay} onRelease={onRelease} />
   </div>
 );
 
 /** The seven coloured chord buttons of a key (used by the chord strip, and on the Stage in Learn). */
-export const StripChips: React.FC<{ keyDef: KeyDef; lit: (degree: number) => boolean; onPlay?: (degree: number) => void; testid?: string }> = ({ keyDef, lit, onPlay, testid }) => (
+export const StripChips: React.FC<{
+  keyDef: KeyDef;
+  lit: (degree: number) => boolean;
+  /** Press: the chord starts. Release (or slide off): it stops. */
+  onPlay?: (degree: number) => void;
+  onRelease?: (degree: number) => void;
+  testid?: string;
+}> = ({ keyDef, lit, onPlay, onRelease, testid }) => (
   <div className="flex min-w-0 flex-1 gap-1" data-testid={testid}>
     {diatonic(keyDef).map((d) => {
       const on = lit(d.degree);
       return (
         <button
           key={d.degree}
-          onClick={() => onPlay?.(d.degree)}
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId);
+            onPlay?.(d.degree);
+          }}
+          onPointerUp={() => onRelease?.(d.degree)}
+          onPointerCancel={() => onRelease?.(d.degree)}
+          onLostPointerCapture={() => onRelease?.(d.degree)}
           data-testid={`strip-${d.degree}`}
           data-on={on ? 'yes' : undefined}
-          title={`${chordName(d.chord)} (${d.numeral}). Click${onPlay ? '' : ''} to hear it.`}
+          title={`${chordName(d.chord)} (${d.numeral}). Hold to hear it${onRelease ? ` (or hold ${d.degree + 1})` : ''}.`}
           className={`h relative flex min-w-0 flex-1 flex-col items-center rounded-md px-1 py-0.5 leading-tight transition-transform ${on ? 'scale-105 ring-2 ring-panel' : 'opacity-90 hover:opacity-100'}`}
           style={{ background: d.color, color: textOn(d.color) }}
         >

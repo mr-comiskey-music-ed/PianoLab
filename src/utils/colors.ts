@@ -36,3 +36,10 @@ export const withAlpha = (hex: string, a: number) => {
   const n = parseInt(hex.slice(1), 16);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 };
+
+/** Dark text on light colours (yellow, lime, orange), light text on the rest. */
+export const textOn = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+  return lum > 150 ? '#2a1e08' : '#fff8ea';
+};

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { pitchColor } from '../utils/colors';
 import { KEY_COUNT, isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
 import { chordName, degreeOf, detectChord, diatonic, keyById, matchesChord, parseChord, stripVoicing, KeyDef } from '../utils/chords';
 import { StripChips, textOn } from './ChordStrip';
@@ -44,13 +45,54 @@ function demoShift(demo: string[] | undefined, start: number): number {
   return hi + shift <= start + KEY_COUNT - 1 ? shift : 0;
 }
 /** How a demo entry is shown on the stage: a letter, or a chord name. */
-const entryLabel = (e: string) => {
-  const notes = entryNotes(e);
-  if (notes.length >= 3) {
-    const d = detectChord(notes);
-    return d ? chordName(d.chord) : e;
-  }
-  return pretty(e.replace(/\*\d+(\.\d+)?$/, '').replace(/-?\d+$/, ''));
+const entryBase = (e: string) => e.replace(/\*\d+(\.\d+)?$/, '');
+const isRest = (e: string) => entryBase(e) === '_';
+/** A note name without its octave, for the Stage ("C♯", not "C#4"). */
+const letter = (n: string) => pretty(n.replace(/-?\d+$/, ''));
+
+/**
+ * The row of demo labels on the Stage. Single notes show as letters; a two-note entry as "C + E"; a chord as its short
+ * name with the full name under it ("C" / "C major"). A chord or interval that follows counted notes, and any rest ("_"),
+ * gets a wide gap so the counting and the result read as separate things. Notes that have a tag (Root / 3rd / 5th) are
+ * shown in their pitch colour, like the Sandbox's piano roll. The entry playing now is full brightness and a bit bigger.
+ */
+const DemoRow: React.FC<{ demo: string[]; current: number; tags?: Record<string, string> }> = ({ demo, current, tags }) => {
+  const tagged = (n: string) => (tags && n in tags ? pitchColor(parseNote(n) ?? 0) : undefined);
+  return (
+    <div className="h flex flex-wrap items-end justify-center gap-x-3 gap-y-1 text-[26px] tracking-wide text-line2" aria-hidden="true" data-testid="demo-row">
+      {demo.map((e, k) => {
+        const on = k === current;
+        const cls = `inline-flex flex-col items-center leading-none transition-transform ${on ? 'scale-110 text-panel' : current >= 0 ? 'opacity-70' : ''}`;
+        if (isRest(e)) return <span key={k} className="w-10" />;
+        const notes = entryBase(e).split('+');
+        const prevSingle = k > 0 && !isRest(demo[k - 1]) && entryBase(demo[k - 1]).split('+').length === 1;
+        const gap = notes.length > 1 && prevSingle ? 'ml-12' : '';
+        if (notes.length === 1)
+          return (
+            <span key={k} className={cls} style={{ color: tagged(notes[0]) }}>
+              {letter(notes[0])}
+            </span>
+          );
+        if (notes.length === 2)
+          return (
+            <span key={k} className={`${cls} ${gap}`} data-testid="demo-interval">
+              <span>
+                <span style={{ color: tagged(notes[0]) }}>{letter(notes[0])}</span>
+                <span className="mx-1 text-[20px] opacity-70">+</span>
+                <span style={{ color: tagged(notes[1]) }}>{letter(notes[1])}</span>
+              </span>
+            </span>
+          );
+        const d = detectChord(entryNotes(e));
+        return (
+          <span key={k} className={`${cls} ${gap}`} data-testid="demo-chord">
+            <span>{d ? d.symbol : notes.map(letter).join(' ')}</span>
+            {d && <span className="mt-1 text-[13px] tracking-normal opacity-80">{d.longName}</span>}
+          </span>
+        );
+      })}
+    </div>
+  );
 };
 
 /**
@@ -88,8 +130,9 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     const s = stepRef.current;
     // Keep the demo on the keys you can see: move it by whole octaves if it would run off either end.
     const shift = demoShift(s.demo, viewRef.current);
-    const entries = (s.demo ?? []).map((e) => ({ notes: entryNotes(e).map((n) => n + shift), len: entryLength(e) })).filter((e) => e.notes.length);
-    if (!entries.length) return;
+    // Rests ("_") stay in the list (as empty entries) so the Stage's labels line up with what is playing.
+    const entries = (s.demo ?? []).map((e) => ({ notes: isRest(e) ? [] : entryNotes(e).map((n) => n + shift), len: entryLength(e) }));
+    if (!entries.some((e) => e.notes.length)) return;
     const run = ++demoRun.current;
     const stopped = () => demoRun.current !== run;
     setDemoing(true);
@@ -100,6 +143,13 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     for (let k = 0; k < entries.length; k++) {
       if (stopped()) return;
       const { notes, len } = entries[k];
+      if (!notes.length) {
+        // A rest: a pause between groups.
+        setDemoLit(null);
+        setDemoIdx(k);
+        await wait(450 * len);
+        continue;
+      }
       const gap = (notes.length > 1 ? 950 : singles > 8 ? 420 : 560) * len;
       setDemoLit(new Set(notes));
       setDemoIdx(k);
@@ -115,17 +165,21 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx.engine]);
 
-  /** Clicking a chord on a Stage strip plays it (and lights its keys) for a moment. */
+  /** Holding a chord on a Stage strip plays it (and lights its keys) until it is let go. */
+  const stripHeld = useRef<number[]>([]);
   const playStrip = (k: KeyDef, degree: number) => {
     demoRun.current++;
+    stripHeld.current.forEach((n) => ctx.engine.noteOff(n));
     const notes = stripVoicing(k, degree);
-    void ctx.engine.unlock().then(() => notes.forEach((n) => ctx.engine.noteOn(n, 0.7)));
+    stripHeld.current = notes;
+    void ctx.engine.unlock().then(() => stripHeld.current === notes && notes.forEach((n) => ctx.engine.noteOn(n, 0.7)));
     setDemoLit(new Set(notes));
     setDemoing(false);
-    window.setTimeout(() => {
-      notes.forEach((n) => ctx.engine.noteOff(n));
-      setDemoLit((cur) => (cur && [...cur].join() === notes.join() ? null : cur));
-    }, 900);
+  };
+  const releaseStrip = () => {
+    stripHeld.current.forEach((n) => ctx.engine.noteOff(n));
+    stripHeld.current = [];
+    setDemoLit(null);
   };
 
   const goStep = (n: number, demo: boolean) => {
@@ -394,19 +448,13 @@ export function useLearn(ctx: ModeCtx): ModeParts {
             return (
               <div key={id} className="wood flex items-center gap-2 rounded-lg px-2 py-1.5">
                 <span className="h w-[86px] shrink-0 text-left text-[13px] text-line">{k.label}</span>
-                <StripChips keyDef={k} lit={(d) => d === deg} onPlay={(d) => playStrip(k, d)} testid={`learn-strip-${id}`} />
+                <StripChips keyDef={k} lit={(d) => d === deg} onPlay={(d) => playStrip(k, d)} onRelease={releaseStrip} testid={`learn-strip-${id}`} />
               </div>
             );
           })}
         </div>
       ) : (
-        <div className="h flex flex-wrap justify-center gap-x-3 gap-y-1 text-[26px] tracking-wide text-line2" aria-hidden="true">
-          {(step.demo ?? []).map((n, k) => (
-            <span key={k} className={k === demoIdx ? 'text-brass' : ''}>
-              {entryLabel(n)}
-            </span>
-          ))}
-        </div>
+        <DemoRow demo={step.demo ?? []} current={demoIdx} tags={step.tags} />
       )}
       <div className="flex gap-2">
         <button className="btn btn-dark text-[16px]" onClick={() => void showMe()} disabled={demoing}>

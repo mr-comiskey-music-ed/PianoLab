@@ -66,6 +66,7 @@ export default function App() {
    * as playing in Learn, Practice or Challenges, and the Sandbox doesn't record them.
    */
   const stripNotes = useRef<number[]>([]);
+  const stripDegree = useRef<number | null>(null);
   const stripTimer = useRef<number | undefined>(undefined);
   const [stripLit, setStripLit] = useState<Set<number> | null>(null);
   const [stripActive, setStripActive] = useState<number | null>(null);
@@ -77,18 +78,29 @@ export default function App() {
       window.clearTimeout(stripTimer.current);
       const notes = stripVoicing(stripKey, degree);
       stripNotes.current = notes;
+      stripDegree.current = degree;
       setStripLit(new Set(notes));
       setStripActive(degree);
-      void engine.unlock().then(() => notes.forEach((n) => engine.noteOn(n, 0.7)));
-      stripTimer.current = window.setTimeout(() => {
-        notes.forEach((n) => engine.noteOff(n));
-        stripNotes.current = [];
-        setStripLit(null);
-        setStripActive(null);
-      }, 1100);
+      void engine.unlock().then(() => {
+        // Only if it is still the chord being held (a very quick tap may already have let go).
+        if (stripNotes.current === notes) notes.forEach((n) => engine.noteOn(n, 0.7));
+      });
+      // A safety net: let go after 20 s even if the release never arrives (window lost focus mid-press, etc.).
+      stripTimer.current = window.setTimeout(() => stopStripChord(degree), 20000);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [stripKey],
   );
+  /** Let go of a strip chord: it sounds only while held (mouse button, finger, or number key down). */
+  const stopStripChord = useCallback((degree?: number) => {
+    if (degree !== undefined && stripDegree.current !== degree) return; // a different chord is held now
+    window.clearTimeout(stripTimer.current);
+    stripNotes.current.forEach((n) => engine.noteOff(n));
+    stripNotes.current = [];
+    stripDegree.current = null;
+    setStripLit(null);
+    setStripActive(null);
+  }, []);
   const [soundId, setSoundId] = useState(DEFAULT_SOUND);
   const [states, setStates] = useState<Record<string, LoadState>>({});
   const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 1 });
@@ -233,9 +245,20 @@ export default function App() {
       const n = Number(e.key);
       if (n >= 1 && n <= 7) playStripChord(n - 1);
     };
+    const onUp = (e: KeyboardEvent) => {
+      const n = Number(e.key);
+      if (n >= 1 && n <= 7) stopStripChord(n - 1);
+    };
+    const onBlur = () => stopStripChord();
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [showStrip, playStripChord]);
+    window.addEventListener('keyup', onUp);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onUp);
+      window.removeEventListener('blur', onBlur);
+    };
+  }, [showStrip, playStripChord, stopStripChord]);
 
   /** Notes sounding (play back / scrubbing) that are off the 25 keys on screen: flash the Oct button that would show them. */
   const litList = parts.lit ? [...parts.lit] : [];
@@ -344,6 +367,7 @@ export default function App() {
               active={detected}
               playing={stripActive}
               onPlay={playStripChord}
+              onRelease={stopStripChord}
             />
           )}
           <div className={`stage min-h-[150px] flex-1 overflow-hidden border-x-[10px] border-t-[10px] border-transparent shadow-inner wood-v ${showStrip ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>

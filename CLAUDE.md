@@ -101,6 +101,20 @@ lesson picker (all lessons open; later the teacher's assignment link can decide)
   (the chord listener judges at 2 keys for these steps). Lesson 5 starts with major 3rd (4) and minor 3rd (3) steps, then
   builds chords as "major 3rd + minor 3rd" / "minor 3rd + major 3rd" with Root / 3rd / 5th on the keys.
 - Wording: "piano key" wherever "key" could mean a musical key (Lesson 4 especially).
+- Learn demo label row on the Stage (`DemoRow`): letters without octave numbers; a two-note entry shows "C + E"; a chord
+  shows its short name with the long name under it ("C" / "C major"); a chord/interval after counted notes, and any rest
+  (`"_"`, `"_*2"`), gets a wide gap; tagged notes (Root/3rd/5th) are in their pitch colours. Key tags on the piano are
+  pills in the note's pitch colour (same colours as the Sandbox roll).
+- Challenge feedback: green box when right ("✓ Right!", or the answer for Ear Check), red box with a tip when wrong
+  (short + long names: "That is C (C major), not C♯m (C♯ minor)"). Level list = one line per level so 6 fit a Chromebook.
+- Listening levels (Ear Check, and nameChord with `playChord`): answer buttons stay closed until the chord has started
+  playing; Ear Check shows and plays the right answer for ~1.8 s before the next question (buttons closed meanwhile).
+  Questions can carry their own `choices` (Lesson 5 "Name the chord": 5 per question).
+- Lesson 5 Learn order: major 3rd, try, minor 3rd, try · Chord names (D vs Dm) · Hearing it (long chords, pause between
+  the D pair and the A pair) · Building chords · Build anywhere · More chords. Lesson 5 Challenges: Major and minor 3rds ·
+  Major or minor? · Name the chord (`l5-name-heard`) · Build major · Build minor · Mix, all with short names ("Play Dm.").
+- Chord strip chords (Practice, Sandbox, Learn Stage strips) sound only while held: pointer down/up on a chord, or
+  number keys 1-7 down/up (20 s safety cut-off).
 - Lesson 4 levels: Half steps · Find the black keys (starts at Cs only) · Name the black key. Lesson 5 levels: Major and
   minor 3rds (`l5-thirds`, halfStep type with step 3/4) · Build major · Build minor · Major or minor? · Mix.
 - `lessons.test.ts` also checks each lesson's Learn sections come in one run (the step list groups by section).
@@ -113,7 +127,7 @@ lesson picker (all lessons open; later the teacher's assignment link can decide)
   above the piano no longer shows "Last note"; only the Sandbox shows the chord there (its centre is the roll). No chord
   names in Challenges.
 - Chord strip: Practice (Lesson 2+) and Sandbox only (in Learn it would give answers away); key picker, degree colours,
-  numerals always shown (no checkbox). Click a chord or press 1-7: one chord at a time (the last is cut off), voiced from
+  numerals always shown (no checkbox). Hold a chord (or hold 1-7): one chord at a time (the last is cut off), voiced from
   a low I upward (I in octave 3, roots climbing) so there's no jump down. Strip chords go straight to the sound engine,
   not the piano: they never count in Learn/Practice/Challenges and the Sandbox doesn't record them.
 - The middle area: suggested name **the Stage** (my suggestion, not yet confirmed by him; `data-testid="stage"`).

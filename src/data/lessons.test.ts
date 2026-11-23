@@ -14,7 +14,7 @@ describe('lesson content', () => {
   it('every Learn step can be played', () => {
     for (const l of LESSONS)
       for (const s of l.learn) {
-        for (const d of s.demo ?? []) for (const n of d.replace(/\*\d+(\.\d+)?$/, '').split('+')) expect(parseNote(n), `${s.id} demo ${n}`).not.toBeNull();
+        for (const d of s.demo ?? []) for (const n of d.replace(/\*\d+(\.\d+)?$/, '').split('+').filter((x) => x !== '_')) expect(parseNote(n), `${s.id} demo ${n}`).not.toBeNull();
         for (const n of Object.keys(s.tags ?? {})) expect(parseNote(n), `${s.id} tag ${n}`).not.toBeNull();
         if (s.tryInterval !== undefined) expect(s.tryInterval, `${s.id} interval`).toBeGreaterThan(0);
         if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0) + (s.tryTriad ? 1 : 0) + (s.tryProgression?.length ?? 0) + (s.tryInterval ? 1 : 0), `${s.id} has an answer`).toBeGreaterThan(0);
@@ -38,7 +38,8 @@ describe('lesson content', () => {
         for (const p of v.prompts) {
           const where = `${v.id}: ${p.text}`;
           if (['buildIt', 'nameChord', 'earCheck', 'smooth'].includes(v.type)) expect(parseChord(p.chord ?? ''), where).not.toBeNull();
-          if (['nameChord', 'earCheck', 'nameIt'].includes(v.type) && v.choices) for (const a of p.answer ?? []) expect(v.choices, where).toContain(a);
+          if (['nameChord', 'earCheck', 'nameIt'].includes(v.type) && (p.choices ?? v.choices)) for (const a of p.answer ?? []) expect(p.choices ?? v.choices, where).toContain(a);
+          if (v.type === 'nameChord') expect((p.choices ?? v.choices ?? []).length, where).toBeGreaterThan(1);
           if (v.type === 'findIt') for (const a of p.answer ?? []) expect(pcOf(a), where).not.toBeNull();
           if (v.type === 'nameIt' || v.type === 'halfStep') expect(pcOf(p.show ?? ''), where).not.toBeNull();
           if (v.type === 'halfStep') expect(Math.abs(p.step ?? 0), where).toBeGreaterThan(0);

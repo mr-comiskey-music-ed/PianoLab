@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { BLACK_NAMES, KEY_COUNT, isBlack, letterOf, octaveOf } from '../utils/music';
+import { pitchColor, textOn } from '../utils/colors';
 
 export type KeyMark = 'target' | 'ok' | 'bad';
 
@@ -84,9 +85,16 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
             style={{ left: `${left}%`, width: `${black ? wW * 0.6 : wW}%` }}
           >
             {tag && (
-              // A word on the key (Root / 3rd / 5th), above where the note name goes.
-              <span className={`h pointer-events-none absolute left-0 right-0 text-center ${black ? 'top-1 text-[9px] text-brass' : 'bottom-7 text-[12px] text-brass3'}`} data-testid="key-tag">
-                {tag}
+              // A word on the key (Root / 3rd / 5th) in the note's colour (the same colours as the Sandbox's piano roll),
+              // above where the note name goes.
+              <span className={`pointer-events-none absolute left-0 right-0 flex justify-center ${black ? 'top-2' : 'bottom-8'}`}>
+                <span
+                  className={`h rounded-md px-1.5 py-0.5 shadow ${black ? 'text-[10px]' : 'text-[14px]'}`}
+                  style={{ background: pitchColor(midi), color: textOn(pitchColor(midi)) }}
+                  data-testid="key-tag"
+                >
+                  {tag}
+                </span>
               </span>
             )}
             {txt && black && (

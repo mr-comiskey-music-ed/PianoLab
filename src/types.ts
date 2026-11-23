@@ -52,6 +52,8 @@ export interface Prompt {
   inv?: number;
   /** halfStep: how many half steps from the lit key (+1 up, -1 down). */
   step?: number;
+  /** This question's own answer buttons (overrides the level's `choices`). */
+  choices?: string[];
 }
 
 export interface Level {
@@ -67,6 +69,8 @@ export interface Level {
   labels: 'all' | 'c' | 'off';
   /** nameIt / nameChord / earCheck: the answer buttons (nameIt default: the seven letters). */
   choices?: string[];
+  /** nameChord: also play the chord out loud (with "Hear it again"). */
+  playChord?: boolean;
   /** smooth: the first chord's keys, e.g. ["C4","E4","G4"]. */
   start?: string[];
   prompts: Prompt[];
@@ -81,7 +85,7 @@ export interface LearnStep {
   say: string;
   /**
    * Notes the app plays as a demo, one after another. "C4" is one note; "C4+E4+G4" is a chord (played together);
-   * "E4*2" is held twice as long (a note the counting stops on).
+   * "E4*2" is held twice as long (a note the counting stops on); "_" is a short silence ("_*2" a longer one).
    * Leave out when a demo would not teach anything.
    */
   demo?: string[];

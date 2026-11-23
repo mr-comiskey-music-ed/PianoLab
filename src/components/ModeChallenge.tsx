@@ -72,7 +72,20 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   const [selected, setSelected] = useState<string>(levels[0].id);
   const [run, setRun] = useState<Run | null>(null);
   const [finished, setFinished] = useState<Finished | null>(null);
-  const [msg, setMsg] = useState<string>('');
+  /** Feedback under the question: green when right, red when wrong (with a tip). */
+  const [fb, setFbState] = useState<{ kind: 'good' | 'bad'; text: string } | null>(null);
+  const fbTimer = useRef<number | undefined>(undefined);
+  const setFb = (f: { kind: 'good' | 'bad'; text: string } | null, clearAfter?: number) => {
+    window.clearTimeout(fbTimer.current);
+    setFbState(f);
+    if (clearAfter) fbTimer.current = window.setTimeout(() => setFbState(null), clearAfter);
+  };
+  const setMsg = (text: string) => setFb(text ? { kind: 'bad', text } : null);
+  /** Listening levels: answer buttons wait until the chord has played (no answering the next question by double-tapping). */
+  const [ready, setReady] = useState(true);
+  /** Ear Check: after a right answer, the chord is shown and played again before the next question. */
+  const [reveal, setReveal] = useState<number[] | null>(null);
+  const busy = useRef(false);
   const [marks, setMarks] = useState<Map<number, KeyMark>>(new Map());
   const [best, setBest] = useState<Record<string, number>>(() => loadBest());
   const [labelPick, setLabelPick] = useState<Record<string, Labels>>({});
@@ -112,16 +125,24 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   const levelById = (id: string) => levels.find((l) => l.id === id) ?? levels[0];
   const bestResult = (id: string) => ctx.results.find((r) => r.levelId === id);
 
-  /** Ear Check: play the prompt's chord (root position, around middle C). */
-  const playChord = (p?: Prompt) => {
+  /** The keys a listening question plays: Ear Check in root position around middle C; "Name the chord" = the lit keys. */
+  const chordKeys = (level: Level, p: Prompt | undefined, idx: number): number[] => {
     const c = parseChord(p?.chord ?? '');
-    if (!c) return;
+    if (!c) return [];
+    return level.type === 'nameChord' ? litChord(viewRef.current, c, p?.inv ?? 0, idx) : voicing(c, 0, 55);
+  };
+  /** Play a question's chord. The answer buttons open once it has started sounding. */
+  const playChord = (level: Level, p: Prompt | undefined, idx: number) => {
+    const notes = chordKeys(level, p, idx);
+    if (!notes.length) return;
+    setReady(false);
     void ctx.engine.unlock().then(() => {
-      const notes = voicing(c, 0, 55);
       notes.forEach((n) => ctx.engine.noteOn(n, 0.75));
-      window.setTimeout(() => notes.forEach((n) => ctx.engine.noteOff(n)), 1100);
+      window.setTimeout(() => setReady(true), 400);
+      window.setTimeout(() => notes.forEach((n) => ctx.engine.noteOff(n)), 1300);
     });
   };
+  const listens = (level: Level) => level.type === 'earCheck' || (level.type === 'nameChord' && !!level.playChord);
 
   const start = (id: string) => {
     const level = levelById(id);
@@ -133,13 +154,16 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const ordered = level.type === 'smooth' ? level.prompts : prompts;
     const prev = level.type === 'smooth' ? (level.start ?? ['C4', 'E4', 'G4']).map((n) => parseNote(n)!).filter((n) => n !== null) : undefined;
     setRunNow({ level, prompts: ordered, idx: 0, points: 0, misses: 0, prev, moved: 0, bestMoves: 0 });
-    if (level.type === 'earCheck') window.setTimeout(() => playChord(ordered[0]), 300);
+    busy.current = false;
+    setReveal(null);
+    setReady(!listens(level));
+    if (listens(level)) window.setTimeout(() => playChord(level, ordered[0], 0), 300);
   };
 
   /** Score the current prompt as right or wrong and move on. `extra` updates the run (Smooth Mover). */
   const answer = (correct: boolean, keys: number[] = [], why = 'Not quite. Try again.', extra: Partial<Run> = {}) => {
     const r = runRef.current;
-    if (!r) return;
+    if (!r || busy.current) return;
     if (!correct) {
       if (keys.length) flash(keys, 'bad');
       setMsg(why);
@@ -147,7 +171,29 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       return;
     }
     if (keys.length) flash(keys, 'ok');
-    setMsg('');
+    if (r.level.type === 'earCheck') {
+      // Show and play the answer, then go on.
+      const c = parseChord(r.prompts[r.idx].chord ?? '');
+      const notes = chordKeys(r.level, r.prompts[r.idx], r.idx);
+      busy.current = true;
+      setFb({ kind: 'good', text: c ? `✓ Yes! That was ${chordName(c)} (${chordLongName(c)}).` : '✓ Yes!' });
+      setReveal(notes);
+      void ctx.engine.unlock().then(() => notes.forEach((n) => ctx.engine.noteOn(n, 0.75)));
+      window.setTimeout(() => {
+        notes.forEach((n) => ctx.engine.noteOff(n));
+        setReveal(null);
+        busy.current = false;
+        setFb(null);
+        advance(r, extra);
+      }, 1800);
+      return;
+    }
+    setFb({ kind: 'good', text: '✓ Right!' }, 1100);
+    advance(r, extra);
+  };
+
+  /** Score a right answer and go to the next question (or the result). */
+  const advance = (r: Run, extra: Partial<Run>) => {
     const points = r.points + credit(r.misses);
     const idx = r.idx + 1;
     const next = { ...r, ...extra };
@@ -167,7 +213,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       setFinished({ level: r.level, raw, best: Math.max(prevBest, raw), moved: next.moved, bestMoves: next.bestMoves });
     } else {
       setRunNow({ ...next, idx, points, misses: 0 });
-      if (r.level.type === 'earCheck') window.setTimeout(() => playChord(r.prompts[idx]), 500);
+      if (listens(r.level)) window.setTimeout(() => playChord(r.level, r.prompts[idx], idx), 400);
     }
   };
 
@@ -207,14 +253,16 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       const c = parseChord(p.chord ?? '');
       if (!c) return;
       const got = detectChord(held);
-      const gotName = got ? got.longName : null;
+      // Short and long names together, e.g. "C♯m (C♯ minor)".
+      const gotName = got ? `${got.symbol} (${got.longName})` : null;
+      const want = (ch: Chord) => `${chordName(ch)} (${chordLongName(ch)})`;
       if (r.level.type === 'buildIt') {
         const ok = matchesChord(held, c, p.inv);
         const right = matchesChord(held, c);
         const why = right && p.inv !== undefined
           ? `That is ${chordLongName(c)}, but the wrong note is on the bottom. Let go and try again.`
           : gotName
-            ? `That is ${gotName}, not ${chordLongName(c)}. Let go and try again.`
+            ? `That is ${gotName}, not ${want(c)}. Let go and try again.`
             : 'Those keys don’t make that chord. Let go and try again.';
         answer(ok, held, why);
         return;
@@ -222,7 +270,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       // Smooth Mover: the right chord AND the fewest half steps from the lit chord.
       const prev = r.prev ?? held;
       if (held.length !== 3 || !matchesChord(held, c)) {
-        answer(false, held, gotName ? `That is ${gotName}, not ${chordLongName(c)}. Let go and try again.` : `Play the three notes of ${chordLongName(c)}. Let go and try again.`);
+        answer(false, held, gotName ? `That is ${gotName}, not ${want(c)}. Let go and try again.` : `Play the three notes of ${want(c)}. Let go and try again.`);
         return;
       }
       const moved = moveDistance(prev, held);
@@ -247,6 +295,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       if (c) lit = new Set(litChord(ctx.viewStart, c, prompt.inv ?? 0, run.idx));
     } else if (t === 'smooth' && run.prev) lit = new Set(run.prev);
   }
+  if (reveal) lit = new Set(reveal);
 
   const selLevel = levelById(selected);
   const left = (
@@ -271,22 +320,22 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
               }}
               className={`flex items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-left ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
             >
-              <span>
-                <span className="h text-[11px] text-muted">Level {k + 1}</span>
-                <span className="block text-[14px] font-semibold leading-tight text-wal3">{l.title}</span>
+              {/* One line per level ("1 · Name C, F and G"), so a lesson with 6 levels still fits a Chromebook screen. */}
+              <span className="min-w-0 text-[14px] font-semibold leading-tight text-wal3">
+                <span className="h mr-1 text-[12px] text-muted">{k + 1} ·</span>
+                {l.title}
               </span>
-              <span className={`h text-[13px] ${r && passed(r.raw, l) ? 'text-good' : 'text-muted'}`}>
+              <span className={`h shrink-0 ${r ? 'text-[13px]' : 'text-[11px]'} ${r && passed(r.raw, l) ? 'text-good' : 'text-muted'}`}>
                 {r ? `${passed(r.raw, l) ? '✓ ' : ''}${floored(r.raw)}%` : `${l.pass}% to pass`}
               </span>
             </button>
           );
         })}
       </div>
-      <p className="text-[13px] text-muted">{selLevel.blurb}</p>
     </div>
   );
 
-  const choices = run ? (run.level.choices ?? (run.level.type === 'nameIt' ? ALL_LETTERS : [])) : [];
+  const choices = run ? (run.prompts[run.idx]?.choices ?? run.level.choices ?? (run.level.type === 'nameIt' ? ALL_LETTERS : [])) : [];
   let stage;
   if (finished) {
     const ok = passed(finished.raw, finished.level);
@@ -339,22 +388,33 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             From the lit chord ({detectChord(run.prev) ? chordName(detectChord(run.prev)!.chord) : ''}). Half steps moved so far: {run.moved ?? 0}
           </div>
         )}
-        {run.level.type === 'earCheck' && (
-          <button className="btn btn-dark" onClick={() => playChord(prompt)} data-testid="hear-again">
+        {listens(run.level) && (
+          <button className="btn btn-dark" onClick={() => playChord(run.level, prompt, run.idx)} disabled={!!reveal} data-testid="hear-again">
             ▶ Hear it again
           </button>
         )}
         {choices.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2">
             {choices.map((l) => (
-              <button key={l} data-testid={`choice-${l}`} className="btn btn-brass min-w-[52px] text-[20px]" onClick={() => answer((prompt.answer ?? [prompt.show ?? '']).includes(l))}>
+              <button
+                key={l}
+                data-testid={`choice-${l}`}
+                disabled={!ready || !!reveal}
+                className="btn btn-brass min-w-[52px] text-[20px] disabled:opacity-50"
+                onClick={() => answer((prompt.answer ?? [prompt.show ?? '']).includes(l))}
+              >
                 {pretty(l)}
               </button>
             ))}
           </div>
         )}
-        <div className="min-h-[24px] max-w-[640px] text-[15px] text-brass" data-testid="challenge-msg">
-          {msg}
+        {/* Green when right; red (with a tip) when wrong. */}
+        <div
+          className={`min-h-[30px] max-w-[680px] rounded-lg px-3 py-1 text-[16px] ${fb ? (fb.kind === 'good' ? 'pop bg-[#cfe3b4] text-good' : 'bg-[#f0c4bf] text-[#7a2420]') : 'text-transparent'}`}
+          data-testid="challenge-msg"
+          data-kind={fb?.kind}
+        >
+          {fb?.text ?? '.'}
         </div>
         <div className="h-2 w-64 overflow-hidden rounded-full bg-wal2">
           <div className="h-full bg-brass transition-all" style={{ width: `${(run.idx / run.prompts.length) * 100}%` }} />

@@ -1584,7 +1584,7 @@
             "D4",
             "D#4",
             "E4*2",
-            "C4+E4"
+            "C4+E4*2"
           ],
           "tags": {
             "C4": "Root",
@@ -1614,7 +1614,7 @@
             "C#4",
             "D4",
             "Eb4*2",
-            "C4+Eb4"
+            "C4+Eb4*2"
           ],
           "tags": {
             "C4": "Root",
@@ -1634,6 +1634,36 @@
           "hint": "Count 3 half steps up from your bottom note, black keys included."
         },
         {
+          "id": "l5-names",
+          "section": "Chord names",
+          "title": "D and Dm",
+          "say": "When we name a chord, we shorten it. A major chord is written with just its root letter: D major is \"D\". A minor chord adds a small \"m\": D minor is \"Dm\". So \"C\" means C major, and \"Am\" means A minor.",
+          "need": 0,
+          "demo": [
+            "D4+F#4+A4*2",
+            "_",
+            "D4+F4+A4*2"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l5-hear",
+          "section": "Hearing it",
+          "title": "Bright and dark",
+          "say": "Major chords sound bright. Minor chords sound darker. Listen: D, then Dm. Then A, then Am.",
+          "need": 0,
+          "demo": [
+            "D4+F#4+A4*2.5",
+            "D4+F4+A4*2.5",
+            "_*2",
+            "A3+C#4+E4*2.5",
+            "A3+C4+E4*2.5"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
           "id": "l5-count",
           "section": "Building chords",
           "title": "Major = 4 + 3",
@@ -1648,7 +1678,7 @@
             "F4",
             "F#4",
             "G4*2",
-            "C4+E4+G4"
+            "C4+E4+G4*2"
           ],
           "tags": {
             "C4": "Root",
@@ -1673,7 +1703,7 @@
             "F4",
             "F#4",
             "G4*2",
-            "C4+Eb4+G4"
+            "C4+Eb4+G4*2"
           ],
           "tags": {
             "C4": "Root",
@@ -1686,10 +1716,10 @@
         {
           "id": "l5-try-d",
           "section": "Build anywhere",
-          "title": "D major",
+          "title": "D",
           "say": "Count from D: up 4 to F♯, up 3 to A.",
           "need": 1,
-          "tryText": "Play D major (D, F♯, A).",
+          "tryText": "Play D (D, F♯, A).",
           "tryChord": [
             "D"
           ],
@@ -1698,37 +1728,22 @@
         {
           "id": "l5-try-cm",
           "section": "Build anywhere",
-          "title": "C minor",
+          "title": "Cm",
           "say": "Count from C: up 3 to E♭, up 4 to G.",
           "need": 1,
-          "tryText": "Play C minor.",
+          "tryText": "Play Cm.",
           "tryChord": [
             "Cm"
           ],
           "hint": "C, up 3 half steps is E♭, up 4 more is G."
         },
         {
-          "id": "l5-hear",
-          "section": "Hearing it",
-          "title": "Bright and dark",
-          "say": "Major chords sound bright. Minor chords sound darker. Listen: D major, D minor, A major, A minor.",
-          "need": 0,
-          "demo": [
-            "D4+F#4+A4",
-            "D4+F4+A4",
-            "A3+C#4+E4",
-            "A3+C4+E4"
-          ],
-          "show": true,
-          "labels": "all"
-        },
-        {
           "id": "l5-try-a",
           "section": "More chords",
-          "title": "A major",
+          "title": "A",
           "say": "Count from A: up 4, then up 3.",
           "need": 1,
-          "tryText": "Play A major.",
+          "tryText": "Play A.",
           "tryChord": [
             "A"
           ],
@@ -1737,10 +1752,10 @@
         {
           "id": "l5-try-fm",
           "section": "More chords",
-          "title": "F minor",
+          "title": "Fm",
           "say": "Count from F: up 3, then up 4.",
           "need": 1,
-          "tryText": "Play F minor.",
+          "tryText": "Play Fm.",
           "tryChord": [
             "Fm"
           ],
@@ -1806,108 +1821,6 @@
               "text": "Play a minor 3rd (3 half steps) UP from the lit key.",
               "show": "C",
               "step": 3
-            }
-          ]
-        },
-        {
-          "id": "l5-build-major",
-          "title": "Build major chords",
-          "blurb": "Play the major chord. Count 4 + 3 half steps.",
-          "type": "buildIt",
-          "octave": "any",
-          "pass": 80,
-          "labels": "all",
-          "prompts": [
-            {
-              "text": "Play D major.",
-              "chord": "D"
-            },
-            {
-              "text": "Play A major.",
-              "chord": "A"
-            },
-            {
-              "text": "Play E major.",
-              "chord": "E"
-            },
-            {
-              "text": "Play B♭ major.",
-              "chord": "Bb"
-            },
-            {
-              "text": "Play E♭ major.",
-              "chord": "Eb"
-            },
-            {
-              "text": "Play G major.",
-              "chord": "G"
-            },
-            {
-              "text": "Play A♭ major.",
-              "chord": "Ab"
-            },
-            {
-              "text": "Play F♯ major.",
-              "chord": "F#"
-            },
-            {
-              "text": "Play D♭ major.",
-              "chord": "Db"
-            },
-            {
-              "text": "Play B major.",
-              "chord": "B"
-            }
-          ]
-        },
-        {
-          "id": "l5-build-minor",
-          "title": "Build minor chords",
-          "blurb": "Play the minor chord. Count 3 + 4 half steps.",
-          "type": "buildIt",
-          "octave": "any",
-          "pass": 80,
-          "labels": "c",
-          "prompts": [
-            {
-              "text": "Play C minor.",
-              "chord": "Cm"
-            },
-            {
-              "text": "Play F minor.",
-              "chord": "Fm"
-            },
-            {
-              "text": "Play G minor.",
-              "chord": "Gm"
-            },
-            {
-              "text": "Play B minor.",
-              "chord": "Bm"
-            },
-            {
-              "text": "Play F♯ minor.",
-              "chord": "F#m"
-            },
-            {
-              "text": "Play C♯ minor.",
-              "chord": "C#m"
-            },
-            {
-              "text": "Play E♭ minor.",
-              "chord": "Ebm"
-            },
-            {
-              "text": "Play D minor.",
-              "chord": "Dm"
-            },
-            {
-              "text": "Play B♭ minor.",
-              "chord": "Bbm"
-            },
-            {
-              "text": "Play G♯ minor.",
-              "chord": "G#m"
             }
           ]
         },
@@ -2011,60 +1924,314 @@
           ]
         },
         {
-          "id": "l5-build-mixed",
-          "title": "Major and minor mix",
-          "blurb": "Play the chord. Watch for the \"m\".",
+          "id": "l5-name-heard",
+          "title": "Name the chord",
+          "blurb": "A chord plays and lights up. Which one is it?",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which chord is this?",
+              "chord": "D",
+              "answer": [
+                "D"
+              ],
+              "choices": [
+                "B",
+                "A",
+                "Dm",
+                "D",
+                "B♭m"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Em",
+              "answer": [
+                "Em"
+              ],
+              "choices": [
+                "Cm",
+                "Fm",
+                "E",
+                "Bm",
+                "Em"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Bb",
+              "answer": [
+                "B♭"
+              ],
+              "choices": [
+                "A♭m",
+                "E♭",
+                "B♭",
+                "B♭m",
+                "Dm"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "F#m",
+              "answer": [
+                "F♯m"
+              ],
+              "choices": [
+                "Em",
+                "B♭m",
+                "F♯m",
+                "F♯",
+                "G"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "A",
+              "answer": [
+                "A"
+              ],
+              "choices": [
+                "Bm",
+                "B",
+                "A",
+                "F♯",
+                "Am"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Cm",
+              "answer": [
+                "Cm"
+              ],
+              "choices": [
+                "Bm",
+                "Cm",
+                "Fm",
+                "G",
+                "C"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Eb",
+              "answer": [
+                "E♭"
+              ],
+              "choices": [
+                "A♭m",
+                "E♭",
+                "Em",
+                "F",
+                "E♭m"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Gm",
+              "answer": [
+                "Gm"
+              ],
+              "choices": [
+                "E♭m",
+                "Em",
+                "Gm",
+                "B♭m",
+                "G"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "E",
+              "answer": [
+                "E"
+              ],
+              "choices": [
+                "B",
+                "Em",
+                "C♯m",
+                "Am",
+                "E"
+              ]
+            },
+            {
+              "text": "Which chord is this?",
+              "chord": "Bm",
+              "answer": [
+                "Bm"
+              ],
+              "choices": [
+                "Bm",
+                "E♭m",
+                "Gm",
+                "B",
+                "Am"
+              ]
+            }
+          ],
+          "playChord": true
+        },
+        {
+          "id": "l5-build-major",
+          "title": "Build major chords",
+          "blurb": "Play the major chord. Count 4 + 3 half steps.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "all",
+          "prompts": [
+            {
+              "text": "Play D.",
+              "chord": "D"
+            },
+            {
+              "text": "Play A.",
+              "chord": "A"
+            },
+            {
+              "text": "Play E.",
+              "chord": "E"
+            },
+            {
+              "text": "Play B♭.",
+              "chord": "Bb"
+            },
+            {
+              "text": "Play E♭.",
+              "chord": "Eb"
+            },
+            {
+              "text": "Play G.",
+              "chord": "G"
+            },
+            {
+              "text": "Play A♭.",
+              "chord": "Ab"
+            },
+            {
+              "text": "Play F♯.",
+              "chord": "F#"
+            },
+            {
+              "text": "Play D♭.",
+              "chord": "Db"
+            },
+            {
+              "text": "Play B.",
+              "chord": "B"
+            }
+          ]
+        },
+        {
+          "id": "l5-build-minor",
+          "title": "Build minor chords",
+          "blurb": "Play the minor chord. Count 3 + 4 half steps.",
           "type": "buildIt",
           "octave": "any",
           "pass": 80,
           "labels": "c",
           "prompts": [
             {
-              "text": "Play E major.",
-              "chord": "E"
+              "text": "Play Cm.",
+              "chord": "Cm"
             },
             {
-              "text": "Play E minor.",
-              "chord": "Em"
-            },
-            {
-              "text": "Play B♭ major.",
-              "chord": "Bb"
-            },
-            {
-              "text": "Play G minor.",
-              "chord": "Gm"
-            },
-            {
-              "text": "Play A♭ major.",
-              "chord": "Ab"
-            },
-            {
-              "text": "Play F minor.",
+              "text": "Play Fm.",
               "chord": "Fm"
             },
             {
-              "text": "Play D major.",
-              "chord": "D"
+              "text": "Play Gm.",
+              "chord": "Gm"
             },
             {
-              "text": "Play B minor.",
+              "text": "Play Bm.",
               "chord": "Bm"
             },
             {
-              "text": "Play E♭ major.",
-              "chord": "Eb"
+              "text": "Play F♯m.",
+              "chord": "F#m"
             },
             {
-              "text": "Play C♯ minor.",
+              "text": "Play C♯m.",
               "chord": "C#m"
             },
             {
-              "text": "Play A major.",
+              "text": "Play E♭m.",
+              "chord": "Ebm"
+            },
+            {
+              "text": "Play Dm.",
+              "chord": "Dm"
+            },
+            {
+              "text": "Play B♭m.",
+              "chord": "Bbm"
+            },
+            {
+              "text": "Play G♯m.",
+              "chord": "G#m"
+            }
+          ]
+        },
+        {
+          "id": "l5-build-mixed",
+          "title": "Major and minor mix",
+          "blurb": "Play each chord. A letter on its own is major; a letter with \"m\" is minor.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play E.",
+              "chord": "E"
+            },
+            {
+              "text": "Play Em.",
+              "chord": "Em"
+            },
+            {
+              "text": "Play B♭.",
+              "chord": "Bb"
+            },
+            {
+              "text": "Play Gm.",
+              "chord": "Gm"
+            },
+            {
+              "text": "Play A♭.",
+              "chord": "Ab"
+            },
+            {
+              "text": "Play Fm.",
+              "chord": "Fm"
+            },
+            {
+              "text": "Play D.",
+              "chord": "D"
+            },
+            {
+              "text": "Play Bm.",
+              "chord": "Bm"
+            },
+            {
+              "text": "Play E♭.",
+              "chord": "Eb"
+            },
+            {
+              "text": "Play C♯m.",
+              "chord": "C#m"
+            },
+            {
+              "text": "Play A.",
               "chord": "A"
             },
             {
-              "text": "Play F♯ minor.",
+              "text": "Play F♯m.",
               "chord": "F#m"
             }
           ]
