@@ -217,7 +217,7 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
   Good 0.75) + half right notes. Tests: `timing.test.ts`.
 - Progression Play (`type: "play"`, `components/PlayLevel.tsx` + `Waterfall.tsx`): blocks in the bar's degree colour fall
   onto a brass line above the keys; bar labels show chord + numeral. Start screen: tempo (never slower than the level or
-  the assignment), Show = Falling blocks / Chord names only / Nothing (the level's `screen` is the most help allowed),
+  the assignment), Show = Falling Note Blocks / Chord Names Only (the level's `screen` is the most help allowed; "Nothing (memory)" removed at his request),
   Listen first, Start. 4-click count-in shown as 1-2-3-4 (his call: how you'd count a band in; wood block, on the audio clock), Perfect/Good/Early/Late pops, Stop. The
   global metronome is turned off for it. Result shows Perfect/Good/Miss, timing % and right-notes %.
 - Echo (`type: "echo"`, prompt `notes`): the app plays a short tune, then the student plays it back (any octave, same
@@ -231,12 +231,17 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
 - His feedback round 2: "Falling Note Blocks" / "Chord Names Only" (Chord Names Only = full-width bands across the
   Stage, named in the middle, so they don't look like a piano key; the Perfect/Miss pop moves to the top there). Beat lines
   across the waterfall in every mode: beat 1 (bar line) thickest, beat 3 medium, beats 2 and 4 thin (count-in included).
-  Lesson 2's timed levels have no "Nothing (memory)" (level `screenMax: "names"`) and are 8 bars, so missing one chord
+  Lesson 2's timed levels are 8 bars, so missing one chord
   still passes (88%): Roots in time (whole) · C, F and G in time (whole notes now) · C, F and G: half notes
   (`l2-play-cfg-half`, new). Latency reminder: if at least 70% of presses are on the same side and the middle offset is
   70 ms or more (`steadyOffset` in timing.ts; compares to the nearest hit up to half a beat away, so a latency setting
   that is far off still shows), the result screen says "You were usually about N ms late/early..." with a Check latency
   button (`ctx.openLatency`).
+- Smooth moves in time (Lesson 6, his plan, 16 bars each, whole notes, smoothest voicing, rising difficulty):
+  `l6-play-smooth` I-IV-V-I in C · `l6-play-smooth-c6` all six (I-vi-ii-V-I-iii-IV-V) in C · `l6-play-smooth-g` I-IV-V-I in G
+  · `l6-play-smooth-f` I-IV-V-vi in F · `l6-play-smooth-a` I-IV-V-I in A · `l6-play-smooth-d6` all six in D. Lesson 6 has 9
+  levels (fits). Equal-distance moves pick the voicing nearest where the hand started (`smoothestVoicing(..., anchor)`),
+  so a long progression doesn't creep up the keyboard (C: CEG > CFA > DGB > EGC, then the same loop).
 - Level titles on the Stage are no longer in capitals (capitals turned "vi" into "VI").
 - Assignment link (core, `utils/assignment.ts`): Grade Report > Teacher > "Make an assignment link": name, levels (by
   lesson), note names (level's own / at most Cs / none), slowest tempo, sound. Link = `?a=<compressed>.<checksum>`

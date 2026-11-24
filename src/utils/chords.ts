@@ -267,8 +267,11 @@ export const moveDistance = (from: number[], to: number[]) => {
  * With `range` [lowest, highest], only voicings that fit on those keys count (Smooth Mover keeps targets on screen); if
  * none fits, any voicing counts.
  */
-export function smoothestVoicing(from: number[], c: Chord, range?: [number, number]): { notes: number[]; distance: number } {
+export function smoothestVoicing(from: number[], c: Chord, range?: [number, number], anchor?: number): { notes: number[]; distance: number } {
   const lo = Math.min(...from);
+  // Equal moves: with an anchor (the middle of where the hand started), take the one nearest it, so a long progression
+  // doesn't creep up (or down) the keyboard.
+  const off = (v: number[]) => (anchor === undefined ? 0 : Math.abs(v.reduce((a, n) => a + n, 0) / v.length - anchor));
   const find = (fits: (v: number[]) => boolean) => {
     let best = { notes: voicing(c, 0, lo), distance: Infinity };
     for (let inv = 0; inv < 3; inv++) {
@@ -276,7 +279,7 @@ export function smoothestVoicing(from: number[], c: Chord, range?: [number, numb
         const v = voicing(c, inv, floor);
         if (!fits(v)) continue;
         const d = moveDistance(from, v);
-        if (d < best.distance) best = { notes: v, distance: d };
+        if (d < best.distance || (d === best.distance && off(v) < off(best.notes))) best = { notes: v, distance: d };
       }
     }
     return best;

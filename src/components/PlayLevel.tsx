@@ -7,9 +7,10 @@ import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
 import { useNoteListener } from './chordInput';
 
-/** Easiest to hardest. A level's `screen` is the most help allowed; students can take less. */
-export const SCREEN_ORDER: ScreenHelp[] = ['blocks', 'names', 'off'];
-const SCREEN_LABEL: Record<ScreenHelp, string> = { blocks: 'Falling Note Blocks', names: 'Chord Names Only', off: 'Nothing (memory)' };
+/** Easiest to hardest. A level's `screen` is the most help allowed; students can take less. ("Nothing (memory)" was
+ *  removed at his request: it doesn't make sense for a waterfall.) */
+export const SCREEN_ORDER: ScreenHelp[] = ['blocks', 'names'];
+const SCREEN_LABEL: Record<ScreenHelp, string> = { blocks: 'Falling Note Blocks', names: 'Chord Names Only' };
 const COUNT_IN = 4;
 const LEAD_MS = 350;
 /** The fastest a student may push a level's tempo. */
@@ -153,9 +154,7 @@ export function usePlayLevel(
   }, [phase, timeline, startAt, tempo, screen]);
 
   const running = phase !== 'idle';
-  // The level's `screen` is the most help allowed; `screenMax` the least (Lesson 2 has no "Nothing (memory)").
-  const hardest = SCREEN_ORDER.indexOf(level.screenMax ?? 'off');
-  const shownScreens = SCREEN_ORDER.filter((s) => SCREEN_ORDER.indexOf(s) <= hardest);
+  const shownScreens = SCREEN_ORDER;
   const allowedScreens = shownScreens.filter((s) => SCREEN_ORDER.indexOf(s) >= SCREEN_ORDER.indexOf(level.screen ?? 'blocks'));
 
   const settingsUI = (

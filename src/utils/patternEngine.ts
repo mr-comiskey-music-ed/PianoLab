@@ -76,6 +76,8 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
   const hits: TimedHit[] = [];
   const bars: BarInfo[] = [];
   let prev: number[] | null = null;
+  // Where the hand starts (the middle of the first chord): smooth moves stay near it.
+  let anchor: number | undefined;
   for (let bar = 0; bar < p.bars; bar++) {
     const d = resolveNumeral(key, p.progression[bar % p.progression.length]);
     if (!d) continue;
@@ -83,7 +85,8 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
     // Voicing: root position near C3, or (inversions / smoothest) the smoothest move from the last chord, kept in view.
     let notes: number[];
     if (p.voicing === 'root' || !prev) notes = voicing(chord, 0, BASE + chord.root);
-    else notes = smoothestVoicing(prev, chord, [BASE, BASE + 24]).notes;
+    else notes = smoothestVoicing(prev, chord, [BASE, BASE + 24], anchor).notes;
+    anchor ??= notes.reduce((a, n) => a + n, 0) / notes.length;
     prev = notes;
     bars.push({ bar, beat: bar * 4, symbol: chordName(chord), numeral: d.numeral, color: d.color });
     const root = BASE + chord.root;

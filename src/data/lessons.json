@@ -987,8 +987,7 @@
             "tempo": 70,
             "bars": 8
           },
-          "screen": "blocks",
-          "screenMax": "names"
+          "screen": "blocks"
         },
         {
           "id": "l2-play-cfg",
@@ -1015,8 +1014,7 @@
             "tempo": 70,
             "bars": 8
           },
-          "screen": "blocks",
-          "screenMax": "names"
+          "screen": "blocks"
         },
         {
           "id": "l2-play-cfg-half",
@@ -1043,8 +1041,7 @@
             "tempo": 70,
             "bars": 8
           },
-          "screen": "blocks",
-          "screenMax": "names"
+          "screen": "blocks"
         }
       ]
     },
@@ -3090,7 +3087,7 @@
         {
           "id": "l6-play-smooth",
           "title": "Smooth moves in time",
-          "blurb": "Play I – IV – V – I with the smoothest moves, in time. The blocks show the voicing.",
+          "blurb": "Play I – IV – V – I in C with the smoothest moves, in time. The blocks show the voicing.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -3110,7 +3107,150 @@
             "rhythm": "whole",
             "voicing": "smoothest",
             "tempo": 70,
-            "bars": 8
+            "bars": 16
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l6-play-smooth-c6",
+          "title": "Smooth: all of C major",
+          "blurb": "Every chord from I to vi in C, with the smoothest moves. Keep the notes you can; move the others a little.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l6-smooth-c6",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi",
+              "ii",
+              "V",
+              "I",
+              "iii",
+              "IV",
+              "V"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 16
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l6-play-smooth-g",
+          "title": "Smooth: G major",
+          "blurb": "I – IV – V – I in G (G, C, D). Watch for F♯ in the D chord.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l6-smooth-g",
+            "key": "G",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 16
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l6-play-smooth-f",
+          "title": "Smooth: F major",
+          "blurb": "I – IV – V – vi in F (F, B♭, C, Dm). Watch for B♭ in the IV chord.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l6-smooth-f",
+            "key": "F",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "vi"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 16
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l6-play-smooth-a",
+          "title": "Smooth: A major",
+          "blurb": "I – IV – V – I in A (A, D, E). Three black keys: C♯, F♯ and G♯.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l6-smooth-a",
+            "key": "A",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 16
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l6-play-smooth-d6",
+          "title": "Smooth: all of D major",
+          "blurb": "Every chord from I to vi in D, with the smoothest moves. The hardest one.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l6-smooth-d6",
+            "key": "D",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi",
+              "ii",
+              "V",
+              "I",
+              "iii",
+              "IV",
+              "V"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 16
           },
           "screen": "blocks"
         }

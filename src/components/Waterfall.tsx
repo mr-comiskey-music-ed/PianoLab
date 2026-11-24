@@ -12,7 +12,7 @@ const BEATS_VISIBLE = 6;
 /**
  * The waterfall (SPEC section 14): blocks in the chord's scale-degree colour fall onto a brass hit line just above the
  * keys, lined up with the keys below. Each bar is labelled with its chord and numeral. `screen` sets how much shows:
- * blocks (easiest), chord names only (full-width bands), or nothing (hardest). `now()` is the time in ms on the same clock as `startAt`
+ * blocks (easiest), or chord names only (full-width bands). `now()` is the time in ms on the same clock as `startAt`
  * (the first downbeat). Results colour the blocks: Perfect and Good glow, Miss fades.
  */
 export const Waterfall: React.FC<{
