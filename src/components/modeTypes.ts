@@ -36,6 +36,11 @@ export interface ModeCtx {
   stopMetronome: () => void;
   /** Open the latency check (offered when timing is steadily off). */
   openLatency: () => void;
+  /** The latency check has been done on this device. */
+  latencySet: boolean;
+  /** The student chose "Skip for now" at the first timed challenge (this visit only, not saved). */
+  latencySkipped: boolean;
+  skipLatency: () => void;
   /** A teacher's assignment can set the slowest tempo allowed for timed levels. */
   minTempo?: number;
   results: LevelResult[];

@@ -8,6 +8,7 @@ import { encodeSubmission, DEFAULT_ASSIGNMENT } from '../utils/codec';
 import { parseBatch, BatchResult, BatchEntry, ALL_LESSONS } from '../utils/batch';
 import { floored, passed, bestByLevel } from '../utils/grading';
 import { saveLatency } from '../utils/autosave';
+import { STEADY_MS, tapSpread } from '../utils/timing';
 import { downloadMidi, formatLength, perfLength, unpackPerf } from '../utils/performance';
 
 const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }> = ({ title, onClose, wide, children }) => (
@@ -99,6 +100,8 @@ export const LatencyModal: React.FC<{
 }> = ({ engine, subscribe, onDone, onClose, pauseMetro }) => {
   const [phase, setPhase] = useState<'ready' | 'running' | 'done' | 'failed'>('ready');
   const [result, setResult] = useState<number | null>(null);
+  /** How much the taps wandered around their own middle (ms). Steadily early or late is fine; back and forth is not. */
+  const [spread, setSpread] = useState(0);
   const clicks = useRef<number[]>([]);
   const taps = useRef<number[]>([]);
 
@@ -135,6 +138,7 @@ export const LatencyModal: React.FC<{
       const ms = Math.max(0, Math.round(median));
       saveLatency(ms);
       setResult(ms);
+      setSpread(tapSpread(offs));
       setPhase('done');
       onDone(ms);
     }, (BEATS * 60) / BPM * 1000 + 900);
@@ -166,10 +170,27 @@ export const LatencyModal: React.FC<{
           <p className="h text-[22px] text-good" data-testid="latency-result">
             Your latency: {result} ms
           </p>
-          <p className="mt-1 text-[14px] text-wal1">Saved in this browser. It will be used for timing grades. You can run this again any time.</p>
-          <button className="btn btn-brass mt-3 w-full" onClick={onClose}>
-            Done
-          </button>
+          {spread <= STEADY_MS ? (
+            <p className="h text-[16px] text-good" data-testid="latency-steady" data-steady="yes">
+              Steady ✓
+            </p>
+          ) : (
+            <p className="mt-1 flex flex-col rounded-lg bg-[#f6e3b8] px-2 py-1 text-[14px] text-wal2" data-testid="latency-steady" data-steady="no">
+              <span>Your taps were uneven, so this number may be off.</span>
+              <span>Try once more, tapping right with each click.</span>
+            </p>
+          )}
+          <p className="mt-1 text-[14px] text-wal1">Saved in this browser and used for timing grades.</p>
+          <div className="mt-3 flex gap-2">
+            {spread > STEADY_MS && (
+              <button className="btn btn-brass flex-1" onClick={() => setPhase('ready')} data-testid="latency-again">
+                Try once more
+              </button>
+            )}
+            <button className={`btn flex-1 ${spread > STEADY_MS ? '' : 'btn-brass'}`} onClick={onClose}>
+              Done
+            </button>
+          </div>
         </>
       )}
       {phase === 'failed' && (

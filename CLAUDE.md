@@ -257,6 +257,12 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
   in patternEngine.ts), and the grading rule is its own line: "80% to pass, half on timing, half on correct notes".
   Latency reminder and the latency check's intro: one sentence per line, short. Lesson 6 timed titles shortened to fit
   one line: Smooth: C major · Smooth: all of C · Smooth: G/F/A major · Smooth: all of D (ids unchanged).
+- Latency check result says "Steady ✓", or (taps wandering more than 30 ms around their own middle, `tapSpread` in
+  timing.ts) "Your taps were uneven..." with Try once more. Being steadily early/late is fine (that IS the latency).
+  First timed challenge: if latency was never checked on this device, the start screen asks for it first (Check latency /
+  Skip for now; skip lasts this visit only, nothing saved). His call instead of putting it in assignment links. (He asked
+  about Soundtrap-style mic loopback: decided against: it measures speaker+mic delay, not the MIDI keyboard or the
+  student's feel; mic permission prompts and 25 Chromebooks clicking in one room.)
 - Level titles on the Stage are no longer in capitals (capitals turned "vi" into "VI").
 - Assignment link (core, `utils/assignment.ts`): Grade Report > Teacher > "Make an assignment link": name, levels (by
   lesson), note names (level's own / at most Cs / none), slowest tempo, sound. Link = `?a=<compressed>.<checksum>`

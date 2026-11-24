@@ -210,15 +210,33 @@ export function usePlayLevel(
             </span>
             <span>{level.pass}% to pass, half on timing, half on correct notes</span>
           </div>
-          {settingsUI}
-          <div className="flex gap-2">
-            <button className="btn btn-dark text-[16px]" onClick={() => begin(true)} data-testid="listen-first">
-              ▶ Listen first
-            </button>
-            <button className="btn btn-brass text-[18px]" onClick={() => begin(false)} data-testid="start">
-              Start
-            </button>
-          </div>
+          {!ctx.latencySet && !ctx.latencySkipped ? (
+            // First timed challenge on this device: check latency first, so the timing grades are fair.
+            <div className="flex max-w-[560px] flex-col items-center gap-2 rounded-lg bg-[#f6e3b8] px-4 py-3 text-[15px] text-wal2" data-testid="latency-first">
+              <span className="h text-[17px] text-wal3">First, a quick latency check (about 10 seconds).</span>
+              <span>It makes your timing grades fair for your keyboard and headphones.</span>
+              <div className="mt-1 flex gap-2">
+                <button className="btn btn-brass" onClick={ctx.openLatency} data-testid="latency-first-check">
+                  Check latency
+                </button>
+                <button className="btn" onClick={ctx.skipLatency} data-testid="latency-first-skip">
+                  Skip for now
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {settingsUI}
+              <div className="flex gap-2">
+                <button className="btn btn-dark text-[16px]" onClick={() => begin(true)} data-testid="listen-first">
+                  ▶ Listen first
+                </button>
+                <button className="btn btn-brass text-[18px]" onClick={() => begin(false)} data-testid="start">
+                  Start
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
       {phase === 'count' && (

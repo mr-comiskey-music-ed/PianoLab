@@ -156,3 +156,19 @@ export function steadyOffset(presses: number[], hitTimes: number[], maxMs: numbe
   const sameSide = ds.filter((d) => Math.sign(d) === Math.sign(mid)).length / ds.length;
   return Math.abs(mid) >= OFFSET_MIN_MS && sameSide >= OFFSET_AGREE ? Math.round(mid) : null;
 }
+
+/** Taps that wander more than this (typical distance from their own middle value, ms) are "uneven". */
+export const STEADY_MS = 30;
+/**
+ * How much latency-check taps wander around their own middle value (the median distance from the median, ms). Being
+ * steadily early or late doesn't count: that steady amount IS the latency. Only going back and forth around the beat does.
+ */
+export function tapSpread(offsets: number[]): number {
+  if (!offsets.length) return 0;
+  const mid = (xs: number[]) => {
+    const s = [...xs].sort((a, b) => a - b);
+    return s[Math.floor(s.length / 2)];
+  };
+  const m = mid(offsets);
+  return Math.round(mid(offsets.map((o) => Math.abs(o - m))));
+}

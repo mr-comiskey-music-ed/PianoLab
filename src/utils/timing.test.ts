@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTimeline, chordSummary, resolveNumeral, rhythmBeats } from './patternEngine';
-import { TimingJudge, summarize, steadyOffset, HitResult } from './timing';
+import { STEADY_MS, TimingJudge, summarize, steadyOffset, tapSpread, HitResult } from './timing';
 import { keyById, chordName } from './chords';
 import { Pattern } from '../data/pattern';
 
@@ -89,5 +89,10 @@ describe('timing judge', () => {
     expect(steadyOffset(hits.map((h, i) => h + (i % 2 ? 90 : -90)), hits, 375)).toBeNull(); // early and late: no
     expect(steadyOffset(hits.map((h) => h + 20), hits, 375)).toBeNull(); // close enough
     expect(steadyOffset([150, 900], hits, 375)).toBeNull(); // too few presses
+  });
+  it('steady taps are steady even when always late; back-and-forth taps are not', () => {
+    expect(tapSpread([60, 65, 58, 62, 70, 61, 63, 59])).toBeLessThanOrEqual(STEADY_MS); // always ~60 ms late: fine
+    expect(tapSpread([-5, 3, 0, 8, -2, 4])).toBeLessThanOrEqual(STEADY_MS); // right on: fine
+    expect(tapSpread([-40, 80, 10, 120, -60, 70, 0, 100])).toBeGreaterThan(STEADY_MS); // all over the beat
   });
 });

@@ -112,6 +112,7 @@ export default function App() {
   const [states, setStates] = useState<Record<string, LoadState>>({});
   const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 1 });
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
+  const [latencySkipped, setLatencySkipped] = useState(false);
   const [modal, setModal] = useState<null | 'latency' | 'batch' | 'assign'>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [customParams, setCustomParams] = useState<SynthParams>(() => {
@@ -247,6 +248,9 @@ export default function App() {
     stopMetronome: () => metroRef.current.on && onMetroRef.current({ ...metroRef.current, on: false }),
     minTempo: assignment?.tempo,
     openLatency: () => setModal('latency'),
+    latencySet: latency !== null,
+    latencySkipped,
+    skipLatency: () => setLatencySkipped(true),
     results,
     setResults,
     learnDone,
