@@ -331,7 +331,10 @@ YouTube ungraded):
 'phone' = sideways and at most 500 px tall; 'upright' = taller than wide and under 700 px wide; Chromebooks/laptops/tablets
 = 'full' (unchanged). Phone, round 2 (his feedback): ONE bar on top: ☰ (opens the left drawer) · tabs ("Grade") ·
 Oct − / Oct + · ♪ (Sound drawer) · ⋯ (MIDI/latency/saved chips); the bar above the keys and the "C3–C5" text are gone on
-phones (no off-screen-notes label there; the Oct buttons still flash). Drawers slide over (backdrop closes). Chord strip
+phones (no off-screen-notes label there; the Oct buttons still flash). The ☰ button became a labelled menu button (his
+"not obvious" note): "Lesson 3 / Step 2 ▾" (Learn), "Lesson 3 / Level 2 ▾" (Challenges, `navLabel` from the modes),
+"Lesson 3 ▾" (Practice), "Options ▾" (Sandbox), "Jam setup ▾"; a brass hint bubble "Lessons and levels are here" shows
+once per visit under it (6 s or the first tap; nothing saved). Phone tab "Jam Room" -> "Jam". Drawers slide over (backdrop closes). Chord strip
 hidden. Stage contents at 80% (`.phone-stage` zoom) and laid out LEFT TO RIGHT (`StageRow.tsx`: `StageBox` + `Col`, used
 by Challenges (start / question / result: score | passed + best | buttons), Learn (explanation | try | buttons),
 Practice, the timed-level start screen); `ctx.phone` tells modes. Piano 36% of the height; stage side borders 10 px so

@@ -780,6 +780,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   return {
     left,
     stage,
+    navLabel: `Level ${Math.max(0, levels.findIndex((l) => l.id === selLevel.id)) + 1}`,
     lit,
     marks,
     labels: effective(selLevel),

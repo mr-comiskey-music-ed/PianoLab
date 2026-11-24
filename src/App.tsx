@@ -121,6 +121,18 @@ export default function App() {
   const compact = screen !== 'full';
   const [drawer, setDrawer] = useState<null | 'left' | 'right'>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Phones: a hint under the lesson-menu button, shown once per visit, gone after a few seconds or the first tap.
+  const [navHint, setNavHint] = useState(true);
+  useEffect(() => {
+    if (!phone || !navHint) return;
+    const t = window.setTimeout(() => setNavHint(false), 6000);
+    const off = () => setNavHint(false);
+    window.addEventListener('pointerdown', off, { once: true });
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener('pointerdown', off);
+    };
+  }, [phone, navHint]);
   const [modal, setModal] = useState<null | 'latency' | 'batch' | 'assign'>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [customParams, setCustomParams] = useState<SynthParams>(() => {
@@ -368,9 +380,37 @@ export default function App() {
       <header className={`wood relative flex items-center text-panel shadow-md ${compact ? 'gap-2 px-2 py-1' : 'flex-wrap gap-x-4 gap-y-1 px-3 py-1.5'}`} data-testid="topbar">
         {phone && mode !== 'report' ? (
           // Phones: one bar. The lesson / sandbox / jam panel opens from here (no logo, to save room).
-          <button className="btn btn-dark shrink-0 px-2 py-0.5 text-[15px]" onClick={() => setDrawer('left')} data-testid="open-left" aria-label={mode === 'jam' ? 'Jam Room settings' : mode === 'sandbox' ? 'Sandbox' : 'Lesson'}>
-            ☰
-          </button>
+          // Says where you are (and that this is where to change it): "Lesson 3 / Level 2 ▾".
+          <span className="relative shrink-0">
+            <button
+              className="btn btn-dark flex flex-col items-start px-2 py-0 leading-tight"
+              onClick={() => {
+                setDrawer('left');
+                setNavHint(false);
+              }}
+              data-testid="open-left"
+            >
+              {mode === 'jam' ? (
+                <span className="h text-[13px]">Jam setup ▾</span>
+              ) : mode === 'sandbox' ? (
+                <span className="h text-[13px]">Options ▾</span>
+              ) : parts.navLabel ? (
+                <>
+                  <span className="h text-[10px] text-brass">Lesson {lesson.number}</span>
+                  <span className="h text-[13px]">{parts.navLabel} ▾</span>
+                </>
+              ) : (
+                <span className="h text-[13px]">Lesson {lesson.number} ▾</span>
+              )}
+            </button>
+            {navHint && (mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
+              // A first-visit hint (not saved anywhere: it shows once per visit).
+              <span className="pop absolute left-0 top-full z-50 mt-2 w-max max-w-[220px] rounded-lg bg-brass px-2.5 py-1.5 text-[13px] font-semibold text-brasstext shadow-lg" data-testid="nav-hint" onClick={() => setNavHint(false)}>
+                <span className="absolute -top-1.5 left-4 h-3 w-3 rotate-45 bg-brass" />
+                Lessons and levels are here ▲
+              </span>
+            )}
+          </span>
         ) : (
           <div className={`h flex items-center gap-2 tracking-wide ${compact ? 'text-[16px]' : 'text-[22px]'}`}>
             <img src="/favicon.svg" alt="" className={compact ? 'h-6 w-6' : 'h-7 w-7'} />
@@ -388,7 +428,7 @@ export default function App() {
               }}
               className={`h shrink-0 rounded-md ${compact ? 'px-1.5 py-0.5 text-[13px]' : 'px-3 py-1 text-[15px]'} ${mode === t.id ? 'bg-brass text-brasstext' : 'text-panel hover:bg-white/10'}`}
             >
-              {compact && t.id === 'report' ? 'Grade' : t.label}
+              {compact && t.id === 'report' ? 'Grade' : compact && t.id === 'jam' ? 'Jam' : t.label}
             </button>
           ))}
         </nav>

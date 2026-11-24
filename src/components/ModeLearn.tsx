@@ -579,6 +579,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   return {
     left,
     stage,
+    navLabel: `Step ${i + 1}`,
     // Nothing is lit or labelled while the student is working it out. Only the note the app is playing shows.
     // Show-and-tell steps put the names on every key (step.labels).
     labels: step.labels ?? 'off',
