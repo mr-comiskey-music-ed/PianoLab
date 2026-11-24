@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diatonicSevenths, isSeventh, chordName, chordPcs, detectChord, diatonic, keyById, matchesChord, moveDistance, moveSizes, parseChord, smoothestVoicing, voicing } from './chords';
+import { parseNumeral, diatonicSevenths, isSeventh, chordName, chordPcs, detectChord, diatonic, keyById, matchesChord, moveDistance, moveSizes, parseChord, smoothestVoicing, voicing } from './chords';
 import { parseNote, pcOf } from './music';
 
 const n = (...names: string[]) => names.map((x) => parseNote(x)!);
@@ -106,5 +106,18 @@ describe('7th chords (Lesson 8)', () => {
     expect(diatonicSevenths(keyById('C')).map((d) => `${chordName(d.chord)} ${d.numeral}`)).toEqual([
       'Cmaj7 Imaj7', 'Dm7 ii7', 'Em7 iii7', 'Fmaj7 IVmaj7', 'G7 V7', 'Am7 vi7', 'Bø7 viiø7',
     ]);
+  });
+});
+
+describe('any Roman numeral (Jam Room)', () => {
+  const C = keyById('C');
+  const name = (t: string) => { const d = parseNumeral(C, t); return d ? chordName(d.chord) : null; };
+  it('reads the key’s chords, 7ths, blues and borrowed chords', () => {
+    expect(['I', 'ii', 'V', 'vi', 'vii°'].map(name)).toEqual(['C', 'Dm', 'G', 'Am', 'B°']);
+    expect(['V7', 'ii7', 'Imaj7', 'viiø7'].map(name)).toEqual(['G7', 'Dm7', 'Cmaj7', 'Bø7']);
+    expect(['I7', 'IV7'].map(name)).toEqual(['C7', 'F7']); // blues
+    expect(['bVII', '♭VI', 'bIII'].map(name)).toEqual(['B♭', 'A♭', 'E♭']);
+    expect(chordName(parseNumeral(keyById('Am'), 'VII')!.chord)).toBe('G');
+    expect(name('X')).toBeNull();
   });
 });

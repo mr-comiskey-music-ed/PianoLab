@@ -518,6 +518,26 @@ export class AudioEngine {
    * performance.now() clock (ms): the gap to the audio clock now, plus the device's output delay. Timed levels and the
    * latency check both use this, so whatever small error it has cancels out in the student's latency setting.
    */
+  /** One wood-block click at an exact audio-clock time (beat 0 of a bar is accented). Used by the Jam Room's count-in. */
+  clickAt(time: number, beat: number) {
+    this.tick('wood', beat % 4, time);
+  }
+
+  /** The Jam Room's Piano fader (0-1.5, squared). The metronome is not affected. */
+  setPianoLevel(v: number) {
+    this.bus.gain.value = v * v;
+  }
+  private pianoMeter: Tone.Meter | null = null;
+  /** The piano's level for the Jam Room meter, 0-1 (the meter is made the first time it's asked for). */
+  pianoLevel(): number {
+    if (!this.pianoMeter) {
+      this.pianoMeter = new Tone.Meter({ smoothing: 0.85 });
+      this.master.connect(this.pianoMeter);
+    }
+    const db = this.pianoMeter.getValue() as number;
+    return Math.max(0, Math.min(1, (db + 48) / 48));
+  }
+
   /** How long after a "play now" a sound is heard (ms): the device's output delay. */
   outputDelayMs(): number {
     return this.audioToPerf(Tone.getContext().rawContext.currentTime) - performance.now();

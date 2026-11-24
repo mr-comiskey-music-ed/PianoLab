@@ -1,5 +1,5 @@
 import { Pattern, Rhythm, Texture } from '../data/pattern';
-import { Chord, KeyDef, chordName, diatonic, diatonicSevenths, makeKey, smoothestVoicing, voicing } from './chords';
+import { Chord, KeyDef, chordName, diatonic, diatonicSevenths, makeKey, parseNumeral, smoothestVoicing, voicing } from './chords';
 import { pc, pcOf } from './music';
 import { MAJOR_SCALE } from './scales';
 
@@ -66,7 +66,7 @@ export function rhythmBeats(r: Rhythm): number[] {
  *  (Lesson 8): "V7", "ii7", "Imaj7", "viiø7". */
 export function resolveNumeral(k: KeyDef, numeral: string) {
   const n = numeral.replace(/o$/, '°').trim();
-  return diatonic(k).find((d) => d.numeral === n) ?? diatonicSevenths(k).find((d) => d.numeral === n) ?? null;
+  return diatonic(k).find((d) => d.numeral === n) ?? diatonicSevenths(k).find((d) => d.numeral === n) ?? parseNumeral(k, numeral);
 }
 
 /** The lowest note for chords: the root's octave-3 position (C3-B3), which keeps a 25-key view (C3-C5) comfortable. */

@@ -167,6 +167,32 @@ export function diatonicSevenths(k: KeyDef): Diatonic[] {
   }));
 }
 
+const ROMAN = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii'];
+/**
+ * Any Roman numeral in a key, not just the key's own chords (Jam Room progressions): "I", "vi", "V7" (dominant),
+ * "ii7", "Imaj7", "viiø7", "vii°", and borrowed chords like "♭VII" or "bVI" (a half step lower) and "I7" (blues).
+ * Upper case = major, lower case = minor; with 7: upper case = dominant 7th, lower case = minor 7th. Null if unreadable.
+ */
+export function parseNumeral(k: KeyDef, text: string): Diatonic | null {
+  const m = text.trim().match(/^([b♭#♯]?)(VII|VI|V|IV|III|II|I|vii|vi|v|iv|iii|ii|i)(°|o|ø|\+)?(maj7|7)?$/);
+  if (!m) return null;
+  const degree = ROMAN.indexOf(m[2].toLowerCase());
+  const upper = m[2] === m[2].toUpperCase();
+  const steps = k.mode === 'major' ? MAJOR_STEPS : MINOR_STEPS;
+  const shift = m[1] === 'b' || m[1] === '♭' ? -1 : m[1] ? 1 : 0;
+  const root = (((k.tonic + steps[degree] + shift) % 12) + 12) % 12;
+  const mark = m[3] === 'o' ? '°' : m[3];
+  let quality: Quality;
+  if (m[4] === 'maj7') {
+    if (!upper || mark) return null;
+    quality = 'maj7';
+  } else if (m[4] === '7') quality = mark === 'ø' ? 'hdim7' : mark === '°' ? 'dim7' : mark === '+' ? 'dom7' : upper ? 'dom7' : 'min7';
+  else quality = mark === 'ø' ? 'hdim7' : mark === '°' ? 'dim' : mark === '+' ? 'aug' : upper ? 'maj' : 'min';
+  const flats = k.flats || shift < 0;
+  const color = Object.values(DEGREE_COLORS)[degree];
+  return { degree, chord: { root, quality, rootName: pcName(root, flats) }, numeral: text.trim().replace(/^b/, '♭').replace(/^#/, '♯').replace(/o/, '°'), color };
+}
+
 // ---------- The chord detector ("What am I playing?") ----------
 /**
  * Chord types the detector knows, by intervals above the root (half steps). Earlier entries win when a set of notes

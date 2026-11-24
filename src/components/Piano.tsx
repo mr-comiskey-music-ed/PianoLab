@@ -17,12 +17,16 @@ interface Props {
   keyText?: Map<number, string>;
   /** Black keys get their names too (Lesson 4 on), when names are showing. */
   blackNames?: boolean;
+  /** Jam Room Melody mode: the key's notes get a small brass dot. */
+  tint?: Set<number>;
+  /** Jam Room Key lock: notes outside the key are greyed (and silent). */
+  dim?: Set<number>;
   onDown: (midi: number) => void;
   onUp: (midi: number) => void;
 }
 
 /** 25 keys, C to C. Mouse and multitouch both work: each finger is tracked by its own pointer id. */
-export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks, labels, keyText, blackNames, onDown, onUp }) => {
+export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks, labels, keyText, blackNames, tint, dim, onDown, onUp }) => {
   const held = useRef(new Map<number, number>()); // pointerId -> midi
   const keys = Array.from({ length: KEY_COUNT }, (_, i) => start + i);
   const whites = keys.filter((m) => !isBlack(m));
@@ -52,6 +56,7 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
     if (mark === 'bad') return black ? 'bg-[#a3453f]' : 'bg-[#f0c4bf]';
     if (on) return black ? 'bg-brass3' : 'bg-[#f1d58f]';
     if (lit?.has(midi)) return (black ? 'bg-brass2' : 'bg-[linear-gradient(to_bottom,#fffaf0,#f6dea0)]') + ' lit';
+    if (dim?.has(midi)) return black ? 'bg-[#5a4f44]' : 'bg-[#cfc5b5]';
     return black ? 'bg-ebony' : 'bg-[#fffaf0]';
   };
 
@@ -84,6 +89,9 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
             className={`absolute top-0 ${black ? 'h-[62%] z-10 rounded-b-md shadow-[0_3px_4px_rgba(0,0,0,0.5)]' : 'h-full rounded-b-lg border border-line2'} ${cls(midi, black)} transition-colors duration-75`}
             style={{ left: `${left}%`, width: `${black ? wW * 0.6 : wW}%` }}
           >
+            {tint?.has(midi) && (
+              <span className={`pointer-events-none absolute left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-brass ${black ? 'top-2' : 'top-[38%]'}`} data-testid="key-tint" />
+            )}
             {tag && (
               // A word on the key (Root / 3rd / 5th) in the note's colour (the same colours as the Sandbox's piano roll),
               // above where the note name goes.

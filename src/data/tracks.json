@@ -1,0 +1,4 @@
+{
+  "about": "Mr. Comiskey's backing tracks for the Jam Room. Put each audio file in public/tracks/ and add a line here: id (never change it), title, url (/tracks/<file>), bpm, key (C, G, F#, Bb...), mode (major or minor), progression (Roman numerals, one per bar, repeating), offset (seconds from the start of the file to beat 1). Files load only when a student picks them.",
+  "tracks": []
+}

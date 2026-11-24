@@ -75,4 +75,9 @@ export interface ModeParts {
   restart?: { label: string; onClick: () => void; disabled?: boolean };
   /** A pop-up the mode wants shown (e.g. Save performance). */
   overlay?: ReactNode;
+  /** Jam Room Melody mode: keys to mark with a brass dot (the key's notes). */
+  tint?: Set<number>;
+  /** Jam Room Key lock: keys greyed out, and `silence` says which notes make no sound (and don't count). */
+  dim?: Set<number>;
+  silence?: (midi: number) => boolean;
 }

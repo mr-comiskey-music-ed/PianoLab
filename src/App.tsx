@@ -19,6 +19,7 @@ import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { useLearn } from './components/ModeLearn';
 import { usePractice } from './components/ModePractice';
 import { useChallenge } from './components/ModeChallenge';
+import { useJam } from './components/ModeJam';
 import { ModeCtx, NoteEvent } from './components/modeTypes';
 import { LevelResult } from './types';
 import { DEFAULT_START, KEY_COUNT, clampStart, inView, letterOf, noteName, startFor } from './utils/music';
@@ -36,7 +37,7 @@ const octColor = (n: number) =>
 
 const LESSONS = (lessonsData.lessons as unknown as Lesson[]);
 
-type Mode = 'learn' | 'practice' | 'challenge' | 'sandbox' | 'report';
+type Mode = 'learn' | 'practice' | 'challenge' | 'sandbox' | 'jam' | 'report';
 const engine = AudioEngine.get();
 
 export default function App() {
@@ -208,8 +209,15 @@ export default function App() {
   const heldRef = useRef(new Set<number>());
   const getHeld = useCallback(() => [...heldRef.current], []);
 
+  // Jam Room Key lock: notes outside the key make no sound and don't count anywhere.
+  const silenceRef = useRef<((midi: number) => boolean) | undefined>(undefined);
+  const silenced = useRef(new Set<number>());
   const noteOn = useCallback((midi: number, vel: number, source: 'midi' | 'typing' | 'touch') => {
     void engine.unlock();
+    if (silenceRef.current?.(midi)) {
+      silenced.current.add(midi);
+      return;
+    }
     heldRef.current.add(midi);
     engine.noteOn(midi, vel);
     setPressed((p) => new Set(p).add(midi));
@@ -219,6 +227,7 @@ export default function App() {
     noteListeners.current.forEach((fn) => fn({ on: true, midi, vel }));
   }, []);
   const noteOff = useCallback((midi: number) => {
+    if (silenced.current.delete(midi)) return;
     engine.noteOff(midi);
     heldRef.current.delete(midi);
     noteListeners.current.forEach((fn) => fn({ on: false, midi, vel: 0 }));
@@ -263,7 +272,9 @@ export default function App() {
   const practice = usePractice(ctx);
   const challenge = useChallenge(ctx);
   const sandbox = useSandbox(ctx, mode === 'sandbox');
-  const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : mode === 'sandbox' ? sandbox : challenge;
+  const jam = useJam(ctx, mode === 'jam');
+  const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : mode === 'sandbox' ? sandbox : mode === 'jam' ? jam : challenge;
+  silenceRef.current = parts.silence;
 
   // Chord detector: on everywhere except Challenges (it would give answers away). Chord strip: Practice and Sandbox,
   // Lessons 2 on (in Learn it would give the answers away too).
@@ -327,22 +338,16 @@ export default function App() {
           PianoLab
         </div>
         <nav className="flex gap-1" aria-label="Modes">
-          {tabs.map((t) =>
-            t.id === 'jam' ? (
-              <span key={t.id} className="h cursor-default rounded-md px-3 py-1 text-[15px] text-line2/60" title="Coming in a later phase">
-                {t.label} <span className="text-[10px]">soon</span>
-              </span>
-            ) : (
-              <button
-                key={t.id}
-                data-testid={`tab-${t.id}`}
-                onClick={() => setMode(t.id as Mode)}
-                className={`h rounded-md px-3 py-1 text-[15px] ${mode === t.id ? 'bg-brass text-brasstext' : 'text-panel hover:bg-white/10'}`}
-              >
-                {t.label}
-              </button>
-            ),
-          )}
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              data-testid={`tab-${t.id}`}
+              onClick={() => setMode(t.id as Mode)}
+              className={`h rounded-md px-3 py-1 text-[15px] ${mode === t.id ? 'bg-brass text-brasstext' : 'text-panel hover:bg-white/10'}`}
+            >
+              {t.label}
+            </button>
+          ))}
         </nav>
         <div className="ml-auto flex flex-wrap items-center gap-2 text-[12px]">
           <SaveIndicator status={saveStatus} savedAt={savedAt} />
@@ -465,7 +470,9 @@ export default function App() {
                 marks={parts.marks}
                 keyText={parts.keyText}
                 labels={parts.labels}
-                blackNames={!!lesson.blackKeys || mode === 'sandbox'}
+                blackNames={!!lesson.blackKeys || mode === 'sandbox' || mode === 'jam'}
+                tint={parts.tint}
+                dim={parts.dim}
                 onDown={(m) => noteOn(m, 0.8, 'touch')}
                 onUp={noteOff}
               />
