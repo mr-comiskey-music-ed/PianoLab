@@ -1,21 +1,30 @@
 /**
- * Timing grades for playing in time (SPEC section 7). Rhythm-game hit windows: Perfect ±50 ms, Good ±100 ms, Miss beyond.
- * A chord's time is when its FIRST key goes down (his choice); the other keys count if they land within GROUP_MS of it.
- * The student's latency (from the latency check) is taken off every key press first.
+ * Timing grades for playing in time (SPEC section 7). Rhythm-game hit windows: Perfect ±50 ms, Good ±100 ms, Early/Late
+ * up to ±220 ms. A chord's time is when its FIRST key goes down (his choice); the other keys count if they land within
+ * GROUP_MS of it. The student's latency (from the latency check) is taken off every key press first.
  *
- * Each hit is graded twice: timing (Perfect = 1, Good = 0.8, Early/Late = 0.5, Miss = 0; his call: Early or Late is not
- * a pure miss) and notes (the right note names, any octave).
+ * Each hit is graded twice (his calls):
+ *   timing: Perfect 1, Good 0.8, Early/Late 0.5, "slid in" 0.33, Miss 0. Only the RIGHT notes in time earn timing
+ *     credit: wrong notes are a Miss (in the tally and the timing score), the same as not playing.
+ *   notes: 1 for the right notes (any octave); a level can grade more finely (`checkNotes`: Smooth levels give 0.75 for
+ *     the second-smoothest move and 0 for anything bigger).
+ * "Slid in": the first keys were near the beat but not quite the chord, and the student got to the right chord within
+ * SLIDE_MS. It counts as Early/Late in the tally, right notes, and 0.33 timing credit.
  * Grade = half timing, half notes. A press more than MATCH_MS away from every hit doesn't match anything.
  */
 export const PERFECT_MS = 50;
 export const GOOD_MS = 100;
-/** How far from a hit a press can be and still be "for" that hit (graded as a timing miss beyond GOOD_MS). */
+/** How far from a hit a press can be and still be "for" that hit (Early/Late beyond GOOD_MS). */
 export const MATCH_MS = 220;
 /** Keys within this long of a chord's first key belong to the same chord. */
 export const GROUP_MS = 80;
+/** How long after the first key a wrong chord can still be fixed ("slid in"). */
+export const SLIDE_MS = 400;
 const GOOD_CREDIT = 0.8;
 /** Played, but further off than Good (up to MATCH_MS): Early or Late. Half credit for timing. */
 const OFF_CREDIT = 0.5;
+/** Slid into the right chord after a near-the-beat start. A third of the timing credit. */
+const SLIDE_CREDIT = 0.33;
 
 export interface ExpectedHit {
   /** Milliseconds from the start (the first downbeat after the count-in). */
@@ -23,21 +32,28 @@ export interface ExpectedHit {
   pcs: number[];
 }
 
-/** 'off' = Early or Late (played, but more than GOOD_MS away); 'miss' = not played for this hit at all. */
+/** 'off' = Early or Late (or slid in); 'miss' = not played, or wrong notes. */
 export type HitStatus = 'perfect' | 'good' | 'off' | 'miss';
 export interface HitResult {
   status: HitStatus;
-  /** The right note names were played. */
+  /** The right notes were played (in the end). */
   notesRight: boolean;
+  /** Notes credit 0-1 (default: 1 if right, 0 if not). */
+  notes?: number;
   /** Early (-) or late (+), ms. Missing if nothing was played for this hit. */
   dt?: number;
+  /** Got to the right chord after a near-the-beat start. */
+  slid?: boolean;
+  /** A short word about the notes: "Wrong notes", "Not smooth", "Almost smooth". */
+  why?: string;
 }
 
 export interface TimingSummary {
   perfect: number;
   good: number;
-  /** Early or Late. */
+  /** Early or Late (including "slid in"). */
   off: number;
+  /** Not played, or wrong notes. */
   miss: number;
   notesRight: number;
   total: number;
@@ -51,46 +67,93 @@ export interface TimingSummary {
   offset?: number;
 }
 
+const timingCredit = (r: HitResult) =>
+  r.status === 'perfect' ? 1 : r.status === 'good' ? GOOD_CREDIT : r.status === 'off' ? (r.slid ? SLIDE_CREDIT : OFF_CREDIT) : 0;
+const notesCredit = (r: HitResult) => r.notes ?? (r.notesRight ? 1 : 0);
+
 export function summarize(results: (HitResult | undefined)[]): TimingSummary {
   const total = results.length;
   const r = results.map((x) => x ?? { status: 'miss' as const, notesRight: false });
-  const perfect = r.filter((x) => x.status === 'perfect').length;
-  const good = r.filter((x) => x.status === 'good').length;
-  const off = r.filter((x) => x.status === 'off').length;
-  const notesRight = r.filter((x) => x.notesRight).length;
-  const timing = total ? ((perfect + GOOD_CREDIT * good + OFF_CREDIT * off) / total) * 100 : 0;
-  const notes = total ? (notesRight / total) * 100 : 0;
-  return { perfect, good, off, miss: total - perfect - good - off, notesRight, total, timing: Math.round(timing), notes: Math.round(notes), raw: Math.round((timing + notes) / 2) };
+  const count = (s: HitStatus) => r.filter((x) => x.status === s).length;
+  const timing = total ? (r.reduce((a, x) => a + timingCredit(x), 0) / total) * 100 : 0;
+  const notes = total ? (r.reduce((a, x) => a + notesCredit(x), 0) / total) * 100 : 0;
+  return {
+    perfect: count('perfect'),
+    good: count('good'),
+    off: count('off'),
+    miss: count('miss'),
+    notesRight: r.filter((x) => x.notesRight).length,
+    total,
+    timing: Math.round(timing),
+    notes: Math.round(notes),
+    raw: Math.round((timing + notes) / 2),
+  };
 }
 
+/** How right a chord's keys are for a hit: credit 0-1 and an optional word. */
+export type NotesCheck = (hit: number, keys: number[]) => { credit: number; why?: string };
+
+/** The default: the right note names (pitch classes), any octave, nothing extra. */
+export const pitchClassCheck =
+  (hits: ExpectedHit[]): NotesCheck =>
+  (i, keys) => {
+    const want = hits[i].pcs;
+    const got = new Set(keys.map((k) => ((k % 12) + 12) % 12));
+    return got.size === want.length && want.every((p) => got.has(p)) ? { credit: 1 } : { credit: 0, why: 'Wrong notes' };
+  };
+
 /**
- * Judges a run live. Feed it key presses (`press`) with their time in ms on the same clock as the hits; call `tick` now
- * and then so hits that went by unplayed become misses. `onResult` is called once per hit.
+ * Judges a run live. Feed it key presses (`press`, a MIDI note) with their time in ms on the same clock as the hits;
+ * call `tick` now and then so hits that went by unplayed become misses. `onResult` is called once per hit (and again if
+ * a wrong chord is fixed in time: "slid in").
  */
 export class TimingJudge {
   readonly results: (HitResult | undefined)[];
   /** When each chord/note was played (ms, latency already taken off), matched or not. For `steadyOffset`. */
   readonly presses: number[] = [];
-  private group: { t: number; pcs: Set<number>; timer: number } | null = null;
+  private group: { t: number; keys: number[]; timer: number } | null = null;
+  /** A wrong chord that can still be fixed (until `deadline`). */
+  private slide: { i: number; dt: number; deadline: number; keys: number[] } | null = null;
+  private setTimer: (fn: () => void, ms: number) => number;
+  private check: NotesCheck;
+  private getHeld?: () => number[];
 
   constructor(
     private hits: ExpectedHit[],
     private latencyMs: number,
     private onResult: (index: number, r: HitResult) => void,
-    private setTimer: (fn: () => void, ms: number) => number = (fn, ms) => window.setTimeout(fn, ms),
+    opts: { setTimer?: (fn: () => void, ms: number) => number; checkNotes?: NotesCheck; getHeld?: () => number[] } = {},
   ) {
     this.results = hits.map(() => undefined);
+    this.setTimer = opts.setTimer ?? ((fn, ms) => window.setTimeout(fn, ms));
+    this.check = opts.checkNotes ?? pitchClassCheck(hits);
+    this.getHeld = opts.getHeld;
   }
 
-  /** A key went down at time `t` (ms). */
-  press(t: number, pitchClass: number) {
+  /** A key (MIDI note) went down at time `t` (ms). */
+  press(t: number, key: number) {
     const at = t - this.latencyMs;
     if (this.group && at - this.group.t <= GROUP_MS) {
-      this.group.pcs.add(pitchClass);
+      this.group.keys.push(key);
       return;
     }
     this.closeGroup();
-    const g = { t: at, pcs: new Set([pitchClass]), timer: 0 };
+    // Fixing a wrong chord ("sliding in"), unless this press is really for the next hit.
+    const sl = this.slide;
+    if (sl && at <= sl.deadline && !this.hits.some((h, i) => !this.results[i] && Math.abs(at - h.t) <= MATCH_MS)) {
+      sl.keys.push(key);
+      const keys = this.getHeld ? this.getHeld() : sl.keys;
+      const c = this.check(sl.i, keys);
+      if (c.credit > 0) {
+        const r: HitResult = { status: 'off', notesRight: true, notes: c.credit, dt: sl.dt, slid: true, why: c.why };
+        this.results[sl.i] = r;
+        this.slide = null;
+        this.onResult(sl.i, r);
+      }
+      return;
+    }
+    this.slide = null;
+    const g = { t: at, keys: [key], timer: 0 };
     g.timer = this.setTimer(() => {
       if (this.group === g) this.closeGroup();
     }, GROUP_MS + 5);
@@ -115,12 +178,15 @@ export class TimingJudge {
       }
     });
     if (best < 0) return; // not near any hit: ignored
-    const want = this.hits[best].pcs;
-    const notesRight = g.pcs.size === want.length && want.every((p) => g.pcs.has(p));
+    const c = this.check(best, g.keys);
+    const dt = Math.round(bestDt);
     const a = Math.abs(bestDt);
-    const status: HitStatus = a <= PERFECT_MS ? 'perfect' : a <= GOOD_MS ? 'good' : 'off';
-    const r = { status, notesRight, dt: Math.round(bestDt) };
+    const notesRight = c.credit > 0;
+    // Wrong notes = Miss (no timing credit), but they can still be fixed for a moment.
+    const status: HitStatus = !notesRight ? 'miss' : a <= PERFECT_MS ? 'perfect' : a <= GOOD_MS ? 'good' : 'off';
+    const r: HitResult = { status, notesRight, notes: c.credit, dt, why: c.why };
     this.results[best] = r;
+    if (!notesRight) this.slide = { i: best, dt, deadline: g.t + SLIDE_MS, keys: [...g.keys] };
     this.onResult(best, r);
   }
 

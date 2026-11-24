@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chordName, chordPcs, detectChord, diatonic, keyById, matchesChord, moveDistance, parseChord, smoothestVoicing, voicing } from './chords';
+import { chordName, chordPcs, detectChord, diatonic, keyById, matchesChord, moveDistance, moveSizes, parseChord, smoothestVoicing, voicing } from './chords';
 import { parseNote, pcOf } from './music';
 
 const n = (...names: string[]) => names.map((x) => parseNote(x)!);
@@ -73,5 +73,13 @@ describe('chord names with extensions', () => {
     const tri = name('E3', 'G3', 'C4')!;
     expect(tri.symbol).toBe('C');
     expect(tri.inversion).toBe(1);
+  });
+});
+
+describe('move sizes', () => {
+  it('lists every move size to a chord, smallest first', () => {
+    const sizes = moveSizes([60, 64, 67], parseChord('F')!); // C E G -> F: C F A moves 3
+    expect(sizes[0]).toBe(3);
+    expect(sizes[1]).toBeGreaterThan(3);
   });
 });

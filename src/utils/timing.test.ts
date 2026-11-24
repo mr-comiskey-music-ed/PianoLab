@@ -56,29 +56,54 @@ describe('timing judge', () => {
       ],
       30, // 30 ms latency is taken off each press
       (i, r) => (got[i] = r),
-      setTimer,
+      { setTimer },
     );
     // hit 1: chord rolled over 40 ms, first key 20 ms late after latency -> Perfect, right notes
     j.press(1050, 0); j.press(1070, 4); j.press(1090, 7); flush();
-    // hit 2: 90 ms early -> Good, wrong chord (C instead of G)
+    // hit 2: 90 ms early, but the wrong chord (C instead of G) -> Miss (wrong notes earn no timing credit)
     j.press(1940, 0); j.press(1940, 4); j.press(1940, 7); flush();
     // hit 3: 180 ms late -> Late (half credit for timing), and the right notes
     j.press(3210, 9); j.press(3210, 0); j.press(3210, 4); flush();
     // hit 4: never played
     j.tick(4500);
     expect(got[0]).toMatchObject({ status: 'perfect', notesRight: true, dt: 20 });
-    expect(got[1]).toMatchObject({ status: 'good', notesRight: false, dt: -90 });
+    expect(got[1]).toMatchObject({ status: 'miss', notesRight: false, dt: -90, why: 'Wrong notes' });
     expect(got[2]).toMatchObject({ status: 'off', notesRight: true, dt: 180 });
     expect(got[3]).toMatchObject({ status: 'miss', notesRight: false });
     const s = summarize(j.results);
-    expect(s).toMatchObject({ perfect: 1, good: 1, off: 1, miss: 1, notesRight: 2, total: 4 });
-    expect(s.timing).toBe(Math.round(((1 + 0.8 + 0.5) / 4) * 100)); // 58
+    expect(s).toMatchObject({ perfect: 1, good: 0, off: 1, miss: 2, notesRight: 2, total: 4 });
+    expect(s.timing).toBe(Math.round(((1 + 0.5) / 4) * 100)); // 38
     expect(s.notes).toBe(50);
-    expect(s.raw).toBe(Math.round((((1 + 0.8 + 0.5) / 4) * 100 + 50) / 2)); // 54
+    expect(s.raw).toBe(Math.round((((1 + 0.5) / 4) * 100 + 50) / 2)); // 44
+  });
+  it('a wrong chord fixed within 0.4 s "slides in": Early/Late, right notes, a third of the timing credit', () => {
+    const got: HitResult[] = [];
+    const j = new TimingJudge([{ t: 1000, pcs: [0, 4, 7] }, { t: 3000, pcs: [7, 11, 2] }], 0, (i, r) => (got[i] = r), { setTimer });
+    j.press(1010, 60); j.press(1015, 64); j.press(1020, 65); flush(); // C, E and F (wrong) on the beat
+    expect(got[0]).toMatchObject({ status: 'miss', notesRight: false });
+    j.press(1250, 67); // ...then gets to G: C E G (no getHeld here, so the keys pressed count; F is gone in real use)
+    expect(got[0].status).toBe('miss'); // F is still in the keys pressed: not fixed
+    const j2 = new TimingJudge([{ t: 1000, pcs: [0, 4, 7] }], 0, (i, r) => (got[i] = r), { setTimer, getHeld: () => [60, 64, 67] });
+    j2.press(1010, 60); j2.press(1020, 64); flush(); // only C and E on the beat
+    j2.press(1300, 67); // G joins 0.3 s later, C E G held
+    expect(got[0]).toMatchObject({ status: 'off', notesRight: true, slid: true });
+    const s = summarize(j2.results);
+    expect(s).toMatchObject({ off: 1, miss: 0, timing: 33, notes: 100 });
+    // too late to fix (after 0.4 s): stays a Miss
+    const j3 = new TimingJudge([{ t: 1000, pcs: [0, 4, 7] }], 0, (i, r) => (got[i] = r), { setTimer, getHeld: () => [60, 64, 67] });
+    j3.press(1000, 60); flush(); j3.press(1500, 67);
+    expect(got[0]).toMatchObject({ status: 'miss' });
+  });
+  it('notes can be graded more finely (Smooth levels)', () => {
+    const got: HitResult[] = [];
+    const j = new TimingJudge([{ t: 1000, pcs: [0, 4, 7] }], 0, (i, r) => (got[i] = r), { setTimer, checkNotes: () => ({ credit: 0.75, why: 'Almost smooth' }) });
+    j.press(1000, 60); j.press(1000, 64); j.press(1000, 67); flush();
+    expect(got[0]).toMatchObject({ status: 'perfect', notesRight: true, notes: 0.75, why: 'Almost smooth' });
+    expect(summarize(j.results)).toMatchObject({ timing: 100, notes: 75, raw: 88 });
   });
   it('ignores presses far from every hit', () => {
     const got: HitResult[] = [];
-    const j = new TimingJudge([{ t: 1000, pcs: [0] }], 0, (i, r) => (got[i] = r), setTimer);
+    const j = new TimingJudge([{ t: 1000, pcs: [0] }], 0, (i, r) => (got[i] = r), { setTimer });
     j.press(500, 0); flush();
     expect(got.length).toBe(0);
   });

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Level, ScreenHelp } from '../types';
 import { Timeline, beatMs, buildTimeline, chordSummary } from '../utils/patternEngine';
-import { HitResult, TimingJudge, TimingSummary, steadyOffset, summarize } from '../utils/timing';
+import { HitResult, NotesCheck, TimingJudge, TimingSummary, pitchClassCheck, steadyOffset, summarize } from '../utils/timing';
+import { moveDistance, moveSizes, parseChord } from '../utils/chords';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
@@ -103,12 +104,42 @@ export function usePlayLevel(
       (window as unknown as { __play?: unknown }).__play = timeline.hits.map((h, i) => ({ t: expected[i].t, notes: h.notes, dur: h.dur * bm }));
       const results: (HitResult | undefined)[] = timeline.hits.map(() => undefined);
       let id = 0;
-      judge.current = new TimingJudge(expected, ctx.latency, (i, r) => {
-        results[i] = r;
-        setResults([...results]);
-        const text = !r.notesRight && r.dt !== undefined ? 'Wrong notes' : r.status === 'perfect' ? 'Perfect!' : r.status === 'good' ? 'Good' : r.status === 'off' ? ((r.dt ?? 0) < 0 ? 'Early' : 'Late') : 'Miss';
-        setPop({ text, kind: !r.notesRight ? 'miss' : r.status, id: ++id });
-      });
+      // Smooth levels: the right chord AND a smooth move from the chord the student just played. The smoothest move is
+      // full credit for notes, the second-smoothest 0.75 ("Almost smooth"), anything bigger is "Not smooth" (like wrong
+      // notes). So "Chord Names Only" really tests smooth moving. The first chord (or one after a gap) can be any voicing.
+      const byNames = pitchClassCheck(expected);
+      let prev: number[] | null = null;
+      const smooth = pattern?.voicing === 'smoothest';
+      const checkNotes: NotesCheck = (i, keys) => {
+        const basic = byNames(i, keys);
+        if (!smooth || basic.credit === 0) return basic;
+        const notes = [...new Set(keys)].sort((a, b) => a - b);
+        const chord = parseChord(timeline.bars[timeline.hits[i].bar]?.symbol ?? '');
+        let res: { credit: number; why?: string } = { credit: 1 };
+        if (prev && chord) {
+          if (notes.length !== 3) res = { credit: 0, why: 'Play three notes' };
+          else {
+            const moved = moveDistance(prev, notes);
+            const sizes = moveSizes(prev, chord);
+            res = moved <= sizes[0] ? { credit: 1 } : moved <= (sizes[1] ?? sizes[0]) ? { credit: 0.75, why: 'Almost smooth' } : { credit: 0, why: 'Not smooth' };
+          }
+        }
+        if (res.credit > 0) prev = notes;
+        return res;
+      };
+      judge.current = new TimingJudge(
+        expected,
+        ctx.latency,
+        (i, r) => {
+          results[i] = r;
+          setResults([...results]);
+          if (r.status === 'miss' && r.dt === undefined) prev = null; // not played: the next chord starts fresh
+          const when = r.status === 'perfect' ? 'Perfect!' : r.status === 'good' ? 'Good' : (r.dt ?? 0) < 0 ? 'Early' : 'Late';
+          const text = !r.notesRight ? (r.dt === undefined ? 'Miss' : (r.why ?? 'Wrong notes')) : r.why ? `${when} · ${r.why}` : when;
+          setPop({ text, kind: !r.notesRight ? 'miss' : r.status, id: ++id });
+        },
+        { checkNotes, getHeld: ctx.getHeld },
+      );
     }
     // End: a beat after the last bar, then the result.
     timers.current.push(
@@ -131,7 +162,7 @@ export function usePlayLevel(
   // Key presses go to the judge (during the count-in too: an early first chord still counts if it's close enough).
   useNoteListener(ctx.subscribe, (midi) => {
     if (phaseRef.current !== 'run' && phaseRef.current !== 'count') return;
-    judge.current?.press(performance.now(), pc(midi));
+    judge.current?.press(performance.now(), midi);
   });
 
   // While it runs: hits that went by unplayed become misses; with blocks showing, the keys of the current hit light up.

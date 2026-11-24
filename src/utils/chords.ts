@@ -262,6 +262,14 @@ export const moveDistance = (from: number[], to: number[]) => {
   return a.reduce((sum, n, i) => sum + Math.abs(n - (b[i] ?? n)), 0);
 };
 
+/** Every different move size (half steps) from `from` to some voicing of `c` nearby, smallest first. */
+export function moveSizes(from: number[], c: Chord): number[] {
+  const lo = Math.min(...from);
+  const out = new Set<number>();
+  for (let inv = 0; inv < 3; inv++) for (let floor = lo - 12; floor <= lo + 12; floor++) out.add(moveDistance(from, voicing(c, inv, floor)));
+  return [...out].sort((x, y) => x - y);
+}
+
 /**
  * The voicing of `c` (3 notes, any inversion, within an octave or so of `from`) that moves the fewest half steps.
  * With `range` [lowest, highest], only voicings that fit on those keys count (Smooth Mover keeps targets on screen); if

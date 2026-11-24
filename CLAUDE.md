@@ -214,9 +214,15 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
 **Phase 3 (Time) built** (all at once, his choice; timed activities live inside the lessons):
 - Pattern engine `utils/patternEngine.ts` (pattern -> timeline of hits; one chord per bar; textures, rhythms, voicings
   root/smoothest kept on C3-C5). Timing judge `utils/timing.ts`: the first key of a chord counts, other keys within 80 ms
-  belong to it; Perfect ±50 ms, Good ±100 ms, Early/Late up to ±220 ms, otherwise Miss (not played); latency is taken off
-  first. Grade = half timing (his call: Perfect 1, Good 0.8, Early/Late 0.5, Miss 0) + half right notes. Result screen:
-  Perfect · Good · Early/Late · Miss. Tests: `timing.test.ts`.
+  belong to it; Perfect ±50 ms, Good ±100 ms, Early/Late up to ±220 ms; latency is taken off first. Grade = half timing
+  + half notes (his calls): timing Perfect 1, Good 0.8, Early/Late 0.5, slid in 0.33, Miss 0. **Wrong notes = Miss** (in the
+  tally AND no timing credit), same as not playing. **Slid in**: first keys near the beat but not the chord, then the
+  right chord held within 0.4 s (`SLIDE_MS`; uses `getHeld`) = Early/Late in the tally, right notes, 0.33 timing.
+  Notes credit can be finer (`checkNotes`): **Smooth levels** (pattern voicing `smoothest`) judge the move from the chord
+  the student actually played (so Chord Names Only really tests it): smoothest = 1, second-smoothest = 0.75 ("Almost
+  smooth"), bigger = 0 ("Not smooth", a Miss); the first chord (or one after an unplayed chord) can be any voicing
+  (`moveSizes` in chords.ts). Pops say e.g. "Perfect! · Almost smooth", "Not smooth", "Wrong notes". Result screen:
+  Perfect · Good · Early/Late · Miss. Tests: `timing.test.ts`, `e31`.
 - **Timing clock (fixed after his Chromebook test: he was "early" while with the click).** Two bugs: (1) every played key
   used `Tone.now()`, which is 100 ms in the future (Tone's look-ahead), so students heard their own notes late and pushed
   early; live notes now use `Tone.immediate()`. (2) The latency check compared taps on `Tone.now()` with clicks on the
