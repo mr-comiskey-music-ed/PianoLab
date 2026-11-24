@@ -407,7 +407,7 @@ export default function App() {
               // A first-visit hint (not saved anywhere: it shows once per visit).
               <span className="pop absolute left-0 top-full z-50 mt-2 w-max max-w-[220px] rounded-lg bg-brass px-2.5 py-1.5 text-[13px] font-semibold text-brasstext shadow-lg" data-testid="nav-hint" onClick={() => setNavHint(false)}>
                 <span className="absolute -top-1.5 left-4 h-3 w-3 rotate-45 bg-brass" />
-                Lessons and levels are here ▲
+                Lessons and levels are here
               </span>
             )}
           </span>
