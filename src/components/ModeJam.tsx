@@ -4,6 +4,8 @@ import { Diatonic, KEYS, KeyDef, chordName, chordPcs, detectChord, keyById, make
 import { KEY_COUNT, pc, pcOf } from '../utils/music';
 import { MAJOR_SCALE } from '../utils/scales';
 import { textOn } from './ChordStrip';
+import { PianoRoll } from './PianoRoll';
+import { PerfNote } from '../utils/performance';
 import { Labels, ModeCtx, ModeParts } from './modeTypes';
 import tracksData from '../data/tracks.json';
 import youtubeData from '../data/youtube.json';
@@ -38,6 +40,9 @@ export const PROGRESSIONS: { id: string; name: string; numerals: string[] }[] = 
   { id: 'blues', name: '12-bar blues (7ths)', numerals: ['I7', 'I7', 'I7', 'I7', 'IV7', 'IV7', 'I7', 'I7', 'V7', 'IV7', 'I7', 'V7'] },
   { id: 'minor', name: 'Minor: i – VI – III – VII', numerals: ['i', 'VI', 'III', 'VII'] },
 ];
+/** The roll keeps the latest notes only (it's a view, not a recording). */
+const ROLL_MAX = 800;
+const ROLL_KEEP = 500;
 const JAM_KEYS = KEYS.filter((k) => k.mode === 'major' || ['Am', 'Em', 'Dm'].includes(k.id));
 
 /** The pitch classes of a key's scale (major, or natural minor). */
@@ -151,6 +156,10 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   const [meters, setMeters] = useState({ back: 0, piano: 0 });
   const [held, setHeld] = useState<number[]>([]);
   const [labels, setLabels] = useState<Labels>('c');
+  // What the student plays rises up the Stage as a piano roll, like the Sandbox (kept in memory only, not saved).
+  const [rollNotes, setRollNotes] = useState<PerfNote[]>([]);
+  const rollT0 = useRef<number | null>(null);
+  const rollOffset = useRef(0);
 
   const track = TRACKS.find((t) => t.id === trackId);
   const key: KeyDef =
@@ -185,10 +194,30 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     if (Groove.isMade()) Groove.get().setLevel(backVol);
   }, [backVol]);
 
-  // What's being played (for "on the chord").
+  // What's being played (for "on the chord", and the roll).
   useEffect(() => {
     if (!active) return;
-    return ctx.subscribeNotes(() => setHeld(ctx.getHeld()));
+    return ctx.subscribeNotes((e) => {
+      setHeld(ctx.getHeld());
+      const now = performance.now();
+      if (e.on) {
+        if (rollT0.current === null) rollT0.current = now;
+        const t = now - rollT0.current;
+        // Keep it light: only the most recent notes.
+        setRollNotes((prev) => [...(prev.length > ROLL_MAX ? prev.slice(-ROLL_KEEP) : prev), { t, d: -1, m: e.midi, v: Math.max(1, Math.round(e.vel * 127)) }]);
+      } else if (rollT0.current !== null) {
+        const end = now - rollT0.current;
+        setRollNotes((prev) => {
+          for (let i = prev.length - 1; i >= 0; i--)
+            if (prev[i].m === e.midi && prev[i].d < 0) {
+              const next = prev.slice();
+              next[i] = { ...prev[i], d: Math.max(20, end - prev[i].t) };
+              return next;
+            }
+          return prev;
+        });
+      }
+    });
   }, [active, ctx]);
 
   // While playing: where the music is, and the meters.
@@ -415,11 +444,20 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     <div className="h text-[15px] text-line2">{playing ? 'Play along!' : ' '}</div>
   );
 
-  const stage =
+  const roll = (
+    // The roll sits behind the chord chart and over the (half see-through) video; it never takes clicks.
+    <div className="pointer-events-none absolute inset-y-0 left-[2px] right-[2px]" data-testid="jam-roll">
+      <PianoRoll notes={rollNotes} start={ctx.viewStart} now={() => (rollT0.current === null ? null : performance.now() - rollT0.current)} offset={rollOffset} canScroll={false} />
+    </div>
+  );
+  const inner =
     source === 'youtube' ? (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-3">
         {videoId ? (
-          <YouTubeBox videoId={videoId} volume={backVol} />
+          // Half see-through, so the notes rising up the Stage show on top of it.
+          <div className="h-full max-h-full opacity-50" data-testid="youtube-wrap">
+            <YouTubeBox videoId={videoId} volume={backVol} />
+          </div>
         ) : (
           <div className="flex flex-col items-center gap-2 px-6 text-center">
             <div className="h text-[26px] text-panel">Jam along with a YouTube video</div>
@@ -467,6 +505,22 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
         {nowPlaying}
       </div>
     );
+
+  const stage = (
+    <div className="relative h-full w-full">
+      {source === 'youtube' ? (
+        <>
+          <div className="absolute inset-0">{inner}</div>
+          {roll}
+        </>
+      ) : (
+        <>
+          {roll}
+          <div className="relative z-10 h-full">{inner}</div>
+        </>
+      )}
+    </div>
+  );
 
   // Note names: the student's choice, like Practice.
   return { left, stage, labels, labelControl: { value: labels, allowed: ['all', 'c', 'off'], set: setLabels, title: 'Note names' }, detector: true, tint, dim, silence };

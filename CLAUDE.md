@@ -306,6 +306,9 @@ YouTube ungraded):
   chord". Melody mode (brass dot on the key's notes, `tint`), Key lock (other notes greyed and silent: `dim`/`silence`,
   handled in App's noteOn). Mix: Backing and Piano faders (double-click resets) with meters. Note names: student's
   choice. Dropdowns give the typing keyboard back after a pick (blur on change).
+- Jam Room Stage shows a live piano roll of what the student plays (Sandbox's `PianoRoll`, latest ~500-800 notes, in
+  memory only, never saved): behind the chord chart for Groove/Tracks; on top of the YouTube video, which is 50%
+  see-through (his call), with the roll not taking clicks so the video's controls still work.
 - Sandbox MIDI import: Speed 50/75/100% (roll and sound slow together), Track picker for multi-track files (shown until
   you record on top), Mute (notes still come up and light, silently, to play the part yourself).
 
