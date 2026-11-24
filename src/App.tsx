@@ -246,6 +246,7 @@ export default function App() {
     latency: latency ?? 0,
     stopMetronome: () => metroRef.current.on && onMetroRef.current({ ...metroRef.current, on: false }),
     minTempo: assignment?.tempo,
+    openLatency: () => setModal('latency'),
     results,
     setResults,
     learnDone,

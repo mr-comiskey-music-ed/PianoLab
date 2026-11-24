@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTimeline, resolveNumeral, rhythmBeats } from './patternEngine';
-import { TimingJudge, summarize, HitResult } from './timing';
+import { TimingJudge, summarize, steadyOffset, HitResult } from './timing';
 import { keyById, chordName } from './chords';
 import { Pattern } from '../data/pattern';
 
@@ -76,5 +76,13 @@ describe('timing judge', () => {
     const j = new TimingJudge([{ t: 1000, pcs: [0] }], 0, (i, r) => (got[i] = r), setTimer);
     j.press(500, 0); flush();
     expect(got.length).toBe(0);
+  });
+  it('spots a steady offset (a latency setting that may be wrong)', () => {
+    const hits = [0, 750, 1500, 2250, 3000, 3750];
+    expect(steadyOffset(hits.map((h) => h + 150 + (h % 3)), hits, 375)).toBeGreaterThanOrEqual(150); // always ~150 late
+    expect(steadyOffset(hits.map((h) => h - 300), hits, 375)).toBe(-300); // far off: still found (half a beat)
+    expect(steadyOffset(hits.map((h, i) => h + (i % 2 ? 90 : -90)), hits, 375)).toBeNull(); // early and late: no
+    expect(steadyOffset(hits.map((h) => h + 20), hits, 375)).toBeNull(); // close enough
+    expect(steadyOffset([150, 900], hits, 375)).toBeNull(); // too few presses
   });
 });

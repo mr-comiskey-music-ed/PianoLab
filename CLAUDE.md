@@ -228,6 +228,15 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
   button; grade = right answers / target (max 100%).
 - New levels (appended, ids saved in codes): `l1-echo`, `l2-play-roots`, `l2-play-cfg`, `l3-play-pop`, `l3-play-doowop`,
   `l5-speed`, `l6-play-smooth`. Lesson 5 has 9 levels; the level list was tightened so it still fits a Chromebook.
+- His feedback round 2: "Falling Note Blocks" / "Chord Names Only" (Chord Names Only = full-width bands across the
+  Stage, named in the middle, so they don't look like a piano key; the Perfect/Miss pop moves to the top there). Beat lines
+  across the waterfall in every mode: beat 1 (bar line) thickest, beat 3 medium, beats 2 and 4 thin (count-in included).
+  Lesson 2's timed levels have no "Nothing (memory)" (level `screenMax: "names"`) and are 8 bars, so missing one chord
+  still passes (88%): Roots in time (whole) · C, F and G in time (whole notes now) · C, F and G: half notes
+  (`l2-play-cfg-half`, new). Latency reminder: if at least 70% of presses are on the same side and the middle offset is
+  70 ms or more (`steadyOffset` in timing.ts; compares to the nearest hit up to half a beat away, so a latency setting
+  that is far off still shows), the result screen says "You were usually about N ms late/early..." with a Check latency
+  button (`ctx.openLatency`).
 - Level titles on the Stage are no longer in capitals (capitals turned "vi" into "VI").
 - Assignment link (core, `utils/assignment.ts`): Grade Report > Teacher > "Make an assignment link": name, levels (by
   lesson), note names (level's own / at most Cs / none), slowest tempo, sound. Link = `?a=<compressed>.<checksum>`

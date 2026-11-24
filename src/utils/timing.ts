@@ -40,6 +40,9 @@ export interface TimingSummary {
   notes: number;
   /** 0-100: half timing, half notes. This is the level's raw score. */
   raw: number;
+  /** Set when nearly every press was early (-) or late (+) by about the same amount (ms): a sign the latency setting
+   *  may be wrong. See `steadyOffset`. */
+  offset?: number;
 }
 
 export function summarize(results: (HitResult | undefined)[]): TimingSummary {
@@ -59,6 +62,8 @@ export function summarize(results: (HitResult | undefined)[]): TimingSummary {
  */
 export class TimingJudge {
   readonly results: (HitResult | undefined)[];
+  /** When each chord/note was played (ms, latency already taken off), matched or not. For `steadyOffset`. */
+  readonly presses: number[] = [];
   private group: { t: number; pcs: Set<number>; timer: number } | null = null;
 
   constructor(
@@ -90,6 +95,7 @@ export class TimingJudge {
     const g = this.group;
     this.group = null;
     if (!g) return;
+    this.presses.push(g.t);
     // The nearest hit not yet judged, within MATCH_MS.
     let best = -1;
     let bestDt = Infinity;
@@ -121,4 +127,25 @@ export class TimingJudge {
       this.onResult(i, r);
     });
   }
+}
+
+/** Presses needed before a steady offset counts, the smallest offset worth mentioning, and how many presses must agree. */
+const OFFSET_MIN_PRESSES = 4;
+export const OFFSET_MIN_MS = 70;
+const OFFSET_AGREE = 0.7;
+
+/**
+ * Is the student consistently off by about the same amount? Each press is compared with the nearest hit (up to half a
+ * beat away, so even a latency setting that is far off shows up). If at least 70% of presses are on the same side and
+ * the middle value is 70 ms or more, returns that offset (ms, - early / + late); otherwise null.
+ */
+export function steadyOffset(presses: number[], hitTimes: number[], maxMs: number): number | null {
+  const ds = presses
+    .map((p) => hitTimes.reduce((best, h) => (Math.abs(p - h) < Math.abs(best) ? p - h : best), Infinity))
+    .filter((d) => Math.abs(d) <= maxMs)
+    .sort((a, b) => a - b);
+  if (ds.length < OFFSET_MIN_PRESSES) return null;
+  const mid = ds[Math.floor(ds.length / 2)];
+  const sameSide = ds.filter((d) => Math.sign(d) === Math.sign(mid)).length / ds.length;
+  return Math.abs(mid) >= OFFSET_MIN_MS && sameSide >= OFFSET_AGREE ? Math.round(mid) : null;
 }

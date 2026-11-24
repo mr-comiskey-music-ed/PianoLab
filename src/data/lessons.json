@@ -985,14 +985,15 @@
             "rhythm": "whole",
             "voicing": "root",
             "tempo": 70,
-            "bars": 4
+            "bars": 8
           },
-          "screen": "blocks"
+          "screen": "blocks",
+          "screenMax": "names"
         },
         {
           "id": "l2-play-cfg",
           "title": "C, F and G in time",
-          "blurb": "Play each triad when its block reaches the line: two per bar.",
+          "blurb": "Play each triad when its block reaches the line: one per bar.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -1009,12 +1010,41 @@
               "I"
             ],
             "texture": "block",
+            "rhythm": "whole",
+            "voicing": "root",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "screenMax": "names"
+        },
+        {
+          "id": "l2-play-cfg-half",
+          "title": "C, F and G: half notes",
+          "blurb": "Now two per bar: play each triad twice, on beats 1 and 3.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l2-cfg-half",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "block",
             "rhythm": "half",
             "voicing": "root",
             "tempo": 70,
-            "bars": 4
+            "bars": 8
           },
-          "screen": "blocks"
+          "screen": "blocks",
+          "screenMax": "names"
         }
       ]
     },

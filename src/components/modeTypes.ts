@@ -34,6 +34,8 @@ export interface ModeCtx {
   latency: number;
   /** Turn the metronome off (timed levels bring their own clicks). */
   stopMetronome: () => void;
+  /** Open the latency check (offered when timing is steadily off). */
+  openLatency: () => void;
   /** A teacher's assignment can set the slowest tempo allowed for timed levels. */
   minTempo?: number;
   results: LevelResult[];

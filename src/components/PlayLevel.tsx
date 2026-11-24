@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Level, ScreenHelp } from '../types';
 import { Timeline, beatMs, buildTimeline } from '../utils/patternEngine';
-import { HitResult, TimingJudge, TimingSummary, summarize } from '../utils/timing';
+import { HitResult, TimingJudge, TimingSummary, steadyOffset, summarize } from '../utils/timing';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
@@ -9,7 +9,7 @@ import { useNoteListener } from './chordInput';
 
 /** Easiest to hardest. A level's `screen` is the most help allowed; students can take less. */
 export const SCREEN_ORDER: ScreenHelp[] = ['blocks', 'names', 'off'];
-const SCREEN_LABEL: Record<ScreenHelp, string> = { blocks: 'Falling blocks', names: 'Chord names only', off: 'Nothing (memory)' };
+const SCREEN_LABEL: Record<ScreenHelp, string> = { blocks: 'Falling Note Blocks', names: 'Chord Names Only', off: 'Nothing (memory)' };
 const COUNT_IN = 4;
 const LEAD_MS = 350;
 /** The fastest a student may push a level's tempo. */
@@ -110,6 +110,11 @@ export function usePlayLevel(
         const j = judge.current;
         if (j) j.tick(Infinity);
         const s = j ? summarize(j.results) : null;
+        // Steadily early or late by about the same amount? The latency setting may be wrong (see the result screen).
+        if (j && s) {
+          const off = steadyOffset(j.presses, timeline.hits.map((h) => t0 + h.beat * bm), bm / 2);
+          if (off !== null) s.offset = off;
+        }
         const settings = { tempo, screen };
         stop();
         if (s && !listenOnly) opts.onFinish(s.raw, s, settings);
@@ -148,7 +153,10 @@ export function usePlayLevel(
   }, [phase, timeline, startAt, tempo, screen]);
 
   const running = phase !== 'idle';
-  const allowedScreens = SCREEN_ORDER.filter((s) => SCREEN_ORDER.indexOf(s) >= SCREEN_ORDER.indexOf(level.screen ?? 'blocks'));
+  // The level's `screen` is the most help allowed; `screenMax` the least (Lesson 2 has no "Nothing (memory)").
+  const hardest = SCREEN_ORDER.indexOf(level.screenMax ?? 'off');
+  const shownScreens = SCREEN_ORDER.filter((s) => SCREEN_ORDER.indexOf(s) <= hardest);
+  const allowedScreens = shownScreens.filter((s) => SCREEN_ORDER.indexOf(s) >= SCREEN_ORDER.indexOf(level.screen ?? 'blocks'));
 
   const settingsUI = (
     <div className="flex flex-wrap items-center justify-center gap-3 text-[14px] text-line">
@@ -166,7 +174,7 @@ export function usePlayLevel(
       </span>
       <span className="flex items-center gap-1.5" role="radiogroup" aria-label="What shows on the waterfall">
         <span className="h text-[12px] uppercase tracking-wider text-brass">Show</span>
-        {SCREEN_ORDER.map((s) => (
+        {shownScreens.map((s) => (
           <button
             key={s}
             role="radio"
@@ -222,7 +230,7 @@ export function usePlayLevel(
         </div>
       )}
       {pop && phase === 'run' && (
-        <div key={pop.id} className="pop pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2" data-testid="hit-pop">
+        <div key={pop.id} className={`pop pointer-events-none absolute left-1/2 -translate-x-1/2 ${screen === 'names' ? 'top-3' : 'bottom-8'}`} data-testid="hit-pop">
           <span className={`h rounded-lg px-3 py-1 text-[22px] ${pop.kind === 'perfect' ? 'bg-[#cfe3b4] text-good' : pop.kind === 'good' ? 'bg-[#f6e3b8] text-wal2' : 'bg-[#f0c4bf] text-[#7a2420]'}`}>{pop.text}</span>
         </div>
       )}

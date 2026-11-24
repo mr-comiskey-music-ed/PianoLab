@@ -81,6 +81,8 @@ export interface Level {
   pattern?: Pattern;
   /** play: the most help allowed on screen (and the starting setting). Students can take less, never more. */
   screen?: ScreenHelp;
+  /** play: the least help offered (default "off" = Nothing (memory)). Lesson 2 stops at "names". */
+  screenMax?: ScreenHelp;
   /** echo: the most help allowed (and the starting setting). */
   echo?: EchoHelp;
   /** speed (Speed Round): seconds on the clock, and how many right answers make 100%. */
