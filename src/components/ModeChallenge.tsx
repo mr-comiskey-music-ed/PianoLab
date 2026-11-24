@@ -10,6 +10,7 @@ import { KeyMark } from './Piano';
 import { LABEL_ORDER, Labels, ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
 import { usePlayLevel } from './PlayLevel';
+import { Col, StageBox } from './StageRow';
 import { MAJOR_SCALE, fingering, scaleStep } from '../utils/scales';
 
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -539,11 +540,14 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const ok = passed(finished.raw, finished.level);
     const li = levels.findIndex((l) => l.id === finished.level.id);
     stage = (
-      <div className="pop flex h-full flex-col items-center justify-center gap-2 text-center" data-testid="result">
+      <StageBox phone={ctx.phone} className="pop gap-2" testid="result">
+        <Col phone={ctx.phone}>
         <div className="h text-[14px] tracking-wide text-brass">{finished.level.title}</div>
         <div className="h text-[72px] leading-none text-panel" data-testid="result-grade">
           {floored(finished.raw)}%
         </div>
+        </Col>
+        <Col phone={ctx.phone}>
         <div className={`h text-[18px] ${ok ? 'text-[#cfe3b4]' : 'text-brass'}`}>
           {ok ? `Passed! (${finished.level.pass}% needed)` : `Not passed yet. You need ${finished.level.pass}%. Try again!`}
         </div>
@@ -584,7 +588,9 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
           </div>
         )}
         <div className="text-[14px] text-line2">Your best on this device: {floored(finished.best)}%</div>
-        <div className="mt-1 flex gap-2">
+        </Col>
+        <Col phone={ctx.phone}>
+        <div className={`mt-1 flex gap-2 ${ctx.phone ? 'flex-col' : ''}`}>
           <button className="btn btn-brass" onClick={() => (finished.level.type === 'play' ? setFinished(null) : start(finished.level.id))} data-testid="try-again">
             Try again
           </button>
@@ -600,12 +606,14 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             </button>
           )}
         </div>
-        <div className="text-[13px] text-line2">Turn your work in from the Grade Report tab.</div>
-      </div>
+        {!ctx.phone && <div className="text-[13px] text-line2">Turn your work in from the Grade Report tab.</div>}
+        </Col>
+      </StageBox>
     );
   } else if (run && prompt) {
     stage = (
-      <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+      <StageBox phone={ctx.phone} className="gap-3 px-6">
+        <Col phone={ctx.phone} className="max-w-[45%]">
         <div className="h text-[14px] tracking-wide text-brass">
           {run.level.type === 'speed' ? `${run.level.title} · ${run.count ?? 0} right` : `${run.level.title} · ${run.idx + 1} of ${run.prompts.length}`}
         </div>
@@ -617,6 +625,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             From the lit chord ({detectChord(run.prev) ? chordName(detectChord(run.prev)!.chord) : ''}). Half steps moved so far: {run.moved ?? 0}
           </div>
         )}
+        </Col>
+        <Col phone={ctx.phone}>
         {run.level.type === 'echo' && (
           <div className="flex flex-col items-center gap-2">
             <div className="h text-[15px] text-line2" data-testid="echo-status">
@@ -685,6 +695,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             ))}
           </div>
         )}
+        </Col>
+        <Col phone={ctx.phone} className="max-w-[35%]">
         {/* Green when right; red (with a tip) when wrong. */}
         <div
           className={`min-h-[30px] max-w-[680px] rounded-lg px-3 py-1 text-[16px] ${fb ? (fb.kind === 'good' ? 'pop bg-[#cfe3b4] text-good' : 'bg-[#f0c4bf] text-[#7a2420]') : 'text-transparent'}`}
@@ -693,7 +705,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         >
           {fb?.text ?? '.'}
         </div>
-        <div className="h-2 w-64 overflow-hidden rounded-full bg-wal2">
+        <div className={`h-2 overflow-hidden rounded-full bg-wal2 ${ctx.phone ? 'w-40' : 'w-64'}`}>
           {run.level.type === 'speed' && run.endsAt !== undefined ? (
             <div className="h-full bg-brass" data-testid="time-bar" style={{ width: `${Math.max(0, (run.endsAt - performance.now()) / ((run.level.seconds ?? 60) * 10))}%` }} />
           ) : (
@@ -718,16 +730,20 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         >
           Restart
         </button>
-      </div>
+        </Col>
+      </StageBox>
     );
   } else if (isPlay) {
     stage = play.stage;
   } else {
     const minHelp = selLevel.echo ?? 'watch';
     stage = (
-      <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+      <StageBox phone={ctx.phone} className="gap-2 px-6">
+        <Col phone={ctx.phone} className="max-w-[45%]">
         <div className="h text-[14px] tracking-wide text-brass">Level: {selLevel.title}</div>
-        <div className="h text-[30px] text-panel">{selLevel.blurb}</div>
+        <div className="h text-[30px] leading-tight text-panel">{selLevel.blurb}</div>
+        </Col>
+        <Col phone={ctx.phone} className="max-w-[35%]">
         <div className="text-[15px] text-line2">
           {selLevel.type === 'speed'
             ? `${selLevel.seconds ?? 60} seconds · as many as you can · ${selLevel.target ?? 12} right = 100% · ${selLevel.pass}% to pass`
@@ -751,10 +767,13 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             ))}
           </div>
         )}
+        </Col>
+        <Col phone={ctx.phone}>
         <button className="btn btn-brass mt-2 text-[18px]" data-testid="start" onClick={() => start(selected)}>
           Start
         </button>
-      </div>
+        </Col>
+      </StageBox>
     );
   }
 

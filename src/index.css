@@ -103,5 +103,5 @@ textarea, input { user-select: text; -webkit-user-select: text; }
 
 /* Phones held sideways: the Stage is a short strip, so its contents are drawn smaller (the piano gets the room). */
 .phone-stage {
-  zoom: 0.52;
+  zoom: 0.8;
 }

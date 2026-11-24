@@ -264,6 +264,7 @@ export default function App() {
     stopMetronome: () => metroRef.current.on && onMetroRef.current({ ...metroRef.current, on: false }),
     minTempo: assignment?.tempo,
     openLatency: () => setModal('latency'),
+    phone,
     latencySet: latency !== null,
     latencySkipped,
     skipLatency: () => setLatencySkipped(true),
@@ -336,6 +337,18 @@ export default function App() {
     return { text: `MIDI: ${midiStatus}`, ok: true };
   }, [midiStatus]);
 
+  // Octave buttons: in the bar above the keys, or (phones) in the top bar.
+  const octDown = (
+    <button className={`btn btn-dark ${phone ? 'px-1.5 py-0.5 text-[13px]' : 'px-2'} ${octColor(octShift < 0 ? -octShift : 0)} ${offBelow ? 'oct-alert' : ''}`} onClick={() => octave(-1)} disabled={viewStart <= 24} data-testid="oct-down" title="Octave down (Z)">
+      Oct −
+    </button>
+  );
+  const octUp = (
+    <button className={`btn btn-dark ${phone ? 'px-1.5 py-0.5 text-[13px]' : 'px-2'} ${octColor(octShift > 0 ? octShift : 0)} ${offAbove ? 'oct-alert' : ''}`} onClick={() => octave(1)} disabled={viewStart >= 84} data-testid="oct-up" title="Octave up (X)">
+      Oct +
+    </button>
+  );
+
   return (
     <div className="flex h-full flex-col bg-page">
       {screen === 'upright' && mode !== 'report' && (
@@ -353,10 +366,17 @@ export default function App() {
       )}
       {/* Top bar (walnut) */}
       <header className={`wood relative flex items-center text-panel shadow-md ${compact ? 'gap-2 px-2 py-1' : 'flex-wrap gap-x-4 gap-y-1 px-3 py-1.5'}`} data-testid="topbar">
-        <div className={`h flex items-center gap-2 tracking-wide ${compact ? 'text-[16px]' : 'text-[22px]'}`}>
-          <img src="/favicon.svg" alt="" className={compact ? 'h-6 w-6' : 'h-7 w-7'} />
-          {!compact && 'PianoLab'}
-        </div>
+        {phone && mode !== 'report' ? (
+          // Phones: one bar. The lesson / sandbox / jam panel opens from here (no logo, to save room).
+          <button className="btn btn-dark shrink-0 px-2 py-0.5 text-[15px]" onClick={() => setDrawer('left')} data-testid="open-left" aria-label={mode === 'jam' ? 'Jam Room settings' : mode === 'sandbox' ? 'Sandbox' : 'Lesson'}>
+            ☰
+          </button>
+        ) : (
+          <div className={`h flex items-center gap-2 tracking-wide ${compact ? 'text-[16px]' : 'text-[22px]'}`}>
+            <img src="/favicon.svg" alt="" className={compact ? 'h-6 w-6' : 'h-7 w-7'} />
+            {!compact && 'PianoLab'}
+          </div>
+        )}
         <nav className={`flex gap-1 ${compact ? 'min-w-0 flex-1 overflow-x-auto' : ''}`} aria-label="Modes">
           {tabs.map((t) => (
             <button
@@ -366,12 +386,21 @@ export default function App() {
                 setMode(t.id as Mode);
                 setDrawer(null);
               }}
-              className={`h shrink-0 rounded-md ${compact ? 'px-2 py-0.5 text-[13px]' : 'px-3 py-1 text-[15px]'} ${mode === t.id ? 'bg-brass text-brasstext' : 'text-panel hover:bg-white/10'}`}
+              className={`h shrink-0 rounded-md ${compact ? 'px-1.5 py-0.5 text-[13px]' : 'px-3 py-1 text-[15px]'} ${mode === t.id ? 'bg-brass text-brasstext' : 'text-panel hover:bg-white/10'}`}
             >
               {compact && t.id === 'report' ? 'Grade' : t.label}
             </button>
           ))}
         </nav>
+        {phone && mode !== 'report' && (
+          <span className="flex shrink-0 items-center gap-1">
+            {octDown}
+            {octUp}
+            <button className="btn btn-dark px-2 py-0.5 text-[15px]" onClick={() => setDrawer('right')} data-testid="open-right" aria-label="Sound">
+              ♪
+            </button>
+          </span>
+        )}
         {compact && (
           // Phones: the MIDI / latency / saved chips go in a small menu.
           <button className="btn btn-dark shrink-0 px-2 py-0.5 text-[15px]" aria-label="More" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)} data-testid="more-menu">
@@ -464,28 +493,20 @@ export default function App() {
               onRelease={stopStripChord}
             />
           )}
-          <div className={`stage flex-1 overflow-hidden border-transparent shadow-inner wood-v ${phone ? 'min-h-[60px] border-x-[6px] border-t-[6px]' : 'min-h-[150px] border-x-[10px] border-t-[10px]'} ${showStrip && !phone ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
+          <div className={`stage flex-1 overflow-hidden border-transparent shadow-inner wood-v ${phone ? 'min-h-[60px] border-x-[10px] border-t-[6px]' : 'min-h-[150px] border-x-[10px] border-t-[10px]'} ${showStrip && !phone ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
             <div className={`h-full w-full ${phone ? 'phone-stage' : ''}`}>
             <div className="stage h-full w-full rounded-sm" data-testid="stage">
               {parts.stage}
             </div>
             </div>
           </div>
-          <div className={`wood flex items-center gap-2 text-panel ${phone ? 'px-1.5 py-1' : 'flex-wrap px-3 py-1.5'}`}>
-            {phone && (
-              <button className="btn btn-dark px-2 py-0.5 text-[13px]" onClick={() => setDrawer('left')} data-testid="open-left">
-                ☰ {mode === 'jam' ? 'Jam' : mode === 'sandbox' ? 'Sandbox' : 'Lesson'}
-              </button>
-            )}
-            <button className={`btn btn-dark px-2 ${octColor(octShift < 0 ? -octShift : 0)} ${offBelow ? 'oct-alert' : ''}`} onClick={() => octave(-1)} disabled={viewStart <= 24} data-testid="oct-down" title="Octave down (Z)">
-              Oct −
-            </button>
+          {!phone && (
+          <div className="wood flex flex-wrap items-center gap-2 px-3 py-1.5 text-panel">
+            {octDown}
             <span className="h w-20 text-center text-[14px]" data-testid="range">
               {noteName(viewStart)}–{noteName(viewStart + KEY_COUNT - 1)}
             </span>
-            <button className={`btn btn-dark px-2 ${octColor(octShift > 0 ? octShift : 0)} ${offAbove ? 'oct-alert' : ''}`} onClick={() => octave(1)} disabled={viewStart >= 84} data-testid="oct-up" title="Octave up (X)">
-              Oct +
-            </button>
+            {octUp}
             {(offAbove || offBelow) && (
               <span className="h oct-alert-label rounded-md px-2 py-0.5 text-[13px]" data-testid="oct-alert" role="status">
                 {offBelow && offAbove ? '♪ Notes playing above and below: use Oct − / Oct +' : offAbove ? '♪ Notes playing higher up: press Oct +' : '♪ Notes playing lower down: press Oct −'}
@@ -506,14 +527,9 @@ export default function App() {
                 )}
               </span>
             )}
-
-            {phone && (
-              <button className="btn btn-dark ml-auto px-2 py-0.5 text-[13px]" onClick={() => setDrawer('right')} data-testid="open-right">
-                ♪ Sound
-              </button>
-            )}
           </div>
-          <div className={`flex shrink-0 ${phone ? 'h-[43vh]' : 'h-[clamp(150px,24vh,210px)]'}`}>
+          )}
+          <div className={`flex shrink-0 ${phone ? 'h-[36vh]' : 'h-[clamp(150px,24vh,210px)]'}`}>
             <div className="wood-v w-3 rounded-bl-lg" />
             <div className="min-w-0 flex-1 bg-[#2a2118] pt-1">
               <Piano

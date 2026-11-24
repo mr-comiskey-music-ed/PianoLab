@@ -6,6 +6,7 @@ import { chordPcs, moveDistance, moveSizes, parseChord } from '../utils/chords';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
+import { Col, StageBox } from './StageRow';
 import { useNoteListener } from './chordInput';
 
 /** Easiest to hardest. A level's `screen` is the most help allowed; students can take less. ("Nothing (memory)" was
@@ -245,7 +246,9 @@ export function usePlayLevel(
         <Waterfall timeline={timeline} tempo={tempo} startAt={startAt} now={() => performance.now()} viewStart={ctx.viewStart} screen={running ? screen : 'blocks'} results={results} />
       </div>
       {!running && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#1e1710]/80 px-6 text-center">
+        <div className="absolute inset-0 bg-[#1e1710]/80">
+        <StageBox phone={ctx.phone} className="gap-3 px-6">
+          <Col phone={ctx.phone} className="max-w-[40%]">
           <div className="h text-[14px] tracking-wide text-brass">{level.title}</div>
           <div className="h max-w-[680px] text-[26px] leading-tight text-panel">{level.blurb}</div>
           <div className="flex flex-col gap-0.5 text-[14px] text-line2">
@@ -254,6 +257,7 @@ export function usePlayLevel(
             </span>
             <span>{level.pass}% to pass, half on timing, half on correct notes</span>
           </div>
+          </Col>
           {!ctx.latencySet && !ctx.latencySkipped ? (
             // First timed challenge on this device: check latency first, so the timing grades are fair.
             <div className="flex max-w-[560px] flex-col items-center gap-2 rounded-lg bg-[#f6e3b8] px-4 py-3 text-[15px] text-wal2" data-testid="latency-first">
@@ -270,8 +274,11 @@ export function usePlayLevel(
             </div>
           ) : (
             <>
+              <Col phone={ctx.phone} className="max-w-[34%]">
               {settingsUI}
-              <div className="flex gap-2">
+              </Col>
+              <Col phone={ctx.phone}>
+              <div className={`flex gap-2 ${ctx.phone ? 'flex-col' : ''}`}>
                 <button className="btn btn-dark text-[16px]" onClick={() => begin(true)} data-testid="listen-first">
                   ▶ Listen first
                 </button>
@@ -279,8 +286,10 @@ export function usePlayLevel(
                   Start
                 </button>
               </div>
+              </Col>
             </>
           )}
+        </StageBox>
         </div>
       )}
       {phase === 'count' && (

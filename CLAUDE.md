@@ -329,11 +329,15 @@ YouTube ungraded):
 
 **Phone layout (mock-up stage, his call: sideways to play, everything slimmed, mock-up first)** (`utils/screen.ts`):
 'phone' = sideways and at most 500 px tall; 'upright' = taller than wide and under 700 px wide; Chromebooks/laptops/tablets
-= 'full' (unchanged). Phone: compact top bar (icon, short tabs, "Grade"), MIDI/latency/saved chips in a ⋯ menu; left
-and right panels become pull-out drawers ("☰ Lesson/Sandbox/Jam" and "♪ Sound" buttons in the bar above the keys,
-backdrop closes); chord strip hidden; Stage contents drawn at 52% (`.phone-stage` zoom); piano 43% of the height.
-Upright: "Turn your phone sideways to play" (Grade Report still opens). Mock-up done for Practice; other tabs next,
-after he approves the look. iPhone Safari has no Web MIDI (touch only); the silent switch mutes web audio.
+= 'full' (unchanged). Phone, round 2 (his feedback): ONE bar on top: ☰ (opens the left drawer) · tabs ("Grade") ·
+Oct − / Oct + · ♪ (Sound drawer) · ⋯ (MIDI/latency/saved chips); the bar above the keys and the "C3–C5" text are gone on
+phones (no off-screen-notes label there; the Oct buttons still flash). Drawers slide over (backdrop closes). Chord strip
+hidden. Stage contents at 80% (`.phone-stage` zoom) and laid out LEFT TO RIGHT (`StageRow.tsx`: `StageBox` + `Col`, used
+by Challenges (start / question / result: score | passed + best | buttons), Learn (explanation | try | buttons),
+Practice, the timed-level start screen); `ctx.phone` tells modes. Piano 36% of the height; stage side borders 10 px so
+the waterfall lines up with the keys. Upright: "Turn your phone sideways to play" (Grade Report still opens). Touch
+always works on phones (his requirement); Android Chrome takes USB/Bluetooth MIDI controllers; iPhone Safari has no
+Web MIDI (touch only); the silent switch mutes web audio. Still to check on phones: Sandbox, Jam Room, Grade Report.
 
 ## Open items (last updated end of Phase 1 testing)
 - Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (gentler crackle), Pad (softer swell).

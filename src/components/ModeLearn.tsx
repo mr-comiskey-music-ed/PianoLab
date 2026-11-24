@@ -5,6 +5,7 @@ import { Chord, INVERSION_NAMES, chordName, chordPcs, degreeOf, detectChord, dia
 import { StripChips, textOn } from './ChordStrip';
 import { ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
+import { Col, StageBox } from './StageRow';
 import { MAJOR_SCALE, scaleStep } from '../utils/scales';
 
 /** Position of a white key counting only white keys (C0 = 0, D0 = 1 ...). Black keys: null. */
@@ -479,8 +480,11 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   );
 
   const stage = step.show ? (
-    <div className="flex h-full flex-col items-center justify-center gap-3 overflow-auto px-6 py-3 text-center">
+    <StageBox phone={ctx.phone} className="gap-3 overflow-auto px-6 py-3">
+      <Col phone={ctx.phone} className="max-h-full max-w-[48%] overflow-auto">
       {explain}
+      </Col>
+      <Col phone={ctx.phone} className="max-w-[48%]">
       <div className="h text-[12px] uppercase tracking-wider text-brass" data-testid="learn-prompt">
         Watch and listen
       </div>
@@ -508,11 +512,15 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         </button>
         {nextBtn}
       </div>
-    </div>
+      </Col>
+    </StageBox>
   ) : (
-    <div className="flex h-full flex-col items-center justify-center gap-2.5 overflow-auto px-6 py-3 text-center">
+    <StageBox phone={ctx.phone} className="gap-2.5 overflow-auto px-6 py-3">
+      <Col phone={ctx.phone} className="max-h-full max-w-[42%] overflow-auto">
       {explain}
-      <div className="w-full max-w-[720px] border-t border-wal1 pt-2.5">
+      </Col>
+      <Col phone={ctx.phone} className="max-w-[36%]">
+      <div className={`w-full max-w-[720px] pt-2.5 ${ctx.phone ? '' : 'border-t border-wal1'}`}>
         <div className="h text-[12px] uppercase tracking-wider text-brass">Now you try</div>
         <div className="h text-[28px] leading-tight text-panel" data-testid="learn-prompt">
           {step.tryText}
@@ -553,6 +561,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       >
         {msg?.text ?? '.'}
       </div>
+      </Col>
+      <Col phone={ctx.phone}>
       {stepDone ? (
         nextBtn
       ) : step.demo?.length ? (
@@ -562,7 +572,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         </button>
       ) : null}
       {ctx.learnDone && last && stepDone && <div className="h text-[16px] text-brass">Learn complete. Your code will say so.</div>}
-    </div>
+      </Col>
+    </StageBox>
   );
 
   return {

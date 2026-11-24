@@ -34,6 +34,8 @@ export interface ModeCtx {
   latency: number;
   /** Turn the metronome off (timed levels bring their own clicks). */
   stopMetronome: () => void;
+  /** A phone held sideways: the Stage is a short, wide strip, so lay things out left to right. */
+  phone?: boolean;
   /** Open the latency check (offered when timing is steadily off). */
   openLatency: () => void;
   /** The latency check has been done on this device. */

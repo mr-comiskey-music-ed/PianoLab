@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LABEL_ORDER, Labels } from './modeTypes';
 import { letterOf, noteName, pretty } from '../utils/music';
 import { Detected, INVERSION_NAMES, KeyDef, detectChord } from '../utils/chords';
+import { Col, StageBox } from './StageRow';
 import { ModeCtx, ModeParts } from './modeTypes';
 
 /** Practice: free exploration with labels on, the chord detector and (Lesson 2 on) the chord strip. No grading. */
@@ -38,11 +39,14 @@ export function usePractice(ctx: ModeCtx): ModeParts {
     </div>
   );
   const stage = (
-    <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+    <StageBox phone={ctx.phone} className="gap-2 px-6">
+      <Col phone={ctx.phone}>
       <div className="h text-[12px] uppercase tracking-wider text-brass">{shown ? 'Chord' : 'You played'}</div>
       <div className="h text-[64px] leading-none text-panel" data-testid="practice-note">
         {shown ? shown.symbol : lastThing && 'note' in lastThing ? pretty(noteName(lastThing.note)) : '–'}
       </div>
+      </Col>
+      <Col phone={ctx.phone}>
       <div className="text-[15px] text-line2" data-testid="practice-detail">
         {shown
           ? `${shown.longName}${shown.triad && shown.inversion ? `, ${INVERSION_NAMES[shown.inversion].toLowerCase()}` : ''}${shown.bass && !shown.triad ? `, ${shown.bass} on the bottom` : ''}`
@@ -57,7 +61,8 @@ export function usePractice(ctx: ModeCtx): ModeParts {
           <span className="ml-2 align-middle text-[14px] opacity-75">in {ctx.keyDef.label}</span>
         </div>
       )}
-    </div>
+      </Col>
+    </StageBox>
   );
   return { left, stage, labels, labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels } };
 }
