@@ -126,6 +126,9 @@ lesson picker (all lessons open; later the teacher's assignment link can decide)
 - Level types: findIt, nameIt, buildIt, nameChord (name / numeral / inversion via `choices`), halfStep,
   earCheck (major/minor, "Hear it again"), smooth (Smooth Mover: right chord AND fewest half steps from the lit chord;
   result shows half steps moved vs the smoothest possible). Choice-button answers don't flash the keys.
+  Smooth Mover: replaying the lit chord (to place your hand) is ignored, no penalty; the "smoothest" target is chosen
+  among voicings that fit on the keys on screen (`smoothestVoicing(from, c, range)`), and the start chord is moved into
+  view, so a move never sends you off the keyboard. `e22` tests both.
 - What you played: Practice's centre shows the last thing played, big: a chord (symbol, full name, inversion or bass, and
   its Roman numeral in the strip's key, in its degree colour) or a single note. A chord stays "the last thing" while its
   notes are let go unevenly; it changes only when a new chord forms or a new note starts from silence. The readout bar

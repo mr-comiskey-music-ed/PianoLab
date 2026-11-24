@@ -152,7 +152,13 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const prompts = shuffleNoRepeats(level.prompts, sameQuestion, lastAsked.current[level.id]);
     // Smooth Mover keeps its order: each chord follows the last one.
     const ordered = level.type === 'smooth' ? level.prompts : prompts;
-    const prev = level.type === 'smooth' ? (level.start ?? ['C4', 'E4', 'G4']).map((n) => parseNote(n)!).filter((n) => n !== null) : undefined;
+    let prev = level.type === 'smooth' ? (level.start ?? ['C4', 'E4', 'G4']).map((n) => parseNote(n)!).filter((n) => n !== null) : undefined;
+    // The starting chord sits on the keys on screen (moved by whole octaves if the view has moved).
+    if (prev) {
+      const v = viewRef.current;
+      while (Math.max(...prev) > v + KEY_COUNT - 1 && Math.min(...prev) - 12 >= v) prev = prev.map((n) => n - 12);
+      while (Math.min(...prev) < v && Math.max(...prev) + 12 <= v + KEY_COUNT - 1) prev = prev.map((n) => n + 12);
+    }
     setRunNow({ level, prompts: ordered, idx: 0, points: 0, misses: 0, prev, moved: 0, bestMoves: 0 });
     busy.current = false;
     setReveal(null);
@@ -269,12 +275,19 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       }
       // Smooth Mover: the right chord AND the fewest half steps from the lit chord.
       const prev = r.prev ?? held;
+      // Playing the lit chord itself (to get your hand in place) is fine: no answer, no penalty.
+      const prevChord = detectChord(prev);
+      if (prevChord && matchesChord(held, prevChord.chord) && !matchesChord(held, c)) {
+        setFb({ kind: 'good', text: `That's the chord you're on. Now move to ${want(c)}.` });
+        return;
+      }
       if (held.length !== 3 || !matchesChord(held, c)) {
         answer(false, held, gotName ? `That is ${gotName}, not ${want(c)}. Let go and try again.` : `Play the three notes of ${want(c)}. Let go and try again.`);
         return;
       }
       const moved = moveDistance(prev, held);
-      const bestMove = smoothestVoicing(prev, c).distance;
+      // The target always fits on the keys on screen (a smooth move never sends you off the keyboard).
+      const bestMove = smoothestVoicing(prev, c, [viewRef.current, viewRef.current + KEY_COUNT - 1]).distance;
       if (moved > bestMove) {
         answer(false, held, `That is ${chordLongName(c)}, but you moved ${moved} half steps. You can do it in ${bestMove}. Let go and try again.`);
         return;

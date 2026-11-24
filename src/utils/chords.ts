@@ -262,16 +262,28 @@ export const moveDistance = (from: number[], to: number[]) => {
   return a.reduce((sum, n, i) => sum + Math.abs(n - (b[i] ?? n)), 0);
 };
 
-/** The voicing of `c` (3 notes, any inversion, within an octave or so of `from`) that moves the fewest half steps. */
-export function smoothestVoicing(from: number[], c: Chord): { notes: number[]; distance: number } {
+/**
+ * The voicing of `c` (3 notes, any inversion, within an octave or so of `from`) that moves the fewest half steps.
+ * With `range` [lowest, highest], only voicings that fit on those keys count (Smooth Mover keeps targets on screen); if
+ * none fits, any voicing counts.
+ */
+export function smoothestVoicing(from: number[], c: Chord, range?: [number, number]): { notes: number[]; distance: number } {
   const lo = Math.min(...from);
-  let best = { notes: voicing(c, 0, lo), distance: Infinity };
-  for (let inv = 0; inv < 3; inv++) {
-    for (let floor = lo - 12; floor <= lo + 12; floor++) {
-      const v = voicing(c, inv, floor);
-      const d = moveDistance(from, v);
-      if (d < best.distance) best = { notes: v, distance: d };
+  const find = (fits: (v: number[]) => boolean) => {
+    let best = { notes: voicing(c, 0, lo), distance: Infinity };
+    for (let inv = 0; inv < 3; inv++) {
+      for (let floor = lo - 12; floor <= lo + 12; floor++) {
+        const v = voicing(c, inv, floor);
+        if (!fits(v)) continue;
+        const d = moveDistance(from, v);
+        if (d < best.distance) best = { notes: v, distance: d };
+      }
     }
+    return best;
+  };
+  if (range) {
+    const inView = find((v) => v[0] >= range[0] && v[2] <= range[1]);
+    if (inView.distance < Infinity) return inView;
   }
-  return best;
+  return find(() => true);
 }
