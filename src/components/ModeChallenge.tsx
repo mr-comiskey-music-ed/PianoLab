@@ -12,9 +12,9 @@ import { useChordWatcher, useNoteListener } from './chordInput';
 import { usePlayLevel } from './PlayLevel';
 
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-/** Echo help, most to least: keys light up, only the first key lights up, nothing lights up (and only 2 replays). */
+/** Echo difficulty, easiest first: See Notes (keys light up), See First Note (only the first key lights up), By Ear (nothing lights up, only 2 replays). */
 const ECHO_ORDER: EchoHelp[] = ['watch', 'hint', 'ear'];
-const ECHO_LABEL: Record<EchoHelp, string> = { watch: 'Watch & Play', hint: 'Hint', ear: 'Ear only' };
+const ECHO_LABEL: Record<EchoHelp, string> = { watch: 'See Notes', hint: 'See First Note', ear: 'By Ear' };
 const EAR_REPLAYS = 2;
 
 /** Two questions are "the same" when they ask the same thing about the same note or chord. */
@@ -176,6 +176,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     return ECHO_ORDER.indexOf(pick) >= ECHO_ORDER.indexOf(min) ? pick : min;
   };
   const stopEcho = () => {
+    // Stopped partway through the tune: silence it (its note-off timers are about to be cancelled).
+    if (echoTimers.current.length) ctx.engine.allOff();
     echoTimers.current.forEach((t) => window.clearTimeout(t));
     echoTimers.current = [];
     setEchoLit(null);
@@ -206,6 +208,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       });
       echoTimers.current.push(
         window.setTimeout(() => {
+          echoTimers.current = [];
           setEchoLit(null);
           setEchoPlaying(false);
           busy.current = false;
@@ -640,7 +643,17 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             {Math.max(0, Math.ceil((run.endsAt - performance.now()) / 1000))} s left
           </div>
         )}
-        <button className="btn btn-dark px-3 py-1 text-[13px]" onClick={() => start(run.level.id)} data-testid="restart">
+        <button className="btn btn-dark px-3 py-1 text-[13px]" onClick={() => {
+            // Echo: back to the start screen, where the difficulty can be changed. Other levels start over right away.
+            if (run.level.type === 'echo') {
+              stopEcho();
+              busy.current = false;
+              setRunNow(null);
+              setMsg('');
+            } else start(run.level.id);
+          }}
+          data-testid="restart"
+        >
           Restart
         </button>
       </div>
@@ -659,8 +672,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             : `${selLevel.prompts.length} questions · ${selLevel.pass}% to pass · first try counts full, second try counts half`}
         </div>
         {selLevel.type === 'echo' && (
-          <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Echo help">
-            <span className="h text-[12px] uppercase tracking-wider text-brass">Help</span>
+          <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Echo difficulty">
+            <span className="h text-[12px] uppercase tracking-wider text-brass">Difficulty</span>
             {ECHO_ORDER.map((h) => (
               <button
                 key={h}

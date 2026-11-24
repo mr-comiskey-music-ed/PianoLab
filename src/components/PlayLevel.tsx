@@ -77,8 +77,8 @@ export function usePlayLevel(
     setPop(null);
     setPhase(listenOnly ? 'listen' : 'count');
     stopClicks.current = ctx.engine.scheduleBeatClicks(LEAD_MS, COUNT_IN + timeline.beats, tempo);
-    // Count-in numbers on the Stage.
-    for (let i = 0; i < COUNT_IN; i++) timers.current.push(window.setTimeout(() => setCount(COUNT_IN - i), LEAD_MS + i * bm));
+    // Count-in numbers on the Stage: 1, 2, 3, 4 with the clicks, like counting a band in.
+    for (let i = 0; i < COUNT_IN; i++) timers.current.push(window.setTimeout(() => setCount(i + 1), LEAD_MS + i * bm));
     timers.current.push(window.setTimeout(() => setPhase((p) => (p === 'count' ? 'run' : p)), LEAD_MS + COUNT_IN * bm - 120));
     if (listenOnly) {
       // The app plays it, keys lit, nothing graded.

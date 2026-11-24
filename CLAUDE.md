@@ -218,11 +218,12 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
 - Progression Play (`type: "play"`, `components/PlayLevel.tsx` + `Waterfall.tsx`): blocks in the bar's degree colour fall
   onto a brass line above the keys; bar labels show chord + numeral. Start screen: tempo (never slower than the level or
   the assignment), Show = Falling blocks / Chord names only / Nothing (the level's `screen` is the most help allowed),
-  Listen first, Start. 4-click count-in (wood block, on the audio clock), Perfect/Good/Early/Late pops, Stop. The
+  Listen first, Start. 4-click count-in shown as 1-2-3-4 (his call: how you'd count a band in; wood block, on the audio clock), Perfect/Good/Early/Late pops, Stop. The
   global metronome is turned off for it. Result shows Perfect/Good/Miss, timing % and right-notes %.
 - Echo (`type: "echo"`, prompt `notes`): the app plays a short tune, then the student plays it back (any octave, same
-  order). Help: Watch & Play (keys light) / Hint (first key lights) / Ear only (no lights, 2 replays); level `echo` is
-  the most help allowed.
+  order). "Difficulty" (his wording): See Notes (keys light) / See First Note (only the first key lights) / By Ear (no
+  lights, 2 replays); level `echo` is the easiest allowed. Restart during an Echo goes back to the start screen (to
+  change the difficulty); other levels start over right away.
 - Speed Round (`type: "speed"`, `seconds`, `target`): Build It rules, as many as possible; wrong = try again, Skip
   button; grade = right answers / target (max 100%).
 - New levels (appended, ids saved in codes): `l1-echo`, `l2-play-roots`, `l2-play-cfg`, `l3-play-pop`, `l3-play-doowop`,
