@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, resolveNumeral, rhythmBeats } from './patternEngine';
+import { buildTimeline, chordSummary, resolveNumeral, rhythmBeats } from './patternEngine';
 import { TimingJudge, summarize, steadyOffset, HitResult } from './timing';
 import { keyById, chordName } from './chords';
 import { Pattern } from '../data/pattern';
@@ -23,6 +23,11 @@ describe('pattern engine', () => {
     const arp = buildTimeline({ ...base, texture: 'arpeggio', rhythm: 'quarter', bars: 1 });
     expect(arp.hits.map((h) => h.notes[0])).toEqual([48, 52, 55, 60]);
     expect(rhythmBeats('sync:pop')).toEqual([0, 1.5, 3]);
+  });
+  it('writes a repeating loop once, with how many times', () => {
+    expect(chordSummary('A D E A A D E A A D E A A D E A'.split(' '))).toBe('A – D – E – A × 4');
+    expect(chordSummary(['C', 'F', 'G', 'C'])).toBe('C – F – G – C');
+    expect(chordSummary(['C', 'Am', 'F', 'G', 'C', 'Am', 'F', 'G'])).toBe('C – Am – F – G × 2');
   });
   it('transposes by changing the key', () => {
     expect(buildTimeline({ ...base, key: 'G' }).bars.map((b) => b.symbol)).toEqual(['G', 'D', 'Em', 'C']);

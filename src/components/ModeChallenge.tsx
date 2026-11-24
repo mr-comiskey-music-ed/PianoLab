@@ -532,9 +532,13 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         {finished.timing?.offset !== undefined && (
           // Steadily early or late by about the same amount: often the latency setting, not the student.
           <div className="flex max-w-[640px] items-center gap-3 rounded-lg bg-[#f6e3b8] px-3 py-1.5 text-left text-[14px] text-wal2" data-testid="latency-hint">
-            <span>
-              You were usually about {Math.abs(finished.timing.offset)} ms {finished.timing.offset > 0 ? 'late' : 'early'}. If it felt on time to you, your
-              latency setting may be off ({ctx.latency ? `it's set to ${ctx.latency} ms` : 'it was never checked'}).
+            <span className="flex flex-col">
+              <span>
+                You were usually about {Math.abs(finished.timing.offset)} ms {finished.timing.offset > 0 ? 'late' : 'early'}.
+              </span>
+              <span>
+                If it felt on time, your latency setting may be off ({ctx.latency ? `it's set to ${ctx.latency} ms` : 'not checked yet'}).
+              </span>
             </span>
             <button className="btn btn-dark shrink-0 px-2 py-1 text-[13px]" onClick={ctx.openLatency} data-testid="check-latency">
               Check latency

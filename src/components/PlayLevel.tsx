@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Level, ScreenHelp } from '../types';
-import { Timeline, beatMs, buildTimeline } from '../utils/patternEngine';
+import { Timeline, beatMs, buildTimeline, chordSummary } from '../utils/patternEngine';
 import { HitResult, TimingJudge, TimingSummary, steadyOffset, summarize } from '../utils/timing';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
@@ -204,8 +204,11 @@ export function usePlayLevel(
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#1e1710]/80 px-6 text-center">
           <div className="h text-[14px] tracking-wide text-brass">{level.title}</div>
           <div className="h max-w-[680px] text-[26px] leading-tight text-panel">{level.blurb}</div>
-          <div className="text-[14px] text-line2">
-            {timeline.bars.map((b) => b.symbol).join(' – ')} · {pattern?.bars} bars · {level.pass}% to pass · half the grade is timing, half is the right notes
+          <div className="flex flex-col gap-0.5 text-[14px] text-line2">
+            <span data-testid="play-summary">
+              {chordSummary(timeline.bars.map((b) => b.symbol))} · {pattern?.bars} bars
+            </span>
+            <span>{level.pass}% to pass, half on timing, half on correct notes</span>
           </div>
           {settingsUI}
           <div className="flex gap-2">

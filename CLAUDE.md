@@ -253,6 +253,10 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
   · `l6-play-smooth-f` I-IV-V-vi in F · `l6-play-smooth-a` I-IV-V-I in A · `l6-play-smooth-d6` all six in D. Lesson 6 has 9
   levels (fits). Equal-distance moves pick the voicing nearest where the hand started (`smoothestVoicing(..., anchor)`),
   so a long progression doesn't creep up the keyboard (C: CEG > CFA > DGB > EGC, then the same loop).
+- Timed level start screen: the chords are written short when they loop ("A – D – E – A × 4 · 16 bars", `chordSummary`
+  in patternEngine.ts), and the grading rule is its own line: "80% to pass, half on timing, half on correct notes".
+  Latency reminder and the latency check's intro: one sentence per line, short. Lesson 6 timed titles shortened to fit
+  one line: Smooth: C major · Smooth: all of C · Smooth: G/F/A major · Smooth: all of D (ids unchanged).
 - Level titles on the Stage are no longer in capitals (capitals turned "vi" into "VI").
 - Assignment link (core, `utils/assignment.ts`): Grade Report > Teacher > "Make an assignment link": name, levels (by
   lesson), note names (level's own / at most Cs / none), slowest tempo, sound. Link = `?a=<compressed>.<checksum>`

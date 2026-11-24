@@ -122,3 +122,15 @@ function textureHit(t: Texture, chord: number[], root: number, i: number): numbe
 
 /** Beats -> milliseconds at a tempo. */
 export const beatMs = (tempo: number) => 60000 / tempo;
+
+/**
+ * The chords of a run, short: a loop that repeats is written once with how many times ("A – D – E – A × 4");
+ * anything else is listed in full.
+ */
+export function chordSummary(symbols: string[]): string {
+  for (let p = 1; p <= symbols.length / 2; p++) {
+    if (symbols.length % p) continue;
+    if (symbols.every((x, i) => x === symbols[i % p])) return `${symbols.slice(0, p).join(' – ')} × ${symbols.length / p}`;
+  }
+  return symbols.join(' – ');
+}

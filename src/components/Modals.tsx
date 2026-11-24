@@ -144,8 +144,9 @@ export const LatencyModal: React.FC<{
     <Shell title="Latency check" onClose={onClose}>
       {phase === 'ready' && (
         <>
-          <p className="text-[15px] text-wal1">
-            Put on your headphones. You will hear {BEATS} clicks. Tap any key along with each click, as steadily as you can. This measures how much delay your keyboard and Chromebook add, so your timing grades stay fair.
+          <p className="flex flex-col gap-1 text-[15px] text-wal1">
+            <span>Put on headphones and play any key with each click.</span>
+            <span>It measures your keyboard’s delay, so grades stay fair.</span>
           </p>
           <button className="btn btn-brass mt-3 w-full" onClick={start} data-testid="latency-start">
             Start

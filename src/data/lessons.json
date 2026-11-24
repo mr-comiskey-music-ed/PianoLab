@@ -3086,7 +3086,7 @@
         },
         {
           "id": "l6-play-smooth",
-          "title": "Smooth moves in time",
+          "title": "Smooth: C major",
           "blurb": "Play I – IV – V – I in C with the smoothest moves, in time. The blocks show the voicing.",
           "type": "play",
           "octave": "any",
@@ -3113,7 +3113,7 @@
         },
         {
           "id": "l6-play-smooth-c6",
-          "title": "Smooth: all of C major",
+          "title": "Smooth: all of C",
           "blurb": "Every chord from I to vi in C, with the smoothest moves. Keep the notes you can; move the others a little.",
           "type": "play",
           "octave": "any",
@@ -3225,7 +3225,7 @@
         },
         {
           "id": "l6-play-smooth-d6",
-          "title": "Smooth: all of D major",
+          "title": "Smooth: all of D",
           "blurb": "Every chord from I to vi in D, with the smoothest moves. The hardest one.",
           "type": "play",
           "octave": "any",
