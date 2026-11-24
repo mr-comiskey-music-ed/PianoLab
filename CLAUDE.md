@@ -327,6 +327,14 @@ YouTube ungraded):
 - Sandbox MIDI import: Speed 50/75/100% (roll and sound slow together), Track picker for multi-track files (shown until
   you record on top), Mute (notes still come up and light, silently, to play the part yourself).
 
+**Phone layout (mock-up stage, his call: sideways to play, everything slimmed, mock-up first)** (`utils/screen.ts`):
+'phone' = sideways and at most 500 px tall; 'upright' = taller than wide and under 700 px wide; Chromebooks/laptops/tablets
+= 'full' (unchanged). Phone: compact top bar (icon, short tabs, "Grade"), MIDI/latency/saved chips in a ⋯ menu; left
+and right panels become pull-out drawers ("☰ Lesson/Sandbox/Jam" and "♪ Sound" buttons in the bar above the keys,
+backdrop closes); chord strip hidden; Stage contents drawn at 52% (`.phone-stage` zoom); piano 43% of the height.
+Upright: "Turn your phone sideways to play" (Grade Report still opens). Mock-up done for Practice; other tabs next,
+after he approves the look. iPhone Safari has no Web MIDI (touch only); the silent switch mutes web audio.
+
 ## Open items (last updated end of Phase 1 testing)
 - Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (gentler crackle), Pad (softer swell).
 - MIDI import choices to confirm (see SPEC section 10): merge all tracks, drop drums, 3-minute cap, replace not append.

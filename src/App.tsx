@@ -19,6 +19,7 @@ import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { useLearn } from './components/ModeLearn';
 import { usePractice } from './components/ModePractice';
 import { useChallenge } from './components/ModeChallenge';
+import { useScreenKind } from './utils/screen';
 import { useJam } from './components/ModeJam';
 import { ModeCtx, NoteEvent } from './components/modeTypes';
 import { LevelResult } from './types';
@@ -114,6 +115,12 @@ export default function App() {
   const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 1 });
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
   const [latencySkipped, setLatencySkipped] = useState(false);
+  // Phones (a nice-to-have): sideways = compact layout with pull-out drawers; upright = "turn your phone sideways".
+  const screen = useScreenKind();
+  const phone = screen === 'phone';
+  const compact = screen !== 'full';
+  const [drawer, setDrawer] = useState<null | 'left' | 'right'>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [modal, setModal] = useState<null | 'latency' | 'batch' | 'assign'>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [customParams, setCustomParams] = useState<SynthParams>(() => {
@@ -331,25 +338,47 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col bg-page">
-      {/* Top bar (walnut) */}
-      <header className="wood flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-1.5 text-panel shadow-md">
-        <div className="h flex items-center gap-2 text-[22px] tracking-wide">
-          <img src="/favicon.svg" alt="" className="h-7 w-7" />
-          PianoLab
+      {screen === 'upright' && mode !== 'report' && (
+        // 25 piano keys don't fit a phone held upright.
+        <div className="wood fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 p-6 text-center text-panel" data-testid="rotate">
+          <div className="text-[64px] leading-none" aria-hidden="true">
+            ⟳
+          </div>
+          <div className="h text-[26px]">Turn your phone sideways to play</div>
+          <div className="text-[15px] text-line2">The piano needs the whole width of the screen.</div>
+          <button className="btn btn-brass" onClick={() => setMode('report')}>
+            Grade Report
+          </button>
         </div>
-        <nav className="flex gap-1" aria-label="Modes">
+      )}
+      {/* Top bar (walnut) */}
+      <header className={`wood relative flex items-center text-panel shadow-md ${compact ? 'gap-2 px-2 py-1' : 'flex-wrap gap-x-4 gap-y-1 px-3 py-1.5'}`} data-testid="topbar">
+        <div className={`h flex items-center gap-2 tracking-wide ${compact ? 'text-[16px]' : 'text-[22px]'}`}>
+          <img src="/favicon.svg" alt="" className={compact ? 'h-6 w-6' : 'h-7 w-7'} />
+          {!compact && 'PianoLab'}
+        </div>
+        <nav className={`flex gap-1 ${compact ? 'min-w-0 flex-1 overflow-x-auto' : ''}`} aria-label="Modes">
           {tabs.map((t) => (
             <button
               key={t.id}
               data-testid={`tab-${t.id}`}
-              onClick={() => setMode(t.id as Mode)}
-              className={`h rounded-md px-3 py-1 text-[15px] ${mode === t.id ? 'bg-brass text-brasstext' : 'text-panel hover:bg-white/10'}`}
+              onClick={() => {
+                setMode(t.id as Mode);
+                setDrawer(null);
+              }}
+              className={`h shrink-0 rounded-md ${compact ? 'px-2 py-0.5 text-[13px]' : 'px-3 py-1 text-[15px]'} ${mode === t.id ? 'bg-brass text-brasstext' : 'text-panel hover:bg-white/10'}`}
             >
-              {t.label}
+              {compact && t.id === 'report' ? 'Grade' : t.label}
             </button>
           ))}
         </nav>
-        <div className="ml-auto flex flex-wrap items-center gap-2 text-[12px]">
+        {compact && (
+          // Phones: the MIDI / latency / saved chips go in a small menu.
+          <button className="btn btn-dark shrink-0 px-2 py-0.5 text-[15px]" aria-label="More" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)} data-testid="more-menu">
+            ⋯
+          </button>
+        )}
+        <div className={compact ? (menuOpen ? 'absolute right-2 top-full z-50 mt-1 flex flex-col items-stretch gap-1.5 rounded-lg bg-[#2a2118] p-2 text-[12px] shadow-xl' : 'hidden') : 'ml-auto flex flex-wrap items-center gap-2 text-[12px]'} onClick={() => compact && setMenuOpen(false)}>
           <SaveIndicator status={saveStatus} savedAt={savedAt} />
           <span className={`h rounded-md border px-2 py-1 ${midiChip.ok ? 'border-[#7aa65a] text-[#cfe3b4]' : 'border-wal1 text-line2'}`} data-testid="midi-status">
             {midiChip.text}
@@ -361,7 +390,7 @@ export default function App() {
       </header>
 
       {assignment && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 border-b border-brass2 bg-[#fbeecb] px-3 py-1 text-[13px] text-wal3" data-testid="assignment-banner">
+        <div className={`flex items-center gap-x-3 gap-y-0.5 border-b border-brass2 bg-[#fbeecb] px-3 py-1 text-[13px] text-wal3 ${compact ? 'overflow-hidden whitespace-nowrap' : 'flex-wrap'}`} data-testid="assignment-banner">
           <span className="h text-[14px]">Assignment: {assignment.title}</span>
           <span>Lesson{lessons.length > 1 ? 's' : ''} {lessons.map((l) => l.number).join(', ')}</span>
           {assignment.labels === 'c' && <span>Note names: Cs only</span>}
@@ -376,9 +405,22 @@ export default function App() {
           <GradeReport results={results} learned={learned} assignment={assignment} onTeacher={() => setModal('batch')} onAssign={() => setModal('assign')} />
         </main>
       ) : (
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_250px]">
-        {/* Left panel */}
-        <aside className="min-h-0 overflow-auto border-r border-line bg-page p-3 order-2 lg:order-none" data-testid="left-panel">
+      <div className={`grid min-h-0 flex-1 grid-cols-1 ${phone ? '' : 'lg:grid-cols-[260px_minmax(0,1fr)_250px]'}`}>
+        {phone && drawer && <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setDrawer(null)} data-testid="drawer-backdrop" />}
+        {/* Left panel (a pull-out drawer on phones) */}
+        <aside
+          className={
+            phone
+              ? `fixed inset-y-0 left-0 z-50 w-[290px] max-w-[85vw] overflow-auto bg-page p-3 shadow-2xl transition-transform duration-200 ${drawer === 'left' ? 'translate-x-0' : '-translate-x-full'}`
+              : 'min-h-0 overflow-auto border-r border-line bg-page p-3 order-2 lg:order-none'
+          }
+          data-testid="left-panel"
+        >
+          {phone && (
+            <button className="btn mb-2 w-full py-1 text-[13px]" onClick={() => setDrawer(null)}>
+              ✕ Close
+            </button>
+          )}
           {(mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
             <LessonPicker lessons={lessons} current={lesson.id} learned={learned} results={results} onPick={setLessonId} />
           )}
@@ -411,8 +453,8 @@ export default function App() {
         </aside>
 
         {/* Center: stage, readout bar, piano */}
-        <main className="flex min-h-0 min-w-0 flex-col p-2">
-          {showStrip && (
+        <main className={`flex min-h-0 min-w-0 flex-col ${phone ? 'p-1' : 'p-2'}`}>
+          {showStrip && !phone && (
             <ChordStrip
               keyDef={stripKey}
               onKey={setStripKeyId}
@@ -422,12 +464,19 @@ export default function App() {
               onRelease={stopStripChord}
             />
           )}
-          <div className={`stage min-h-[150px] flex-1 overflow-hidden border-x-[10px] border-t-[10px] border-transparent shadow-inner wood-v ${showStrip ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
+          <div className={`stage flex-1 overflow-hidden border-transparent shadow-inner wood-v ${phone ? 'min-h-[60px] border-x-[6px] border-t-[6px]' : 'min-h-[150px] border-x-[10px] border-t-[10px]'} ${showStrip && !phone ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
+            <div className={`h-full w-full ${phone ? 'phone-stage' : ''}`}>
             <div className="stage h-full w-full rounded-sm" data-testid="stage">
               {parts.stage}
             </div>
+            </div>
           </div>
-          <div className="wood flex flex-wrap items-center gap-2 px-3 py-1.5 text-panel">
+          <div className={`wood flex items-center gap-2 text-panel ${phone ? 'px-1.5 py-1' : 'flex-wrap px-3 py-1.5'}`}>
+            {phone && (
+              <button className="btn btn-dark px-2 py-0.5 text-[13px]" onClick={() => setDrawer('left')} data-testid="open-left">
+                ☰ {mode === 'jam' ? 'Jam' : mode === 'sandbox' ? 'Sandbox' : 'Lesson'}
+              </button>
+            )}
             <button className={`btn btn-dark px-2 ${octColor(octShift < 0 ? -octShift : 0)} ${offBelow ? 'oct-alert' : ''}`} onClick={() => octave(-1)} disabled={viewStart <= 24} data-testid="oct-down" title="Octave down (Z)">
               Oct −
             </button>
@@ -458,8 +507,13 @@ export default function App() {
               </span>
             )}
 
+            {phone && (
+              <button className="btn btn-dark ml-auto px-2 py-0.5 text-[13px]" onClick={() => setDrawer('right')} data-testid="open-right">
+                ♪ Sound
+              </button>
+            )}
           </div>
-          <div className="flex h-[clamp(150px,24vh,210px)] shrink-0">
+          <div className={`flex shrink-0 ${phone ? 'h-[43vh]' : 'h-[clamp(150px,24vh,210px)]'}`}>
             <div className="wood-v w-3 rounded-bl-lg" />
             <div className="min-w-0 flex-1 bg-[#2a2118] pt-1">
               <Piano
@@ -482,7 +536,19 @@ export default function App() {
         </main>
 
         {/* Right panel */}
-        <aside className="order-3 min-h-0 overflow-auto border-l border-line bg-page p-3 lg:order-none">
+        <aside
+          className={
+            phone
+              ? `fixed inset-y-0 right-0 z-50 w-[270px] max-w-[85vw] overflow-auto bg-page p-3 shadow-2xl transition-transform duration-200 ${drawer === 'right' ? 'translate-x-0' : 'translate-x-full'}`
+              : 'order-3 min-h-0 overflow-auto border-l border-line bg-page p-3 lg:order-none'
+          }
+          data-testid="right-panel-wrap"
+        >
+          {phone && (
+            <button className="btn mb-2 w-full py-1 text-[13px]" onClick={() => setDrawer(null)}>
+              Close ✕
+            </button>
+          )}
           <RightPanel
             engine={engine}
             soundId={soundId}
