@@ -1,7 +1,18 @@
 import { MAX_PERF_MS, MAX_PERF_NOTES, PerfNote } from './performance';
 
+/** A part of the file (a MIDI track) that has notes, e.g. "Piano", "Bass". */
+export interface MidiTrack {
+  index: number;
+  name: string;
+  count: number;
+}
+
 export interface MidiImport {
   notes: PerfNote[];
+  /** Which track each note came from (same order as `notes`). */
+  trackOf: number[];
+  /** Tracks with notes (drums left out), in file order. */
+  tracks: MidiTrack[];
   /** Name from the file's first track name, if any. */
   title: string;
   /** Notes left out: drums (channel 10) and anything past the length limit. */
@@ -45,9 +56,10 @@ export function readMidiFile(buf: ArrayBuffer): MidiImport {
   if (format > 1) throw new Error('This MIDI file type (type 2) is not supported. Try saving it as type 1.');
   if (division & 0x8000) throw new Error('This MIDI file uses SMPTE timing, which is not supported.');
 
-  type Ev = { tick: number; kind: 'on' | 'off' | 'pedal' | 'tempo'; ch: number; a: number; b: number };
+  type Ev = { tick: number; kind: 'on' | 'off' | 'pedal' | 'tempo'; ch: number; a: number; b: number; tr: number };
   const events: Ev[] = [];
   let title = '';
+  const trackNames: string[] = [];
   for (let t = 0; t < ntracks && p + 8 <= buf.byteLength; t++) {
     const id = str(4);
     const len = u32();
@@ -66,10 +78,12 @@ export function readMidiFile(buf: ArrayBuffer): MidiImport {
       if (st === 0xff) {
         const type = d.getUint8(p++);
         const l = vlq(end);
-        if (type === 0x51 && l === 3) events.push({ tick, kind: 'tempo', ch: 0, a: (d.getUint8(p) << 16) | (d.getUint8(p + 1) << 8) | d.getUint8(p + 2), b: 0 });
-        if (type === 0x03 && !title) {
+        if (type === 0x51 && l === 3) events.push({ tick, kind: 'tempo', ch: 0, a: (d.getUint8(p) << 16) | (d.getUint8(p + 1) << 8) | d.getUint8(p + 2), b: 0, tr: t });
+        if (type === 0x03 && !trackNames[t]) {
           const save = p;
-          title = str(l).trim();
+          trackNames[t] = str(l).trim();
+          // The song's name is the first track's name (type 1: the tempo track); other tracks' names are parts.
+          if (t === 0 && !title) title = trackNames[t];
           p = save;
         }
         p += l;
@@ -84,9 +98,9 @@ export function readMidiFile(buf: ArrayBuffer): MidiImport {
       const ch = st & 0x0f;
       const a = d.getUint8(p++);
       const b = type === 0xc0 || type === 0xd0 ? 0 : d.getUint8(p++);
-      if (type === 0x90 && b > 0) events.push({ tick, kind: 'on', ch, a, b });
-      else if (type === 0x80 || (type === 0x90 && b === 0)) events.push({ tick, kind: 'off', ch, a, b });
-      else if (type === 0xb0 && a === 64) events.push({ tick, kind: 'pedal', ch, a, b });
+      if (type === 0x90 && b > 0) events.push({ tick, kind: 'on', ch, a, b, tr: t });
+      else if (type === 0x80 || (type === 0x90 && b === 0)) events.push({ tick, kind: 'off', ch, a, b, tr: t });
+      else if (type === 0xb0 && a === 64) events.push({ tick, kind: 'pedal', ch, a, b, tr: t });
     }
     p = end;
   }
@@ -105,7 +119,8 @@ export function readMidiFile(buf: ArrayBuffer): MidiImport {
 
   // Pair note-ons with note-offs; the sustain pedal holds released notes until it lifts.
   const notes: PerfNote[] = [];
-  const open = new Map<string, PerfNote[]>(); // `${ch}:${midi}` -> notes still sounding
+  const noteTrack = new Map<PerfNote, number>();
+  const open = new Map<string, PerfNote[]>(); // `${tr}:${ch}:${midi}` -> notes still sounding
   const pedal = new Set<number>();
   const sustained = new Map<number, PerfNote[]>(); // ch -> released while the pedal was down
   let skippedDrums = 0;
@@ -116,7 +131,7 @@ export function readMidiFile(buf: ArrayBuffer): MidiImport {
       if (e.kind === 'on') skippedDrums++;
       continue;
     }
-    const key = `${e.ch}:${e.a}`;
+    const key = `${e.tr}:${e.ch}:${e.a}`;
     if (e.kind === 'on') {
       // Re-striking a held (or pedalled) note ends the old one.
       const held = sustained.get(e.ch)?.filter((n) => n.m === e.a) ?? [];
@@ -124,6 +139,7 @@ export function readMidiFile(buf: ArrayBuffer): MidiImport {
       if (held.length) sustained.set(e.ch, (sustained.get(e.ch) ?? []).filter((n) => n.m !== e.a));
       const n: PerfNote = { t: e.ms, d: -1, m: e.a, v: e.b };
       notes.push(n);
+      noteTrack.set(n, e.tr);
       open.set(key, [...(open.get(key) ?? []), n]);
     } else if (e.kind === 'off') {
       const list = open.get(key);
@@ -148,5 +164,9 @@ export function readMidiFile(buf: ArrayBuffer): MidiImport {
   notes.forEach((n) => (n.t -= first));
   const kept = notes.filter((n) => n.t < MAX_PERF_MS).slice(0, MAX_PERF_NOTES);
   kept.forEach((n) => (n.d = Math.min(n.d, MAX_PERF_MS - n.t)));
-  return { notes: kept, title, skippedDrums, cutOff: kept.length < notes.length };
+  const trackOf = kept.map((n) => noteTrack.get(n) ?? 0);
+  const counts = new Map<number, number>();
+  trackOf.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1));
+  const tracks: MidiTrack[] = [...counts.keys()].sort((a, b) => a - b).map((i, k) => ({ index: i, name: trackNames[i] || `Track ${k + 1}`, count: counts.get(i)! }));
+  return { notes: kept, trackOf, tracks, title, skippedDrums, cutOff: kept.length < notes.length };
 }

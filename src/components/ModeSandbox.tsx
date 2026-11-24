@@ -3,7 +3,7 @@ import { DEFAULT_ASSIGNMENT, encodeSubmission } from '../utils/codec';
 import { MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, downloadMidi, formatLength, packPerf, perfLength, perfLink, readPerfParam } from '../utils/performance';
 import { Labels, LABEL_ORDER, ModeCtx, ModeParts } from './modeTypes';
 import { PianoRoll, makeRollMap } from './PianoRoll';
-import { readMidiFile } from '../utils/midiImport';
+import { MidiTrack, readMidiFile } from '../utils/midiImport';
 
 /** A pause longer than this is shortened to SHORT_GAP, so stepping away doesn't fill the recording with silence. */
 const LONG_GAP = 8000;
@@ -23,6 +23,16 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const saveOpenRef = useRef(false);
   saveOpenRef.current = saveOpen;
   const [loadedMsg, setLoadedMsg] = useState('');
+  // Play-along with an imported song (SPEC section 10): slower play back (the roll slows too), one track at a time,
+  // and Mute to hear nothing but still see the notes come up, so you play the part yourself.
+  const [speed, setSpeed] = useState(1);
+  const speedRef = useRef(1);
+  speedRef.current = speed;
+  const [mute, setMute] = useState(false);
+  const muteRef = useRef(false);
+  muteRef.current = mute;
+  const [imported, setImported] = useState<null | { all: PerfNote[]; trackOf: number[]; tracks: MidiTrack[] }>(null);
+  const [trackPick, setTrackPick] = useState(-1);
 
   // Recording clock: t0 is when the first note was played (performance.now()).
   const t0 = useRef<number | null>(null);
@@ -66,6 +76,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
         const t = now - t0.current;
         if (t > MAX_PERF_MS) return setFull(true);
         lastAt.current = now;
+        setImported(null); // recording on top: the track picker goes (switching tracks would drop what you played)
         setNotes((prev) => {
           held.current.set(e.midi, prev.length);
           return [...prev, { t, d: -1, m: e.midi, v: Math.max(1, Math.round(e.vel * 127)) }];
@@ -114,7 +125,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const pause = useCallback(() => {
     const p = playRef.current;
     if (!p) return;
-    const at = performance.now() - p.start;
+    const at = (performance.now() - p.start) * speedRef.current;
     halt();
     pausedAt.current = Math.max(0, at);
     setPaused(true);
@@ -137,6 +148,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     setAtStart(false);
     await ctx.engine.unlock();
     const LEAD = 50;
+    const sp = speedRef.current;
     const timers: number[] = [];
     for (const n of done) {
       const end = n.t + n.d;
@@ -145,9 +157,9 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       const on = Math.max(0, n.t - from);
       timers.push(
         window.setTimeout(() => {
-          ctx.engine.noteOn(n.m, n.v / 127);
+          if (!muteRef.current) ctx.engine.noteOn(n.m, n.v / 127);
           setPlayLit((s) => new Set(s).add(n.m));
-        }, LEAD + on),
+        }, LEAD + on / sp),
       );
       timers.push(
         window.setTimeout(() => {
@@ -157,12 +169,12 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
             x.delete(n.m);
             return x;
           });
-        }, LEAD + end - from),
+        }, LEAD + (end - from) / sp),
       );
     }
-    timers.push(window.setTimeout(stop, LEAD + perfLength(done) - from + 1500));
-    // The roll's clock reads real performance time, so it scrolls the notes in as they play.
-    playRef.current = { start: performance.now() + LEAD - from, timers };
+    timers.push(window.setTimeout(stop, LEAD + (perfLength(done) - from) / sp + 1500));
+    // The roll's clock reads the performance's own time (slowed by the speed), so it scrolls the notes in as they play.
+    playRef.current = { start: performance.now() + LEAD - from / sp, timers };
     setPlaying(true);
   };
   const playRefFn = useRef(play);
@@ -248,6 +260,8 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       held.current.clear();
       setFull(false);
       setNotes(got.notes);
+      setImported(got.tracks.length > 1 ? { all: got.notes, trackOf: got.trackOf, tracks: got.tracks } : null);
+      setTrackPick(-1);
       // Wait at the very start, so Play back (or the space bar) brings the notes up out of the keys from the beginning.
       pausedAt.current = 0;
       setAtStart(true);
@@ -261,6 +275,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const clear = () => {
     setAsking(null);
     stop();
+    setImported(null);
     setNotes([]);
     held.current.clear();
     t0.current = null;
@@ -273,7 +288,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   // The roll's clock: playback time while playing back, recording time while recording, otherwise "after the end"
   // (the roll has glided to a stop there).
   const now = useCallback(() => {
-    if (playRef.current) return performance.now() - playRef.current.start;
+    if (playRef.current) return (performance.now() - playRef.current.start) * speedRef.current;
     if (pausedAt.current !== null) return pausedAt.current;
     if (t0.current !== null) return performance.now() - t0.current;
     return notesRef.current.length ? restingNow(notesRef.current) : null;
@@ -297,6 +312,45 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       <button className="btn py-1.5" onClick={toggle} disabled={!finished.length} data-testid="perf-play" title="Space bar: play / pause">
         {playing ? '❚❚ Pause' : paused ? '▶ Resume' : '▶ Play back'}
       </button>
+      {finished.length > 0 && (
+        <div className="flex items-center gap-1 text-[13px]" data-testid="perf-speed">
+          <span className="h w-12 shrink-0 text-wal3">Speed</span>
+          {[0.5, 0.75, 1].map((v) => (
+            <button key={v} className={`btn flex-1 px-1 py-0.5 text-[13px] ${speed === v ? 'btn-brass' : ''}`} aria-pressed={speed === v} data-testid={`perf-speed-${v * 100}`} onClick={() => { if (playRef.current) pause(); setSpeed(v); }}>
+              {v * 100}%
+            </button>
+          ))}
+          <button className={`btn px-1.5 py-0.5 text-[13px] ${mute ? 'btn-brass' : ''}`} aria-pressed={mute} data-testid="perf-mute" title="Mute the play back and play the part yourself" onClick={() => setMute((m) => !m)}>
+            {mute ? 'Muted' : 'Mute'}
+          </button>
+        </div>
+      )}
+      {imported && (
+        <label className="flex items-center gap-1 text-[13px]">
+          <span className="h w-12 shrink-0 text-wal3">Track</span>
+          <select
+            className="w-full rounded-md border border-line2 bg-white px-1.5 py-0.5 text-[13px]"
+            value={trackPick}
+            data-testid="perf-track"
+            onChange={(e) => {
+              const t = Number(e.target.value);
+              e.currentTarget.blur();
+              stop();
+              setTrackPick(t);
+              setNotes(t < 0 ? imported.all : imported.all.filter((_, k) => imported.trackOf[k] === t));
+              pausedAt.current = 0;
+              setAtStart(true);
+            }}
+          >
+            <option value={-1}>All tracks</option>
+            {imported.tracks.map((t) => (
+              <option key={t.index} value={t.index}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <button className="btn btn-brass py-1.5" onClick={() => setSaveOpen(true)} disabled={!finished.length} data-testid="perf-save">
         Save performance
       </button>

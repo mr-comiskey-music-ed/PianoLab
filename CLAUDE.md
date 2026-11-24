@@ -62,7 +62,7 @@ Learn steps with `show: true` are show and tell (the musical alphabet): the demo
 - Walnut wood (`.wood`, `.wood-v`): ambientCG "Wood 067" photo texture (CC0, `public/textures/`, ~100 KB) under a soft shade.
 - Pitch colours (`src/utils/colors.ts`): C-to-B round the colour wheel like Shared Piano, slightly toned down. Piano-roll
   notes use them (keys stay plain for now). Roman numerals will use the C major scale's colours (`DEGREE_COLORS`).
-- Layout: walnut top bar with tabs Learn / Practice / Challenges / Sandbox / Jam Room (soon) / Grade Report; left panel
+- Layout: walnut top bar with tabs Learn / Practice / Challenges / Sandbox / Jam Room / Grade Report; left panel
   (lesson picker, instructions, scores, Challenge Yourself); center (stage/waterfall/piano roll, readout bar, piano); right panel
   (sounds + Mix icon, metronome, credits). The piano is always the main view, except on the Grade Report page.
 - **The typing keyboard always belongs to the piano.** Only real text boxes take letter keys; sliders, knobs and buttons
@@ -283,13 +283,42 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
   assigned levels. A broken link opens the normal app.
 - Test hooks (no student data): `window.__play` (hit times) and `window.__echo` (the tune) for browser tests.
 
+**Phase 4 (Music) built** (all at once, his choice; 7th chords became Lesson 8, not a bonus; no class-record backend;
+YouTube ungraded):
+- 7th chords in the theory (`chords.ts`): qualities dom7/maj7/min7/hdim7/dim7 (G7, Cmaj7, Dm7, Bø7, B°7), parse/name/
+  match need all 4 notes (any inversion), `diatonicSevenths` (Imaj7 ii7 iii7 IVmaj7 V7 vi7 viiø7), and `parseNumeral`
+  reads any numeral in a key (V7, ii7, Imaj7, blues I7/IV7, borrowed ♭VII/♭VI). The chord listeners wait for 4 keys when
+  a 7th chord is asked for (Learn and Challenges `minNotes`).
+- Lesson 7 "Scales and the circle of 5ths" (`utils/scales.ts`: W W H W W W H, right-hand fingerings, sharps/flats,
+  fifthUp/Down). Learn: steps, fingers (finger numbers as key tags on show steps only; `lessons.test` enforces tags only
+  on show steps), C/G/F/D with `tryScale` (note by note, a wrong note starts over, 8 dots). Levels: Play the scale
+  (`scale` type, fingering shown as a hint) · Sharps and flats (`quiz` type: buttons, nothing lit) · The circle of 5ths
+  (quiz) · C/G/F/D major in time (pattern texture `scale`: up and down, one note per beat; Falling Note Blocks only) ·
+  More keys (A, B♭, E, E♭).
+- Lesson 8 "7th chords": Learn (one more 3rd, G7; dominant/major/minor 7ths; the 7ths of C; ii7–V7–Imaj7 try).
+  Levels: Build 7th chords · Which kind of 7th? (listen) · Play the 7th numeral · ii7–V7–Imaj7 in C and in F (smooth,
+  in time; the smooth check counts 4 notes).
+- Jam Room tab (`ModeJam.tsx`, `audio/groove.ts`): backing = Groove (app-made drums + bass from the progression: Pop,
+  Rock, Ballad, Funk, Lo-fi, Just the beat; a bar of clicks to count in) / Tracks (his audio files: `public/tracks/` +
+  `src/data/tracks.json`, loaded only when played; README in the folder) / YouTube (his list `src/data/youtube.json` or a
+  pasted link; youtube-nocookie IFrame player, ungraded, no chord chart; a message if YouTube is blocked). Key, chords
+  (presets incl. 12-bar blues, or "My own…" numerals), tempo. Chord chart follows the music; "You're playing X ✓ On the
+  chord". Melody mode (brass dot on the key's notes, `tint`), Key lock (other notes greyed and silent: `dim`/`silence`,
+  handled in App's noteOn). Mix: Backing and Piano faders (double-click resets) with meters. Note names: student's
+  choice. Dropdowns give the typing keyboard back after a pick (blur on change).
+- Sandbox MIDI import: Speed 50/75/100% (roll and sound slow together), Track picker for multi-track files (shown until
+  you record on top), Mute (notes still come up and light, silently, to play the part yourself).
+
 ## Open items (last updated end of Phase 1 testing)
 - Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (gentler crackle), Pad (softer swell).
 - MIDI import choices to confirm (see SPEC section 10): merge all tracks, drop drums, 3-minute cap, replace not append.
 - Grading confirmed: second try = half credit, 80% pass. Lesson 1 has four levels; the octave level (`l1-octave`) was removed
   before anything reached students (he doesn't care about the octave). Old saves drop results for removed levels.
 - Teacher button should eventually assign anything (SPEC section 8, "Everything is assignable"). Today it only batch grades.
-- Not built yet: About screen with full credits (credits are in a small right-panel list), Phase 4 (SPEC section 17).
+- Not built yet: About screen with full credits (credits are in a small right-panel list); class-record backend (skipped,
+  his call); graded YouTube play-along (ungraded for now).
+- Phase 4 to try on the Chromebook: Lessons 7-8, the Jam Room (does YouTube load on the school network?), Sandbox import
+  speed/track/mute. He will supply backing tracks (and YouTube links) for the lists.
 - Phase 3 to try on the Chromebook: timing feel with the real MIDI keyboard (run the latency check first), Echo,
   Speed Round, an assignment link end to end.
 - Phase 2 to try on the Chromebook: every lesson's Learn, the chord levels with the MIDI keyboard, Smooth Mover, the strip.

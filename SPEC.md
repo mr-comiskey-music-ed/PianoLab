@@ -35,7 +35,7 @@ The app follows the order Mr. Comiskey teaches in. Each lesson has levels.
 | 5 | Major and minor chords anywhere | Starts by building **major 3rds (4 half steps) and minor 3rds (3 half steps)** on their own, then stacks them: major = major 3rd + minor 3rd (4 + 3), minor = minor 3rd + major 3rd (3 + 4). Build major and minor chords on any root, black keys included. |
 | 6 | Inversions | Show-and-tell plus lots of repetition. Smooth Mover lives here. |
 | 7 | Scales around the circle of 5ths | Start with C, G, F, and D, and keep going as far as the class gets. Includes fingering hints. |
-| Bonus | 7th chords | A bonus level, not a full lesson. |
+| 8 | 7th chords | A full lesson (changed from a bonus level in Phase 4): dominant, major and minor 7ths, the 7th chords of a key, ii7–V7–Imaj7. |
 
 - Root position versus inversion ear training is **not** for beginners. It appears only in Lesson 6 and later.
 - Roman numerals always show on the chord strip and in Practice (changed after Phase 2 testing). There are no Home/Away/Tension labels.
@@ -262,7 +262,7 @@ Each phase gets its own branch and a Vercel preview, and is tested on a real Chr
 1. **Foundation:** the piano with all three inputs, latency calibration, the audio engine with all sound versions and the Mix panel, Lesson 1 (white-key note names) with interactive Learn, codes, batch grading with the 50% floor, autosave, and the Studio Warm v2 layout. **Design the pattern data format now**, even though it isn't used until Phase 3.
 2. **Chords:** Lessons 2–6 (white-key triads, roman numerals, black keys and half steps, major and minor chords anywhere, and inversions), the chord detector, Smooth Mover, and the chord strip. **Built.** Lessons are picked with a lesson picker (all open for now; the assignment link will be able to choose). A chord counts in any octave or inversion with no extra notes until Lesson 6, where the bass note matters. B° is shown in Lesson 2's Learn but not tested until Lesson 3. The chord strip shows in Practice and the Sandbox (not in Learn, where it would give answers away).
 3. **Time:** the pattern engine, metronome, waterfall, hit windows, Progression Play, Speed Round, Echo, the assignment builder, and Practice recording (the Sandbox already records and saves as a code, link or .mid).
-4. **Music:** Lesson 7 (scales and the circle of 5ths with fingering), Jam Room, backing tracks, YouTube Play Along with the mixer, MIDI import with playback speed, the 7th-chord bonus, and the optional class record backend.
+4. **Music:** Lesson 7 (scales and the circle of 5ths with fingering), Jam Room, backing tracks, YouTube Play Along with the mixer, MIDI import with playback speed, and Lesson 8 (7th chords). **Built.** Backing: app-made grooves plus Mr. Comiskey's own tracks and YouTube (ungraded for now). The class record backend was skipped for now.
 
 ## 18. Open questions
 
