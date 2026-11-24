@@ -99,14 +99,23 @@ export function usePlayLevel(
         }, t0 - performance.now() + (h.beat + h.dur * 0.92) * bm - out));
       }
     } else {
-      const expected = timeline.hits.map((h) => ({ t: t0 + h.beat * bm, pcs: h.pcs }));
+      // Root-only hits in a chord pattern (root, then chord) also accept the whole chord in any inversion: with Chord
+      // Names Only you can't see it's just the root. Wrong chords can be fixed for half the chord's length (at least 0.4 s).
+      const rootThenChord = pattern?.texture === 'bassChord' || pattern?.texture === 'broken';
+      const expected = timeline.hits.map((h) => ({
+        t: t0 + h.beat * bm,
+        pcs: h.pcs,
+        ...(rootThenChord && h.kind === 'note' ? { alt: h.chordPcs } : {}),
+        slideMs: Math.max(400, h.dur * bm * 0.5),
+      }));
       // For browser tests: when each hit is due and its keys (no student data).
       (window as unknown as { __play?: unknown }).__play = timeline.hits.map((h, i) => ({ t: expected[i].t, notes: h.notes, dur: h.dur * bm }));
       const results: (HitResult | undefined)[] = timeline.hits.map(() => undefined);
       let id = 0;
       // Smooth levels: the right chord AND a smooth move from the chord the student just played. The smoothest move is
-      // full credit for notes, the second-smoothest 0.75 ("Almost smooth"), anything bigger is "Not smooth" (like wrong
-      // notes). So "Chord Names Only" really tests smooth moving. The first chord (or one after a gap) can be any voicing.
+      // full credit for notes, the second-smoothest 0.75 ("Almost smooth"), anything bigger is "Not smooth": the right
+      // notes still earn 25% of the chord (his call). So "Chord Names Only" really tests smooth moving. The first chord
+      // (or one after a gap) can be any voicing.
       const byNames = pitchClassCheck(expected);
       let prev: number[] | null = null;
       const smooth = pattern?.voicing === 'smoothest';
@@ -115,14 +124,16 @@ export function usePlayLevel(
         if (!smooth || basic.credit === 0) return basic;
         const notes = [...new Set(keys)].sort((a, b) => a - b);
         const chord = parseChord(timeline.bars[timeline.hits[i].bar]?.symbol ?? '');
-        let res: { credit: number; why?: string } = { credit: 1 };
+        let res: { credit: number; why?: string; partial?: number } = { credit: 1 };
         if (prev && chord) {
-          if (notes.length !== 3) res = { credit: 0, why: 'Play three notes' };
-          else {
-            const moved = moveDistance(prev, notes);
-            const sizes = moveSizes(prev, chord);
-            res = moved <= sizes[0] ? { credit: 1 } : moved <= (sizes[1] ?? sizes[0]) ? { credit: 0.75, why: 'Almost smooth' } : { credit: 0, why: 'Not smooth' };
-          }
+          const moved = moveDistance(prev, notes.length === 3 ? notes : notes.slice(0, 3));
+          const sizes = moveSizes(prev, chord);
+          res =
+            notes.length === 3 && moved <= sizes[0]
+              ? { credit: 1 }
+              : notes.length === 3 && moved <= (sizes[1] ?? sizes[0])
+                ? { credit: 0.75, why: 'Almost smooth' }
+                : { credit: 1, why: 'Not smooth', partial: 0.25 };
         }
         if (res.credit > 0) prev = notes;
         return res;

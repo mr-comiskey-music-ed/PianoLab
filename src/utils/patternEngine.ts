@@ -20,6 +20,8 @@ export interface TimedHit {
   pcs: number[];
   kind: 'chord' | 'note';
   bar: number;
+  /** The bar's whole chord (pitch classes), e.g. for a root-only hit. */
+  chordPcs: number[];
 }
 
 /** A bar's chord, for the labels on the waterfall. */
@@ -93,7 +95,7 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
     hitsInBar.forEach((b, i) => {
       const next = hitsInBar[i + 1] ?? 4;
       const hit = textureHit(p.texture, notes, root, i);
-      hits.push({ beat: bar * 4 + b, dur: next - b, notes: hit, pcs: Array.from(new Set(hit.map(pc))), kind: hit.length > 1 ? 'chord' : 'note', bar });
+      hits.push({ beat: bar * 4 + b, dur: next - b, notes: hit, pcs: Array.from(new Set(hit.map(pc))), kind: hit.length > 1 ? 'chord' : 'note', bar, chordPcs: Array.from(new Set(notes.map(pc))) });
     });
   }
   return { key, hits, bars, beats: p.bars * 4, tempo };

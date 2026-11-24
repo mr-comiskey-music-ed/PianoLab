@@ -9,7 +9,9 @@
  *   notes: 1 for the right notes (any octave); a level can grade more finely (`checkNotes`: Smooth levels give 0.75 for
  *     the second-smoothest move and 0 for anything bigger).
  * "Slid in": the first keys were near the beat but not quite the chord, and the student got to the right chord within
- * SLIDE_MS. It counts as Early/Late in the tally, right notes, and 0.33 timing credit.
+ * the hit's slide time (at least SLIDE_MS; PlayLevel allows up to half the chord's length). It counts as Early/Late in
+ * the tally, right notes, and 0.33 timing credit. A `partial` result (Smooth levels: right notes, not smooth) is worth
+ * that fraction of the whole chord (0.25), also under Early/Late.
  * Grade = half timing, half notes. A press more than MATCH_MS away from every hit doesn't match anything.
  */
 export const PERFECT_MS = 50;
@@ -30,6 +32,10 @@ export interface ExpectedHit {
   /** Milliseconds from the start (the first downbeat after the count-in). */
   t: number;
   pcs: number[];
+  /** Also right: e.g. the whole chord where the pattern has just its root (with Chord Names Only you can't tell). */
+  alt?: number[];
+  /** How long after the first key a wrong chord can still be fixed (default SLIDE_MS). */
+  slideMs?: number;
 }
 
 /** 'off' = Early or Late (or slid in); 'miss' = not played, or wrong notes. */
@@ -46,6 +52,9 @@ export interface HitResult {
   slid?: boolean;
   /** A short word about the notes: "Wrong notes", "Not smooth", "Almost smooth". */
   why?: string;
+  /** Right notes in the end but only part credit for the whole chord (timing and notes both), e.g. 0.25 for "Not
+   *  smooth" on Smooth levels. Counted under Early/Late. */
+  partial?: number;
 }
 
 export interface TimingSummary {
@@ -68,7 +77,7 @@ export interface TimingSummary {
 }
 
 const timingCredit = (r: HitResult) =>
-  r.status === 'perfect' ? 1 : r.status === 'good' ? GOOD_CREDIT : r.status === 'off' ? (r.slid ? SLIDE_CREDIT : OFF_CREDIT) : 0;
+  r.partial !== undefined ? r.partial : r.status === 'perfect' ? 1 : r.status === 'good' ? GOOD_CREDIT : r.status === 'off' ? (r.slid ? SLIDE_CREDIT : OFF_CREDIT) : 0;
 const notesCredit = (r: HitResult) => r.notes ?? (r.notesRight ? 1 : 0);
 
 export function summarize(results: (HitResult | undefined)[]): TimingSummary {
@@ -90,16 +99,17 @@ export function summarize(results: (HitResult | undefined)[]): TimingSummary {
   };
 }
 
-/** How right a chord's keys are for a hit: credit 0-1 and an optional word. */
-export type NotesCheck = (hit: number, keys: number[]) => { credit: number; why?: string };
+/** How right a chord's keys are for a hit: credit 0-1 and an optional word; `partial` = right notes, but the whole chord
+ *  only earns that much (timing and notes). */
+export type NotesCheck = (hit: number, keys: number[]) => { credit: number; why?: string; partial?: number };
 
 /** The default: the right note names (pitch classes), any octave, nothing extra. */
 export const pitchClassCheck =
   (hits: ExpectedHit[]): NotesCheck =>
   (i, keys) => {
-    const want = hits[i].pcs;
     const got = new Set(keys.map((k) => ((k % 12) + 12) % 12));
-    return got.size === want.length && want.every((p) => got.has(p)) ? { credit: 1 } : { credit: 0, why: 'Wrong notes' };
+    const same = (want: number[]) => got.size === new Set(want).size && want.every((p) => got.has(p));
+    return same(hits[i].pcs) || (hits[i].alt && same(hits[i].alt!)) ? { credit: 1 } : { credit: 0, why: 'Wrong notes' };
   };
 
 /**
@@ -145,7 +155,10 @@ export class TimingJudge {
       const keys = this.getHeld ? this.getHeld() : sl.keys;
       const c = this.check(sl.i, keys);
       if (c.credit > 0) {
-        const r: HitResult = { status: 'off', notesRight: true, notes: c.credit, dt: sl.dt, slid: true, why: c.why };
+        const r: HitResult =
+          c.partial !== undefined
+            ? { status: 'off', notesRight: true, notes: c.partial, partial: c.partial, dt: sl.dt, slid: true, why: c.why }
+            : { status: 'off', notesRight: true, notes: c.credit, dt: sl.dt, slid: true, why: c.why };
         this.results[sl.i] = r;
         this.slide = null;
         this.onResult(sl.i, r);
@@ -183,10 +196,11 @@ export class TimingJudge {
     const a = Math.abs(bestDt);
     const notesRight = c.credit > 0;
     // Wrong notes = Miss (no timing credit), but they can still be fixed for a moment.
-    const status: HitStatus = !notesRight ? 'miss' : a <= PERFECT_MS ? 'perfect' : a <= GOOD_MS ? 'good' : 'off';
-    const r: HitResult = { status, notesRight, notes: c.credit, dt, why: c.why };
+    const status: HitStatus = !notesRight ? 'miss' : c.partial !== undefined ? 'off' : a <= PERFECT_MS ? 'perfect' : a <= GOOD_MS ? 'good' : 'off';
+    const r: HitResult =
+      c.partial !== undefined ? { status, notesRight, notes: c.partial, partial: c.partial, dt, why: c.why } : { status, notesRight, notes: c.credit, dt, why: c.why };
     this.results[best] = r;
-    if (!notesRight) this.slide = { i: best, dt, deadline: g.t + SLIDE_MS, keys: [...g.keys] };
+    if (!notesRight) this.slide = { i: best, dt, deadline: g.t + (this.hits[best].slideMs ?? SLIDE_MS), keys: [...g.keys] };
     this.onResult(best, r);
   }
 

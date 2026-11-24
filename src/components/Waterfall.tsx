@@ -3,6 +3,7 @@ import { KEY_COUNT, letterOf } from '../utils/music';
 import { Timeline, beatMs } from '../utils/patternEngine';
 import { HitResult } from '../utils/timing';
 import { withAlpha } from '../utils/colors';
+import { pcName } from '../utils/chords';
 import { ScreenHelp } from '../types';
 import { keyBox } from './PianoRoll';
 
@@ -138,6 +139,17 @@ export const Waterfall: React.FC<{
               g.strokeStyle = r.status === 'perfect' ? '#f7f1e6' : r.status === 'good' ? 'rgba(247,241,230,0.6)' : 'rgba(247,241,230,0.3)';
               g.lineWidth = 2;
               g.stroke();
+            }
+            // The note's name near the bottom of its block (spelled for the key: B♭ in F major), so it's easy to see
+            // which notes to play even when you'd voice the chord differently.
+            const bh = Math.min(bottom, lineY) - top;
+            if (bh >= 18) {
+              const size = Math.max(11, Math.min(15, k.w * W * 0.42));
+              g.font = `600 ${size}px "Barlow Semi Condensed", sans-serif`;
+              g.textAlign = 'center';
+              g.fillStyle = 'rgba(30,23,16,0.85)';
+              g.fillText(pcName(n, L.timeline.key.flats), k.x * W + (k.w * W) / 2, Math.min(bottom, lineY) - 6);
+              g.textAlign = 'left';
             }
           }
         });

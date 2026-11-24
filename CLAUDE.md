@@ -221,7 +221,12 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
   Notes credit can be finer (`checkNotes`): **Smooth levels** (pattern voicing `smoothest`) judge the move from the chord
   the student actually played (so Chord Names Only really tests it): smoothest = 1, second-smoothest = 0.75 ("Almost
   smooth"), bigger = 0 ("Not smooth", a Miss); the first chord (or one after an unplayed chord) can be any voicing
-  (`moveSizes` in chords.ts). Pops say e.g. "Perfect! · Almost smooth", "Not smooth", "Wrong notes". Result screen:
+  (`moveSizes` in chords.ts). **Not smooth** (right notes, big move) is now worth 25% of the chord (timing and notes,
+  `partial`, under Early/Late; his call). Wrong chords can be fixed for half the chord's length (at least 0.4 s,
+  `slideMs`). Root-then-chord patterns (bassChord/broken): the root beats also accept the whole chord in any inversion
+  (`alt`), since Chord Names Only can't show it's just the root (his "inversions not accepted" report on l3-play-doowop).
+  Falling Note Blocks show each note's name near the bottom of its block, spelled for the key (B♭ in F).
+  Pops say e.g. "Perfect! · Almost smooth", "Not smooth", "Wrong notes". Result screen:
   Perfect · Good · Early/Late · Miss. Tests: `timing.test.ts`, `e31`.
 - **Timing clock (fixed after his Chromebook test: he was "early" while with the click).** Two bugs: (1) every played key
   used `Tone.now()`, which is 100 ms in the future (Tone's look-ahead), so students heard their own notes late and pushed

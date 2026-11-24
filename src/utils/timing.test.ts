@@ -101,6 +101,19 @@ describe('timing judge', () => {
     expect(got[0]).toMatchObject({ status: 'perfect', notesRight: true, notes: 0.75, why: 'Almost smooth' });
     expect(summarize(j.results)).toMatchObject({ timing: 100, notes: 75, raw: 88 });
   });
+  it('a root-only hit also accepts the whole chord (alt)', () => {
+    const got: HitResult[] = [];
+    const j = new TimingJudge([{ t: 1000, pcs: [0], alt: [0, 4, 7] }], 0, (i, r) => (got[i] = r), { setTimer });
+    j.press(1000, 64); j.press(1000, 67); j.press(1000, 72); flush(); // C chord, 2nd... any inversion (E G C)
+    expect(got[0]).toMatchObject({ status: 'perfect', notesRight: true });
+  });
+  it('a partial result is worth that much of the whole chord, under Early/Late', () => {
+    const got: HitResult[] = [];
+    const j = new TimingJudge([{ t: 1000, pcs: [0, 4, 7] }], 0, (i, r) => (got[i] = r), { setTimer, checkNotes: () => ({ credit: 1, why: 'Not smooth', partial: 0.25 }) });
+    j.press(1000, 60); j.press(1000, 64); j.press(1000, 67); flush();
+    expect(got[0]).toMatchObject({ status: 'off', notesRight: true, partial: 0.25 });
+    expect(summarize(j.results)).toMatchObject({ off: 1, timing: 25, notes: 25, raw: 25 });
+  });
   it('ignores presses far from every hit', () => {
     const got: HitResult[] = [];
     const j = new TimingJudge([{ t: 1000, pcs: [0] }], 0, (i, r) => (got[i] = r), { setTimer });
