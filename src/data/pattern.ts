@@ -3,7 +3,8 @@
  * Phase 1 only defines and validates it; the pattern engine arrives in Phase 3.
  * Data files (JSON) hold the patterns, so adding one means editing a list.
  */
-export type Texture = 'bass' | 'block' | 'bassChord' | 'broken' | 'arpeggio';
+/** `scale` (Lesson 7): the key's major scale up and down, one note per hit (the progression is ignored). */
+export type Texture = 'bass' | 'block' | 'bassChord' | 'broken' | 'arpeggio' | 'scale';
 export type Rhythm = 'whole' | 'half' | 'quarter' | 'eighths' | `sync:${string}`;
 export type Voicing = 'root' | 'inversions' | 'smoothest';
 
@@ -22,7 +23,7 @@ export interface Pattern {
   bars: number;
 }
 
-const TEXTURES: Texture[] = ['bass', 'block', 'bassChord', 'broken', 'arpeggio'];
+const TEXTURES: Texture[] = ['bass', 'block', 'bassChord', 'broken', 'arpeggio', 'scale'];
 const VOICINGS: Voicing[] = ['root', 'inversions', 'smoothest'];
 
 /** Returns a list of problems; an empty list means the pattern is well formed. */

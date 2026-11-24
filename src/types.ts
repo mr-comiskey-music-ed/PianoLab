@@ -36,7 +36,12 @@ export type NoteLabels = 'off' | 'c' | 'all';
  * (its name, numeral, function or inversion). halfStep: a key lights up, play the key `step` half steps away.
  * earCheck: listen, pick (e.g. Major / Minor). smooth: Smooth Mover, move to the next chord as little as possible.
  */
-export type AssessmentType = 'findIt' | 'nameIt' | 'buildIt' | 'nameChord' | 'halfStep' | 'earCheck' | 'smooth' | 'play' | 'echo' | 'speed';
+export type AssessmentType =
+  | 'findIt' | 'nameIt' | 'buildIt' | 'nameChord' | 'halfStep' | 'earCheck' | 'smooth' | 'play' | 'echo' | 'speed'
+  /** Lesson 7: play a major scale up, one octave, note by note (prompt `scale` = the key). */
+  | 'scale'
+  /** A question with answer buttons and nothing lit (Lesson 7: sharps and flats, the circle of 5ths). */
+  | 'quiz';
 
 /** Progression Play: what scrolls down the waterfall. Falling blocks is easiest; nothing is hardest. */
 export type ScreenHelp = 'blocks' | 'names';
@@ -44,6 +49,8 @@ export type ScreenHelp = 'blocks' | 'names';
 export type EchoHelp = 'watch' | 'hint' | 'ear';
 
 export interface Prompt {
+  /** scale: the major key to play ("G", "B♭"). */
+  scale?: string;
   /** What the app asks, e.g. "Play every F". */
   text: string;
   /** Correct answers: note letters for findIt/nameIt ("F", "C#"), choice labels for nameChord/earCheck. */
@@ -114,6 +121,8 @@ export interface LearnStep {
   tryText?: string;
   /** Letters that count as right ("F", "C#"; flats are read as sharps). */
   tryAnswer?: string[];
+  /** Lesson 7: play this major scale up one octave ("G"), note by note. */
+  tryScale?: string;
   /** Or: any white-key triad built by stacking thirds (root, skip, 3rd, skip, 5th), each on a different root. */
   tryTriad?: boolean;
   /** Or: chords that count as right ("F", "Dm"). Any octave/inversion unless `tryInversion` is set. */

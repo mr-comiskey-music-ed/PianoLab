@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { EchoHelp, Level, Prompt } from '../types';
 import { KEY_COUNT, isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
-import { Chord, chordLongName, chordName, detectChord, matchesChord, moveDistance, parseChord, smoothestVoicing, voicing } from '../utils/chords';
+import { Chord, chordLongName, chordName, chordPcs, detectChord, keyById, matchesChord, pcName, moveDistance, parseChord, smoothestVoicing, voicing } from '../utils/chords';
 import { accuracy, credit, floored, passed } from '../utils/grading';
 import { shuffleNoRepeats } from '../utils/shuffle';
 import { TimingSummary } from '../utils/timing';
@@ -10,6 +10,7 @@ import { KeyMark } from './Piano';
 import { LABEL_ORDER, Labels, ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
 import { usePlayLevel } from './PlayLevel';
+import { MAJOR_SCALE, fingering, scaleStep } from '../utils/scales';
 
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 /** Echo difficulty, easiest first: See Notes (keys light up), See First Note (only the first key lights up), By Ear (nothing lights up, only 2 replays). */
@@ -67,10 +68,10 @@ function litChord(start: number, c: Chord, inv: number, idx: number): number[] {
   const fits = [];
   for (let floor = start; floor < start + KEY_COUNT; floor++) {
     const v = voicing(c, inv, floor);
-    if (v[0] === floor && v[2] < start + KEY_COUNT) fits.push(v);
+    if (v[0] === floor && v[v.length - 1] < start + KEY_COUNT) fits.push(v);
   }
   // Prefer the middle of the keyboard: pick among the fits near the centre.
-  const mid = fits.filter((v) => v[0] >= start + 5 && v[2] <= start + 19);
+  const mid = fits.filter((v) => v[0] >= start + 5 && v[v.length - 1] <= start + 19);
   const pool = mid.length ? mid : fits;
   return pool.length ? pool[idx % pool.length] : voicing(c, inv, start + 12);
 }
@@ -110,6 +111,9 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   const echoBuf = useRef<number[]>([]);
   const [replays, setReplays] = useState(0);
   const echoTimers = useRef<number[]>([]);
+  // Scale levels (Lesson 7): the notes played so far in this try.
+  const scaleBuf = useRef<number[]>([]);
+  const [scaleGot, setScaleGot] = useState(0);
   // Speed Round: a clock that ticks the display.
   const [, setTick] = useState(0);
   const [best, setBest] = useState<Record<string, number>>(() => loadBest());
@@ -221,6 +225,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const level = levelById(id);
     stopEcho();
     setReplays(0);
+    scaleBuf.current = [];
+    setScaleGot(0);
     setFinished(null);
     setMsg('');
     // Never the same question twice in a row (and not a repeat of the one that ended the last try).
@@ -354,6 +360,28 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         answer(ok, [midi], `Not quite: you played ${names}. ${echoHelp(r.level) === 'ear' ? 'Try again.' : 'Press ▶ Hear it again, watch the keys, and try.'}`);
         return;
       }
+      if (r.level.type === 'scale') {
+        // Lesson 7: the scale up one octave, one note at a time. A wrong note starts it over (and counts as a miss).
+        if (busy.current) return;
+        const k = keyById(p.scale ?? 'C');
+        const played = [...scaleBuf.current, midi];
+        const res = scaleStep(k.tonic, played);
+        const tonic = pcName(k.tonic, k.flats);
+        if (res === 'next') {
+          scaleBuf.current = played;
+          setScaleGot(played.length);
+          return;
+        }
+        scaleBuf.current = [];
+        setScaleGot(0);
+        if (res === 'done') {
+          answer(true, [midi]);
+          return;
+        }
+        const want = res === 'wrong-start' ? tonic : pcName(played[0] + MAJOR_SCALE[played.length - 1], k.flats);
+        answer(false, [midi], res === 'wrong-start' ? `Start on ${tonic}.` : `That is ${pcName(midi, k.flats)}; the next note is ${want}. Start again from ${tonic}.`);
+        return;
+      }
       if (r.level.type === 'findIt') {
         const answers = (p.answer ?? []).map(pcOf);
         if (isBlack(midi) && !ctx.lesson.blackKeys && !answers.some((a) => a !== null && [1, 3, 6, 8, 10].includes(a))) {
@@ -419,6 +447,11 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         return;
       }
       answer(true, held, '', { prev: held, moved: (r.moved ?? 0) + moved, bestMoves: (r.bestMoves ?? 0) + bestMove });
+  }, () => {
+    // Triads are judged on 3 keys, 7th chords (Lesson 8) on 4.
+    const r = runRef.current;
+    const c = parseChord(r?.prompts[r.idx]?.chord ?? '');
+    return c ? Math.max(3, chordPcs(c).length) : 3;
   });
 
   // Speed Round: the clock. When time is up, the grade is right answers out of the level's target.
@@ -612,6 +645,19 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
                 </button>
               );
             })()}
+          </div>
+        )}
+        {run.level.type === 'scale' && (
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="flex gap-1.5" data-testid="scale-dots">
+              {MAJOR_SCALE.map((_, k) => (
+                <span key={k} className={`h-3.5 w-3.5 rounded-full border border-brass2 ${k < scaleGot ? 'bg-brass' : 'bg-transparent'}`} />
+              ))}
+            </div>
+            {/* Fingering is a hint, never graded (SPEC section 7). */}
+            <div className="text-[15px] text-line2" data-testid="fingering">
+              Right-hand fingers: {fingering(prompt.scale ?? 'C').join(' ')}
+            </div>
           </div>
         )}
         {run.level.type === 'speed' && (

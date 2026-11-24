@@ -2,14 +2,36 @@ import { DEGREE_COLORS } from './colors';
 import { pc, pcOf } from './music';
 
 /**
- * Chords for Lessons 2-6: spelling, names, keys, roman numerals, the live chord detector (with 7ths, 9ths...), and Smooth Mover.
+ * Chords for Lessons 2-6 and 8 (7th chords): spelling, names, keys, roman numerals, the live chord detector (with 7ths, 9ths...), and Smooth Mover.
  * Pitch classes (0-11, C = 0) are used for theory; MIDI numbers for actual keys.
  */
 
-export type Quality = 'maj' | 'min' | 'dim' | 'aug';
-export const QUALITY_STEPS: Record<Quality, [number, number]> = { maj: [4, 7], min: [3, 7], dim: [3, 6], aug: [4, 8] };
-const SUFFIX: Record<Quality, string> = { maj: '', min: 'm', dim: '°', aug: '+' };
-const QUALITY_WORD: Record<Quality, string> = { maj: 'major', min: 'minor', dim: 'diminished', aug: 'augmented' };
+/** Triads (Lessons 2-6) and 7th chords (Lesson 8): dom7 = G7, maj7 = Cmaj7, min7 = Dm7, hdim7 = Bø7 (m7♭5), dim7 = B°7. */
+export type Quality = 'maj' | 'min' | 'dim' | 'aug' | 'dom7' | 'maj7' | 'min7' | 'hdim7' | 'dim7';
+/** Half steps above the root for each chord tone after the root. */
+export const QUALITY_STEPS: Record<Quality, number[]> = {
+  maj: [4, 7],
+  min: [3, 7],
+  dim: [3, 6],
+  aug: [4, 8],
+  dom7: [4, 7, 10],
+  maj7: [4, 7, 11],
+  min7: [3, 7, 10],
+  hdim7: [3, 6, 10],
+  dim7: [3, 6, 9],
+};
+const SUFFIX: Record<Quality, string> = { maj: '', min: 'm', dim: '°', aug: '+', dom7: '7', maj7: 'maj7', min7: 'm7', hdim7: 'ø7', dim7: '°7' };
+const QUALITY_WORD: Record<Quality, string> = {
+  maj: 'major',
+  min: 'minor',
+  dim: 'diminished',
+  aug: 'augmented',
+  dom7: 'dominant 7th',
+  maj7: 'major 7th',
+  min7: 'minor 7th',
+  hdim7: 'half-diminished 7th',
+  dim7: 'diminished 7th',
+};
 
 /** Spell roots the way a key would (flats for F, Bb, Eb, Ab, Db, Gb keys; sharps otherwise). */
 const SHARP_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
@@ -23,23 +45,31 @@ export interface Chord {
   rootName: string;
 }
 
-/** "Dm", "F#", "Bb", "Bdim", "B°", "C+" -> Chord. Returns null if it can't be read. */
+const QUALITY_BY_SUFFIX: Record<string, Quality> = {
+  '': 'maj', maj: 'maj', m: 'min', min: 'min', dim: 'dim', '°': 'dim', '+': 'aug', aug: 'aug',
+  '7': 'dom7', maj7: 'maj7', M7: 'maj7', 'Δ7': 'maj7', m7: 'min7', min7: 'min7',
+  'ø7': 'hdim7', ø: 'hdim7', m7b5: 'hdim7', 'm7♭5': 'hdim7', '°7': 'dim7', dim7: 'dim7', o7: 'dim7',
+};
+/** "Dm", "F#", "Bb", "Bdim", "B°", "C+", "G7", "Cmaj7", "Dm7", "Bø7", "B°7" -> Chord. Returns null if it can't be read. */
 export function parseChord(sym: string): Chord | null {
-  const m = sym.trim().match(/^([A-G])([#b♯♭]?)(m|min|dim|°|\+|aug|maj)?$/);
+  const m = sym.trim().match(/^([A-G])([#b♯♭]?)(.*)$/);
   if (!m) return null;
   const root = pcOf(m[1] + m[2]);
   if (root === null) return null;
-  const q: Quality = m[3] === 'm' || m[3] === 'min' ? 'min' : m[3] === 'dim' || m[3] === '°' ? 'dim' : m[3] === '+' || m[3] === 'aug' ? 'aug' : 'maj';
+  const q = QUALITY_BY_SUFFIX[m[3]];
+  if (!q) return null;
   return { root, quality: q, rootName: (m[1] + m[2]).replace('#', '♯').replace('b', '♭') };
 }
 
-export const chordPcs = (c: Chord) => [c.root, (c.root + QUALITY_STEPS[c.quality][0]) % 12, (c.root + QUALITY_STEPS[c.quality][1]) % 12];
+export const chordPcs = (c: Chord) => [c.root, ...QUALITY_STEPS[c.quality].map((st) => (c.root + st) % 12)];
+/** A 7th chord (4 notes) rather than a triad. */
+export const isSeventh = (c: Chord) => QUALITY_STEPS[c.quality].length === 3;
 /** Short name: "Dm", "F♯", "B°". */
 export const chordName = (c: Chord) => `${c.rootName}${SUFFIX[c.quality]}`;
 /** Long name: "D minor". */
 export const chordLongName = (c: Chord) => `${c.rootName} ${QUALITY_WORD[c.quality]}`;
 
-export const INVERSION_NAMES = ['Root position', '1st inversion', '2nd inversion'] as const;
+export const INVERSION_NAMES = ['Root position', '1st inversion', '2nd inversion', '3rd inversion'] as const;
 
 /** A voicing (MIDI notes, low to high) of a chord in the given inversion, starting at or above `floor`. */
 export function voicing(c: Chord, inversion = 0, floor = 60): number[] {
@@ -57,14 +87,15 @@ export function voicing(c: Chord, inversion = 0, floor = 60): number[] {
 }
 
 /**
- * Do the held keys make this chord? Exactly the chord's three notes (any octave, doubling allowed), nothing else.
- * With `inversion`, the lowest key must also be the right chord tone (0 = root, 1 = 3rd, 2 = 5th).
+ * Do the held keys make this chord? Exactly the chord's notes (3 for a triad, 4 for a 7th; any octave, doubling
+ * allowed), nothing else. With `inversion`, the lowest key must also be the right chord tone (0 = root, 1 = 3rd, 2 = 5th,
+ * 3 = 7th).
  */
 export function matchesChord(held: number[], c: Chord, inversion?: number): boolean {
-  if (held.length < 3) return false;
   const want = chordPcs(c);
+  if (held.length < want.length) return false;
   const got = new Set(held.map(pc));
-  if (got.size !== 3 || !want.every((p) => got.has(p))) return false;
+  if (got.size !== want.length || !want.every((p) => got.has(p))) return false;
   if (inversion === undefined) return true;
   return pc(Math.min(...held)) === want[inversion];
 }
@@ -119,6 +150,21 @@ export function diatonic(k: KeyDef): Diatonic[] {
     const root = (k.tonic + st) % 12;
     return { degree: i, chord: { root, quality: qs[i], rootName: pcName(root, k.flats) }, numeral: nums[i], color: colors[i] };
   });
+}
+
+const MAJOR_7Q: Quality[] = ['maj7', 'min7', 'min7', 'maj7', 'dom7', 'min7', 'hdim7'];
+const MINOR_7Q: Quality[] = ['min7', 'hdim7', 'maj7', 'min7', 'min7', 'maj7', 'dom7'];
+const SEVENTH_NUM: Record<string, string> = { maj7: 'maj7', min7: '7', dom7: '7', hdim7: 'ø7', dim7: '°7' };
+
+/** The key's seven 7th chords (Lesson 8): in C, Cmaj7 (Imaj7), Dm7 (ii7), Em7 (iii7), Fmaj7 (IVmaj7), G7 (V7), Am7 (vi7),
+ *  Bø7 (viiø7). */
+export function diatonicSevenths(k: KeyDef): Diatonic[] {
+  const qs = k.mode === 'major' ? MAJOR_7Q : MINOR_7Q;
+  return diatonic(k).map((d, i) => ({
+    ...d,
+    chord: { ...d.chord, quality: qs[i] },
+    numeral: d.numeral.replace('°', '') + SEVENTH_NUM[qs[i]],
+  }));
 }
 
 // ---------- The chord detector ("What am I playing?") ----------
@@ -266,7 +312,7 @@ export const moveDistance = (from: number[], to: number[]) => {
 export function moveSizes(from: number[], c: Chord): number[] {
   const lo = Math.min(...from);
   const out = new Set<number>();
-  for (let inv = 0; inv < 3; inv++) for (let floor = lo - 12; floor <= lo + 12; floor++) out.add(moveDistance(from, voicing(c, inv, floor)));
+  for (let inv = 0; inv < chordPcs(c).length; inv++) for (let floor = lo - 12; floor <= lo + 12; floor++) out.add(moveDistance(from, voicing(c, inv, floor)));
   return [...out].sort((x, y) => x - y);
 }
 
@@ -282,7 +328,7 @@ export function smoothestVoicing(from: number[], c: Chord, range?: [number, numb
   const off = (v: number[]) => (anchor === undefined ? 0 : Math.abs(v.reduce((a, n) => a + n, 0) / v.length - anchor));
   const find = (fits: (v: number[]) => boolean) => {
     let best = { notes: voicing(c, 0, lo), distance: Infinity };
-    for (let inv = 0; inv < 3; inv++) {
+    for (let inv = 0; inv < chordPcs(c).length; inv++) {
       for (let floor = lo - 12; floor <= lo + 12; floor++) {
         const v = voicing(c, inv, floor);
         if (!fits(v)) continue;
@@ -293,7 +339,7 @@ export function smoothestVoicing(from: number[], c: Chord, range?: [number, numb
     return best;
   };
   if (range) {
-    const inView = find((v) => v[0] >= range[0] && v[2] <= range[1]);
+    const inView = find((v) => v[0] >= range[0] && v[v.length - 1] <= range[1]);
     if (inView.distance < Infinity) return inView;
   }
   return find(() => true);

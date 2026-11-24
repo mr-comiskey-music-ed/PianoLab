@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { pitchColor } from '../utils/colors';
 import { KEY_COUNT, isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
-import { INVERSION_NAMES, chordName, degreeOf, detectChord, diatonic, keyById, matchesChord, parseChord, stripVoicing, KeyDef } from '../utils/chords';
+import { Chord, INVERSION_NAMES, chordName, chordPcs, degreeOf, detectChord, diatonic, diatonicSevenths, keyById, matchesChord, parseChord, pcName, stripVoicing, KeyDef } from '../utils/chords';
 import { StripChips, textOn } from './ChordStrip';
 import { ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
+import { MAJOR_SCALE, scaleStep } from '../utils/scales';
 
 /** Position of a white key counting only white keys (C0 = 0, D0 = 1 ...). Black keys: null. */
 const WHITE_INDEX = [0, null, 1, null, 2, 3, null, 4, null, 5, null, 6];
@@ -112,6 +113,9 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   /** Progression tries: how many chords of the progression have been played so far. */
   const [progIdx, setProgIdx] = useState(0);
   const progRef = useRef(0);
+  /** Scale tries (Lesson 7): the notes played so far. */
+  const scaleRef = useRef<number[]>([]);
+  const [scaleCount, setScaleCount] = useState(0);
   const [msg, setMsg] = useState<{ kind: 'good' | 'hint'; text: string } | null>(null);
   /** The keys the demo is playing right now, and which demo entry that is. */
   const [demoLit, setDemoLit] = useState<Set<number> | null>(null);
@@ -193,6 +197,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     setCount(0);
     setProgIdx(0);
     progRef.current = 0;
+    scaleRef.current = [];
+    setScaleCount(0);
     usedKeys.current = new Set();
     setMsg(null);
     demoRun.current++;
@@ -213,6 +219,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     setCount(0);
     setProgIdx(0);
     progRef.current = 0;
+    scaleRef.current = [];
+    setScaleCount(0);
     usedKeys.current = new Set();
     setMsg(null);
     demoRun.current++;
@@ -228,6 +236,33 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   // Single-note tries ("Play an F♯").
   useNoteListener(ctx.subscribe, (midi) => {
       const s = stepRef.current;
+      if (!doneRef.current && !s.show && s.tryScale) {
+        // Lesson 7: the scale up, one note at a time. A wrong note starts it over.
+        const k = keyById(s.tryScale);
+        const played = [...scaleRef.current, midi];
+        const res = scaleStep(k.tonic, played);
+        const tonic = pcName(k.tonic, k.flats);
+        if (res === 'wrong-start') {
+          scaleRef.current = [];
+          setScaleCount(0);
+          setMsg({ kind: 'hint', text: `Start on ${tonic}. ${s.hint ?? ''}` });
+        } else if (res === 'wrong') {
+          const want = played[0] + MAJOR_SCALE[played.length - 1];
+          scaleRef.current = [];
+          setScaleCount(0);
+          setMsg({ kind: 'hint', text: `That is ${pcName(midi, k.flats)}. The next note is ${pcName(want, k.flats)}. Start again from ${tonic}.` });
+        } else if (res === 'done') {
+          scaleRef.current = [];
+          setScaleCount(MAJOR_SCALE.length);
+          setCount(s.need);
+          setMsg({ kind: 'good', text: `Yes! That's the ${k.label} scale.` });
+        } else {
+          scaleRef.current = played;
+          setScaleCount(played.length);
+          setMsg(null);
+        }
+        return;
+      }
       if (doneRef.current || s.show || !s.tryAnswer) return;
       const answers = s.tryAnswer.map(pcOf);
       if (isBlack(midi) && !lessonRef.current.blackKeys && !answers.includes(pc(midi))) {
@@ -308,7 +343,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         const want = parseChord(s.tryProgression[at] ?? '');
         if (!want) return;
         const key = keyById(s.tryKey ?? 'C');
-        const num = diatonic(key).find((x) => x.chord.root === want.root && x.chord.quality === want.quality)?.numeral ?? '';
+        const num = [...diatonic(key), ...diatonicSevenths(key)].find((x) => x.chord.root === want.root && x.chord.quality === want.quality)?.numeral ?? '';
         if (matchesChord(held, want)) {
           const next = at + 1;
           progRef.current = next;
@@ -343,7 +378,13 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       });
       const why = rightChord && s.tryInversion !== undefined ? 'Right chord, but check which note is on the bottom.' : got ? `That is ${got.longName}.` : 'Those keys don’t make that chord yet.';
       setMsg({ kind: 'hint', text: `${why} ${s.hint ?? ''} Let go and try again.` });
-  }, () => (stepRef.current.tryInterval !== undefined ? 2 : 3)); // intervals are judged on 2 keys, chords on 3
+  }, () => {
+    // Intervals are judged on 2 keys, triads on 3, 7th chords (Lesson 8) on 4.
+    const s = stepRef.current;
+    if (s.tryInterval !== undefined) return 2;
+    const wanted = [...(s.tryChord ?? []), s.tryProgression?.[progRef.current] ?? ''].map((c) => parseChord(c)).filter((c): c is Chord => !!c);
+    return Math.max(3, ...wanted.map((c) => chordPcs(c).length));
+  });
 
   // Finishing the last step marks Learn done (this goes in the code).
   useEffect(() => {
@@ -483,7 +524,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           {step.tryProgression.map((c, k) => {
             const key = keyById(step.tryKey ?? 'C');
             const ch = parseChord(c);
-            const d = ch ? diatonic(key).find((x) => x.chord.root === ch.root && x.chord.quality === ch.quality) : undefined;
+            const d = ch ? [...diatonic(key), ...diatonicSevenths(key)].find((x) => x.chord.root === ch.root && x.chord.quality === ch.quality) : undefined;
             const done = k < progIdx || stepDone;
             return (
               <span key={k} className={`h rounded-md px-3 py-1 text-[22px] ${done ? '' : 'opacity-40'} ${k === progIdx && !stepDone ? 'ring-2 ring-panel' : ''}`} style={{ background: d?.color ?? '#66584a', color: textOn(d?.color ?? '#66584a') }}>
@@ -493,7 +534,15 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           })}
         </div>
       )}
-      <div className={`flex gap-1.5 ${step.tryProgression ? 'hidden' : ''}`} aria-label={`${count} of ${step.need} done`}>
+      {step.tryScale && (
+        // The scale: one dot per note, filled as they're played.
+        <div className="flex gap-1.5" data-testid="scale-dots" aria-label={`${stepDone ? 8 : scaleCount} of 8 notes`}>
+          {MAJOR_SCALE.map((_, k) => (
+            <span key={k} className={`h-3.5 w-3.5 rounded-full border border-brass2 ${k < (stepDone ? 8 : scaleCount) ? 'bg-brass' : 'bg-transparent'}`} />
+          ))}
+        </div>
+      )}
+      <div className={`flex gap-1.5 ${step.tryProgression || step.tryScale ? 'hidden' : ''}`} aria-label={`${count} of ${step.need} done`}>
         {Array.from({ length: step.need }, (_, k) => (
           <span key={k} className={`h-3 w-3 rounded-full border border-brass2 ${k < count ? 'bg-brass' : 'bg-transparent'}`} />
         ))}

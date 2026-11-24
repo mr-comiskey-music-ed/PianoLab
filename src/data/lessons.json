@@ -3255,6 +3255,951 @@
           "screen": "blocks"
         }
       ]
+    },
+    {
+      "id": "lesson-7",
+      "number": 7,
+      "title": "Scales and the circle of 5ths",
+      "key": "C",
+      "numerals": true,
+      "blackKeys": true,
+      "practice": "Play the major scales of C, G, F and D, up and down. Use the fingering: tuck your thumb under, never run out of fingers.",
+      "learn": [
+        {
+          "id": "l7-steps",
+          "section": "Major scales",
+          "title": "Whole and half steps",
+          "say": "A major scale climbs 8 notes, from one letter to the same letter an octave up. It always uses the same pattern of steps: whole, whole, half, whole, whole, whole, half. A whole step is 2 half steps. C major uses only the white keys: C D E F G A B C.",
+          "need": 0,
+          "demo": [
+            "C4",
+            "D4",
+            "E4",
+            "F4",
+            "G4",
+            "A4",
+            "B4",
+            "C5"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l7-finger-c",
+          "section": "Major scales",
+          "title": "Fingers",
+          "say": "Number your right-hand fingers: thumb = 1, pinky = 5. Play C D E with fingers 1 2 3. Then tuck your thumb under to play F with 1. Finish G A B C with 2 3 4 5.",
+          "need": 0,
+          "demo": [
+            "C4",
+            "D4",
+            "E4",
+            "F4",
+            "G4",
+            "A4",
+            "B4",
+            "C5"
+          ],
+          "tags": {
+            "C4": "1",
+            "D4": "2",
+            "E4": "3",
+            "F4": "1",
+            "G4": "2",
+            "A4": "3",
+            "B4": "4",
+            "C5": "5"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l7-try-c",
+          "section": "Major scales",
+          "title": "Play C major",
+          "say": "Use the fingering: 1 2 3, thumb under, 1 2 3 4 5.",
+          "need": 1,
+          "tryText": "Play the C major scale up, from C to C.",
+          "tryScale": "C",
+          "hint": "C D E F G A B C, all white keys."
+        },
+        {
+          "id": "l7-g",
+          "section": "G and F",
+          "title": "G major: one sharp",
+          "say": "Start a scale on G and keep the same pattern of steps. To make the last step a half step, F has to become F♯. So G major has one sharp: F♯. The fingering is the same as C major.",
+          "need": 0,
+          "demo": [
+            "G3",
+            "A3",
+            "B3",
+            "C4",
+            "D4",
+            "E4",
+            "F#4",
+            "G4"
+          ],
+          "tags": {
+            "G3": "1",
+            "A3": "2",
+            "B3": "3",
+            "C4": "1",
+            "D4": "2",
+            "E4": "3",
+            "F#4": "4",
+            "G4": "5"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l7-try-g",
+          "section": "G and F",
+          "title": "Play G major",
+          "say": "Remember the F♯.",
+          "need": 1,
+          "tryText": "Play the G major scale up, from G to G.",
+          "tryScale": "G",
+          "hint": "G A B C D E F♯ G."
+        },
+        {
+          "id": "l7-f",
+          "section": "G and F",
+          "title": "F major: one flat",
+          "say": "Start on F and keep the same pattern. Now B has to become B♭. So F major has one flat: B♭. Its fingering is different: 1 2 3 4 on F G A B♭, then tuck your thumb under to C.",
+          "need": 0,
+          "demo": [
+            "F3",
+            "G3",
+            "A3",
+            "Bb3",
+            "C4",
+            "D4",
+            "E4",
+            "F4"
+          ],
+          "tags": {
+            "F3": "1",
+            "G3": "2",
+            "A3": "3",
+            "Bb3": "4",
+            "C4": "1",
+            "D4": "2",
+            "E4": "3",
+            "F4": "4"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l7-try-f",
+          "section": "G and F",
+          "title": "Play F major",
+          "say": "Remember the B♭.",
+          "need": 1,
+          "tryText": "Play the F major scale up, from F to F.",
+          "tryScale": "F",
+          "hint": "F G A B♭ C D E F."
+        },
+        {
+          "id": "l7-fifths",
+          "section": "The circle of 5ths",
+          "title": "Up a 5th, one more sharp",
+          "say": "Count up 5 letters from C: C D E F G. G major has 1 sharp. Up a 5th from G is D: 2 sharps. Up a 5th from D is A: 3 sharps. Every step up a 5th adds one sharp. Going down a 5th from C gives F: 1 flat. This loop of keys is called the circle of 5ths.",
+          "need": 0,
+          "demo": [
+            "C3*2",
+            "G3*2",
+            "D4*2",
+            "A4*2",
+            "_",
+            "C4*2",
+            "F3*2"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l7-d",
+          "section": "The circle of 5ths",
+          "title": "D major: two sharps",
+          "say": "D major is up a 5th from G, so it has 2 sharps: F♯ and C♯. Fingering: 1 2 3, thumb under, 1 2 3 4 5.",
+          "need": 0,
+          "demo": [
+            "D3",
+            "E3",
+            "F#3",
+            "G3",
+            "A3",
+            "B3",
+            "C#4",
+            "D4"
+          ],
+          "tags": {
+            "D3": "1",
+            "E3": "2",
+            "F#3": "3",
+            "G3": "1",
+            "A3": "2",
+            "B3": "3",
+            "C#4": "4",
+            "D4": "5"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l7-try-d",
+          "section": "The circle of 5ths",
+          "title": "Play D major",
+          "say": "Two black keys this time.",
+          "need": 1,
+          "tryText": "Play the D major scale up, from D to D.",
+          "tryScale": "D",
+          "hint": "D E F♯ G A B C♯ D."
+        }
+      ],
+      "levels": [
+        {
+          "id": "l7-play-scales",
+          "title": "Play the scale",
+          "blurb": "Play each major scale up one octave, in order. A wrong note starts it over.",
+          "type": "scale",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the C major scale up, from C to C.",
+              "scale": "C"
+            },
+            {
+              "text": "Play the G major scale up, from G to G.",
+              "scale": "G"
+            },
+            {
+              "text": "Play the F major scale up, from F to F.",
+              "scale": "F"
+            },
+            {
+              "text": "Play the D major scale up, from D to D.",
+              "scale": "D"
+            },
+            {
+              "text": "Play the G major scale up, from G to G.",
+              "scale": "G"
+            },
+            {
+              "text": "Play the F major scale up, from F to F.",
+              "scale": "F"
+            }
+          ]
+        },
+        {
+          "id": "l7-sharps-flats",
+          "title": "Sharps and flats",
+          "blurb": "Which notes are sharp or flat in each key?",
+          "type": "quiz",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which note is sharp in G major?",
+              "answer": [
+                "F♯"
+              ],
+              "choices": [
+                "C♯",
+                "F♯",
+                "G♯",
+                "B♭"
+              ]
+            },
+            {
+              "text": "Which note is flat in F major?",
+              "answer": [
+                "B♭"
+              ],
+              "choices": [
+                "B♭",
+                "E♭",
+                "A♭",
+                "F♯"
+              ]
+            },
+            {
+              "text": "Which notes are sharp in D major?",
+              "answer": [
+                "F♯ and C♯"
+              ],
+              "choices": [
+                "F♯ only",
+                "F♯ and C♯",
+                "C♯ and G♯",
+                "F♯, C♯ and G♯"
+              ]
+            },
+            {
+              "text": "How many sharps are in C major?",
+              "answer": [
+                "0"
+              ],
+              "choices": [
+                "0",
+                "1",
+                "2",
+                "3"
+              ]
+            },
+            {
+              "text": "How many sharps are in A major?",
+              "answer": [
+                "3"
+              ],
+              "choices": [
+                "1",
+                "2",
+                "3",
+                "4"
+              ]
+            },
+            {
+              "text": "How many flats are in B♭ major?",
+              "answer": [
+                "2"
+              ],
+              "choices": [
+                "1",
+                "2",
+                "3",
+                "4"
+              ]
+            },
+            {
+              "text": "Which major key has one sharp?",
+              "answer": [
+                "G"
+              ],
+              "choices": [
+                "C",
+                "D",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "text": "Which major key has one flat?",
+              "answer": [
+                "F"
+              ],
+              "choices": [
+                "B♭",
+                "C",
+                "F",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "l7-circle",
+          "title": "The circle of 5ths",
+          "blurb": "Go round the circle: up a 5th adds a sharp, down a 5th adds a flat.",
+          "type": "quiz",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Up a 5th from C is…",
+              "answer": [
+                "G"
+              ],
+              "choices": [
+                "D",
+                "F",
+                "G",
+                "A"
+              ]
+            },
+            {
+              "text": "Up a 5th from G is…",
+              "answer": [
+                "D"
+              ],
+              "choices": [
+                "C",
+                "D",
+                "E",
+                "A"
+              ]
+            },
+            {
+              "text": "Up a 5th from D is…",
+              "answer": [
+                "A"
+              ],
+              "choices": [
+                "A",
+                "B",
+                "E",
+                "G"
+              ]
+            },
+            {
+              "text": "Up a 5th from A is…",
+              "answer": [
+                "E"
+              ],
+              "choices": [
+                "B",
+                "D",
+                "E",
+                "F♯"
+              ]
+            },
+            {
+              "text": "Down a 5th from C is…",
+              "answer": [
+                "F"
+              ],
+              "choices": [
+                "F",
+                "G",
+                "A",
+                "B♭"
+              ]
+            },
+            {
+              "text": "Down a 5th from F is…",
+              "answer": [
+                "B♭"
+              ],
+              "choices": [
+                "C",
+                "E♭",
+                "B♭",
+                "D"
+              ]
+            },
+            {
+              "text": "G major has 1 sharp. How many does D major have?",
+              "answer": [
+                "2"
+              ],
+              "choices": [
+                "1",
+                "2",
+                "3",
+                "4"
+              ]
+            },
+            {
+              "text": "Going up a 5th each time adds one…",
+              "answer": [
+                "Sharp"
+              ],
+              "choices": [
+                "Sharp",
+                "Flat"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "l7-time-c",
+          "title": "C major in time",
+          "blurb": "Play the C major scale up and down, one note per beat.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l7-c",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I"
+            ],
+            "texture": "scale",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l7-time-g",
+          "title": "G major in time",
+          "blurb": "Play the G major scale up and down, one note per beat. Watch for F♯.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l7-g",
+            "key": "G",
+            "mode": "major",
+            "progression": [
+              "I"
+            ],
+            "texture": "scale",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l7-time-f",
+          "title": "F major in time",
+          "blurb": "Play the F major scale up and down, one note per beat. Watch for B♭.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l7-f",
+            "key": "F",
+            "mode": "major",
+            "progression": [
+              "I"
+            ],
+            "texture": "scale",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l7-time-d",
+          "title": "D major in time",
+          "blurb": "Play the D major scale up and down, one note per beat. Watch for F♯ and C♯.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l7-d",
+            "key": "D",
+            "mode": "major",
+            "progression": [
+              "I"
+            ],
+            "texture": "scale",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l7-more-scales",
+          "title": "More keys",
+          "blurb": "Keep going round the circle: A, E, B♭ and E♭ major.",
+          "type": "scale",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the A major scale up, from A to A.",
+              "scale": "A"
+            },
+            {
+              "text": "Play the B♭ major scale up, from B♭ to B♭.",
+              "scale": "B♭"
+            },
+            {
+              "text": "Play the E major scale up, from E to E.",
+              "scale": "E"
+            },
+            {
+              "text": "Play the E♭ major scale up, from E♭ to E♭.",
+              "scale": "E♭"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lesson-8",
+      "number": 8,
+      "title": "7th chords",
+      "key": "C",
+      "numerals": true,
+      "blackKeys": true,
+      "practice": "Add a 4th note to your triads: one more 3rd on top. Try G7 going to C, and Dm7 – G7 – Cmaj7. Watch the chord names change.",
+      "learn": [
+        {
+          "id": "l8-what",
+          "section": "7th chords",
+          "title": "One more 3rd",
+          "say": "A 7th chord is a triad with one more 3rd stacked on top. That top note is the 7th: seven letters up from the root. G7 is G, B, D and F.",
+          "need": 0,
+          "demo": [
+            "G3",
+            "B3",
+            "D4",
+            "F4*2",
+            "G3+B3+D4+F4*2"
+          ],
+          "tags": {
+            "G3": "Root",
+            "B3": "3rd",
+            "D4": "5th",
+            "F4": "7th"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l8-try-g7",
+          "section": "7th chords",
+          "title": "Play G7",
+          "say": "Hold all four notes together.",
+          "need": 1,
+          "tryText": "Play G7 (G, B, D, F).",
+          "tryChord": [
+            "G7"
+          ],
+          "hint": "Build a G triad (G B D), then add F on top."
+        },
+        {
+          "id": "l8-kinds",
+          "section": "Three kinds",
+          "title": "Dominant, major and minor 7ths",
+          "say": "The three most common 7th chords:\nG7 (dominant 7th) is a major triad with a lower 7th. It wants to move home.\nCmaj7 (major 7th) is a major triad with a higher 7th. It sounds dreamy.\nDm7 (minor 7th) is a minor triad with a lower 7th. It sounds smooth.",
+          "need": 0,
+          "demo": [
+            "G3+B3+D4+F4*2",
+            "_",
+            "C4+E4+G4+B4*2",
+            "_",
+            "D4+F4+A4+C5*2"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l8-try-cmaj7",
+          "section": "Three kinds",
+          "title": "Play Cmaj7",
+          "say": "C major, plus B on top.",
+          "need": 1,
+          "tryText": "Play Cmaj7 (C, E, G, B).",
+          "tryChord": [
+            "Cmaj7"
+          ],
+          "hint": "Build a C triad (C E G), then add B on top."
+        },
+        {
+          "id": "l8-try-dm7",
+          "section": "Three kinds",
+          "title": "Play Dm7",
+          "say": "D minor, plus C on top.",
+          "need": 1,
+          "tryText": "Play Dm7 (D, F, A, C).",
+          "tryChord": [
+            "Dm7"
+          ],
+          "hint": "Build a D minor triad (D F A), then add C on top."
+        },
+        {
+          "id": "l8-key",
+          "section": "7ths in a key",
+          "title": "The 7th chords of C major",
+          "say": "Stack four notes on every white key and you get the 7th chords of C major: Cmaj7, Dm7, Em7, Fmaj7, G7, Am7 and Bø7. Their numerals add the 7: Imaj7, ii7, iii7, IVmaj7, V7, vi7 and viiø7.",
+          "need": 0,
+          "demo": [
+            "C3+E3+G3+B3",
+            "D3+F3+A3+C4",
+            "E3+G3+B3+D4",
+            "F3+A3+C4+E4",
+            "G3+B3+D4+F4",
+            "A3+C4+E4+G4",
+            "B3+D4+F4+A4"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l8-251",
+          "section": "7ths in a key",
+          "title": "ii7 – V7 – Imaj7",
+          "say": "ii7 – V7 – Imaj7 is the most famous progression in jazz. In C it is Dm7, G7, Cmaj7. Move each finger as little as you can.",
+          "need": 0,
+          "demo": [
+            "D3+F3+A3+C4*2",
+            "D3+F3+G3+B3*2",
+            "C3+E3+G3+B3*3"
+          ],
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l8-try-251",
+          "section": "7ths in a key",
+          "title": "Play ii7 – V7 – Imaj7",
+          "say": "Play each chord, let go, then play the next.",
+          "need": 1,
+          "tryText": "Play ii7 – V7 – Imaj7 in C, one chord after another.",
+          "tryProgression": [
+            "Dm7",
+            "G7",
+            "Cmaj7"
+          ],
+          "tryKey": "C",
+          "hint": "In C: ii7 = Dm7, V7 = G7, Imaj7 = Cmaj7."
+        }
+      ],
+      "levels": [
+        {
+          "id": "l8-build",
+          "title": "Build 7th chords",
+          "blurb": "Play the 7th chord: all four notes, any order.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play G7.",
+              "chord": "G7"
+            },
+            {
+              "text": "Play Cmaj7.",
+              "chord": "Cmaj7"
+            },
+            {
+              "text": "Play Dm7.",
+              "chord": "Dm7"
+            },
+            {
+              "text": "Play Fmaj7.",
+              "chord": "Fmaj7"
+            },
+            {
+              "text": "Play Am7.",
+              "chord": "Am7"
+            },
+            {
+              "text": "Play Em7.",
+              "chord": "Em7"
+            },
+            {
+              "text": "Play D7.",
+              "chord": "D7"
+            },
+            {
+              "text": "Play C7.",
+              "chord": "C7"
+            },
+            {
+              "text": "Play Gmaj7.",
+              "chord": "Gmaj7"
+            },
+            {
+              "text": "Play B♭maj7.",
+              "chord": "Bbmaj7"
+            }
+          ]
+        },
+        {
+          "id": "l8-kind",
+          "title": "Which kind of 7th?",
+          "blurb": "A 7th chord plays and lights up. Is it a dominant, major or minor 7th?",
+          "type": "nameChord",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "G7",
+              "answer": [
+                "Dominant 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "Cmaj7",
+              "answer": [
+                "Major 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "Dm7",
+              "answer": [
+                "Minor 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "Fmaj7",
+              "answer": [
+                "Major 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "Am7",
+              "answer": [
+                "Minor 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "D7",
+              "answer": [
+                "Dominant 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "Em7",
+              "answer": [
+                "Minor 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "C7",
+              "answer": [
+                "Dominant 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "Gmaj7",
+              "answer": [
+                "Major 7th"
+              ]
+            },
+            {
+              "text": "Which kind of 7th chord is this?",
+              "chord": "Gm7",
+              "answer": [
+                "Minor 7th"
+              ]
+            }
+          ],
+          "choices": [
+            "Dominant 7th",
+            "Major 7th",
+            "Minor 7th"
+          ],
+          "playChord": true
+        },
+        {
+          "id": "l8-numeral",
+          "title": "Play the 7th numeral",
+          "blurb": "Play the 7th chord for each numeral in C major.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the V7 chord in C.",
+              "chord": "G7"
+            },
+            {
+              "text": "Play the Imaj7 chord in C.",
+              "chord": "Cmaj7"
+            },
+            {
+              "text": "Play the ii7 chord in C.",
+              "chord": "Dm7"
+            },
+            {
+              "text": "Play the IVmaj7 chord in C.",
+              "chord": "Fmaj7"
+            },
+            {
+              "text": "Play the vi7 chord in C.",
+              "chord": "Am7"
+            },
+            {
+              "text": "Play the iii7 chord in C.",
+              "chord": "Em7"
+            },
+            {
+              "text": "Play the V7 chord in C.",
+              "chord": "G7"
+            },
+            {
+              "text": "Play the ii7 chord in C.",
+              "chord": "Dm7"
+            }
+          ]
+        },
+        {
+          "id": "l8-time-251",
+          "title": "ii7 – V7 – Imaj7 in C",
+          "blurb": "Dm7, G7, Cmaj7 with the smoothest moves, in time.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l8-251-c",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "ii7",
+              "V7",
+              "Imaj7",
+              "Imaj7"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l8-time-251-f",
+          "title": "ii7 – V7 – Imaj7 in F",
+          "blurb": "Gm7, C7, Fmaj7 with the smoothest moves, in time.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l8-251-f",
+            "key": "F",
+            "mode": "major",
+            "progression": [
+              "ii7",
+              "V7",
+              "Imaj7",
+              "Imaj7"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        }
+      ]
     }
   ]
 }

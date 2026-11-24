@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Level, ScreenHelp } from '../types';
 import { Timeline, beatMs, buildTimeline, chordSummary } from '../utils/patternEngine';
 import { HitResult, NotesCheck, TimingJudge, TimingSummary, pitchClassCheck, steadyOffset, summarize } from '../utils/timing';
-import { moveDistance, moveSizes, parseChord } from '../utils/chords';
+import { chordPcs, moveDistance, moveSizes, parseChord } from '../utils/chords';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
@@ -126,12 +126,13 @@ export function usePlayLevel(
         const chord = parseChord(timeline.bars[timeline.hits[i].bar]?.symbol ?? '');
         let res: { credit: number; why?: string; partial?: number } = { credit: 1 };
         if (prev && chord) {
-          const moved = moveDistance(prev, notes.length === 3 ? notes : notes.slice(0, 3));
+          const size = chordPcs(chord).length; // 3 for triads, 4 for 7th chords
+          const moved = moveDistance(prev, notes.slice(0, size));
           const sizes = moveSizes(prev, chord);
           res =
-            notes.length === 3 && moved <= sizes[0]
+            notes.length === size && moved <= sizes[0]
               ? { credit: 1 }
-              : notes.length === 3 && moved <= (sizes[1] ?? sizes[0])
+              : notes.length === size && moved <= (sizes[1] ?? sizes[0])
                 ? { credit: 0.75, why: 'Almost smooth' }
                 : { credit: 1, why: 'Not smooth', partial: 0.25 };
         }
@@ -201,7 +202,8 @@ export function usePlayLevel(
   }, [phase, timeline, startAt, tempo, screen]);
 
   const running = phase !== 'idle';
-  const shownScreens = SCREEN_ORDER;
+  // Scales (Lesson 7) fall as note blocks only: "Chord Names Only" has nothing to show for a scale.
+  const shownScreens: ScreenHelp[] = pattern?.texture === 'scale' ? ['blocks'] : SCREEN_ORDER;
   const allowedScreens = shownScreens.filter((s) => SCREEN_ORDER.indexOf(s) >= SCREEN_ORDER.indexOf(level.screen ?? 'blocks'));
 
   const settingsUI = (
@@ -248,7 +250,7 @@ export function usePlayLevel(
           <div className="h max-w-[680px] text-[26px] leading-tight text-panel">{level.blurb}</div>
           <div className="flex flex-col gap-0.5 text-[14px] text-line2">
             <span data-testid="play-summary">
-              {chordSummary(timeline.bars.map((b) => b.symbol))} · {pattern?.bars} bars
+              {pattern?.texture === 'scale' ? `${timeline.key.label} scale, up and down` : chordSummary(timeline.bars.map((b) => b.symbol))} · {timeline.bars.length} bars
             </span>
             <span>{level.pass}% to pass, half on timing, half on correct notes</span>
           </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chordName, chordPcs, detectChord, diatonic, keyById, matchesChord, moveDistance, moveSizes, parseChord, smoothestVoicing, voicing } from './chords';
+import { diatonicSevenths, isSeventh, chordName, chordPcs, detectChord, diatonic, keyById, matchesChord, moveDistance, moveSizes, parseChord, smoothestVoicing, voicing } from './chords';
 import { parseNote, pcOf } from './music';
 
 const n = (...names: string[]) => names.map((x) => parseNote(x)!);
@@ -81,5 +81,30 @@ describe('move sizes', () => {
     const sizes = moveSizes([60, 64, 67], parseChord('F')!); // C E G -> F: C F A moves 3
     expect(sizes[0]).toBe(3);
     expect(sizes[1]).toBeGreaterThan(3);
+  });
+});
+
+describe('7th chords (Lesson 8)', () => {
+  it('reads, names and spells them', () => {
+    const g7 = parseChord('G7')!;
+    expect(isSeventh(g7)).toBe(true);
+    expect(chordPcs(g7)).toEqual([7, 11, 2, 5]);
+    expect(chordName(parseChord('Cmaj7')!)).toBe('Cmaj7');
+    expect(chordName(parseChord('Dm7')!)).toBe('Dm7');
+    expect(chordName(parseChord('Bø7')!)).toBe('Bø7');
+    expect(chordPcs(parseChord('Bm7b5')!)).toEqual([11, 2, 5, 9]);
+    expect(parseChord('C9')).toBeNull();
+  });
+  it('a 7th chord needs all four notes, any inversion', () => {
+    expect(matchesChord(n('G3', 'B3', 'D4', 'F4'), parseChord('G7')!)).toBe(true);
+    expect(matchesChord(n('B3', 'D4', 'F4', 'G4'), parseChord('G7')!)).toBe(true);
+    expect(matchesChord(n('G3', 'B3', 'D4'), parseChord('G7')!)).toBe(false);
+    expect(matchesChord(n('G3', 'B3', 'D4', 'F4'), parseChord('G')!)).toBe(false);
+    expect(matchesChord(n('F3', 'G3', 'B3', 'D4'), parseChord('G7')!, 3)).toBe(true); // 7th on the bottom
+  });
+  it('the 7th chords of C major', () => {
+    expect(diatonicSevenths(keyById('C')).map((d) => `${chordName(d.chord)} ${d.numeral}`)).toEqual([
+      'Cmaj7 Imaj7', 'Dm7 ii7', 'Em7 iii7', 'Fmaj7 IVmaj7', 'G7 V7', 'Am7 vi7', 'Bø7 viiø7',
+    ]);
   });
 });

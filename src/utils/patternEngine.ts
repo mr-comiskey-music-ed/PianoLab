@@ -1,6 +1,7 @@
 import { Pattern, Rhythm, Texture } from '../data/pattern';
-import { Chord, KeyDef, chordName, diatonic, makeKey, smoothestVoicing, voicing } from './chords';
+import { Chord, KeyDef, chordName, diatonic, diatonicSevenths, makeKey, smoothestVoicing, voicing } from './chords';
 import { pc, pcOf } from './music';
+import { MAJOR_SCALE } from './scales';
 
 /**
  * The pattern engine (SPEC section 6): turns a pattern (key, numerals, texture, rhythm, voicing, tempo, bars) into a
@@ -61,10 +62,11 @@ export function rhythmBeats(r: Rhythm): number[] {
   }
 }
 
-/** "V" in C major -> the G chord (with its numeral and colour). Accepts "vii°"/"viio" and "ii°"/"iio". */
+/** "V" in C major -> the G chord (with its numeral and colour). Accepts "vii°"/"viio" and "ii°"/"iio", and 7th chords
+ *  (Lesson 8): "V7", "ii7", "Imaj7", "viiø7". */
 export function resolveNumeral(k: KeyDef, numeral: string) {
   const n = numeral.replace(/o$/, '°').trim();
-  return diatonic(k).find((d) => d.numeral === n) ?? null;
+  return diatonic(k).find((d) => d.numeral === n) ?? diatonicSevenths(k).find((d) => d.numeral === n) ?? null;
 }
 
 /** The lowest note for chords: the root's octave-3 position (C3-B3), which keeps a 25-key view (C3-C5) comfortable. */
@@ -74,6 +76,7 @@ const BASE = 48;
 export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
   const tonic = pcOf(p.key) ?? 0;
   const key = makeKey(tonic, p.mode);
+  if (p.texture === 'scale') return scaleTimeline(p, key, tempo);
   const hitsInBar = rhythmBeats(p.rhythm);
   const hits: TimedHit[] = [];
   const bars: BarInfo[] = [];
@@ -101,9 +104,34 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
   return { key, hits, bars, beats: p.bars * 4, tempo };
 }
 
+/**
+ * Lesson 7: the major scale up one octave and back down, one note per quarter (8 up, 7 down, the last held for 2 beats:
+ * 4 bars), repeated to fill the bars. Starts on the tonic in octave 3, so it always fits on the 25 keys.
+ */
+function scaleTimeline(p: Pattern, key: KeyDef, tempo: number): Timeline {
+  const start = BASE + key.tonic;
+  const up = MAJOR_SCALE.map((st) => start + st);
+  const run = [...up, ...up.slice(0, -1).reverse()]; // 15 notes
+  const scalePcs = up.slice(0, 7).map(pc);
+  const color = diatonic(key)[0].color;
+  const hits: TimedHit[] = [];
+  const bars: BarInfo[] = [];
+  const loops = Math.max(1, Math.round(p.bars / 4));
+  for (let l = 0; l < loops; l++) {
+    run.forEach((n, i) => {
+      const beat = l * 16 + i;
+      hits.push({ beat, dur: i === run.length - 1 ? 2 : 1, notes: [n], pcs: [pc(n)], kind: 'note', bar: Math.floor(beat / 4), chordPcs: scalePcs });
+    });
+  }
+  for (let b = 0; b < loops * 4; b++) bars.push({ bar: b, beat: b * 4, symbol: key.label, numeral: '', color });
+  return { key, hits, bars, beats: loops * 16, tempo };
+}
+
 /** What one hit plays, for each texture (SPEC section 6). `i` is the hit's place in its bar. */
 function textureHit(t: Texture, chord: number[], root: number, i: number): number[] {
   switch (t) {
+    case 'scale':
+      return chord; // (scales have their own timeline)
     case 'bass':
       return [root]; // single notes: the chord's root
     case 'block':
