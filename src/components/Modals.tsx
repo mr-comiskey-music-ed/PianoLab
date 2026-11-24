@@ -9,7 +9,7 @@ import { parseBatch, BatchResult, BatchEntry, ALL_LESSONS } from '../utils/batch
 import { floored, passed, bestByLevel } from '../utils/grading';
 import { saveLatency } from '../utils/autosave';
 import { STEADY_MS, tapSpread } from '../utils/timing';
-import { downloadMidi, formatLength, perfLength, unpackPerf } from '../utils/performance';
+import { cleanBacking, downloadMidi, formatLength, perfLength, perfLink, unpackPerf } from '../utils/performance';
 
 const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }> = ({ title, onClose, wide, children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4" role="dialog" aria-modal="true" aria-label={title}>
@@ -304,8 +304,18 @@ const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle:
       <span className="h text-[15px] text-wal3">{e.headline !== null ? `${e.headline}%` : '–'}</span>
     </button>
     {e.submission.perf?.length ? (
-      <div className="border-t border-line px-3 py-1.5">
+      <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-1.5">
         <PerfPlayer engine={engine} perf={e.submission.perf} />
+        {cleanBacking(e.submission.jam).length > 0 && (
+          // A Jam Room performance: hear it with the groove / track / video it was played with (opens the Sandbox).
+          <button
+            className="btn btn-brass px-2 py-0.5 text-[12px]"
+            data-testid="batch-with-backing"
+            onClick={() => void perfLink(unpackPerf(e.submission.perf), cleanBacking(e.submission.jam)).then((l) => window.open(l, '_blank'))}
+          >
+            ▶ With backing
+          </button>
+        )}
       </div>
     ) : null}
     {open && (

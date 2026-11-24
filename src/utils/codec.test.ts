@@ -172,3 +172,27 @@ describe('per-lesson Learn in codes', () => {
     expect(back?.learned).toEqual(['lesson-1', 'lesson-3']);
   });
 });
+
+describe('Jam Room backing in codes and links', () => {
+  it('keeps the backing in a code, and cleans hand-edited junk', async () => {
+    const { cleanBacking, packPerf } = await import('./performance');
+    const { encodeSubmission, decodeSubmission } = await import('./codec');
+    const jam = [
+      { k: 'g', at: 2500, until: 30000, g: 'pop', key: 'Am', n: ['i', 'VI', 'III', 'VII'], bpm: 96 },
+      { k: 'y', at: 31000, v: 'brKVb6CKzFA', vt: 12.3 },
+    ];
+    const code = await encodeSubmission({ name: 'A', assignment: 'open', timestamp: 0, learnDone: false, results: [], perf: packPerf([{ t: 0, d: 400, m: 60, v: 90 }]), jam });
+    const sub = await decodeSubmission(code);
+    expect(cleanBacking(sub!.jam)).toEqual(jam);
+    expect(cleanBacking([{ k: 'g', at: 'x' }, { k: 'zz', at: 1 }, null, { k: 't', at: 5, tr: 'my-track' }])).toEqual([{ k: 't', at: 5, tr: 'my-track' }]);
+  });
+  it('old links (notes only) still open; new links carry the backing', async () => {
+    const { readPerfParam, packPerf } = await import('./performance');
+    const { compress } = await import('./codec');
+    const notes = [{ t: 0, d: 400, m: 60, v: 90 }];
+    const old = await readPerfParam(await compress(JSON.stringify(packPerf(notes))));
+    expect(old).toEqual({ notes, backing: [] });
+    const withJam = await readPerfParam(await compress(JSON.stringify({ p: packPerf(notes), j: [{ k: 't', at: 0, tr: 'x' }] })));
+    expect(withJam?.backing).toEqual([{ k: 't', at: 0, tr: 'x' }]);
+  });
+});

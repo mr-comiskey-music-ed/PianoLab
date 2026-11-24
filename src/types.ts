@@ -185,6 +185,8 @@ export interface Submission {
   take?: string;
   /** A Sandbox performance, packed by packPerf() in utils/performance.ts (code key `p`). */
   perf?: number[];
+  /** A Jam Room performance's backing (code key `j`): see BackingSeg in utils/performance.ts. */
+  jam?: unknown[];
 }
 
 /** SynthLab's two synth looks (only 'hardware-bench', the Modern Synth, is used here). Copied so the SynthLab panel compiles. */

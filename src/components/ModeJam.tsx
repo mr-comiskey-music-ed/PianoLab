@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BackingTrack, GROOVES, Groove } from '../audio/groove';
+import { GROOVES, Groove, TRACKS } from '../audio/groove';
 import { Diatonic, KEYS, KeyDef, chordName, chordPcs, detectChord, keyById, makeKey, parseNumeral } from '../utils/chords';
 import { KEY_COUNT, pc, pcOf } from '../utils/music';
 import { MAJOR_SCALE } from '../utils/scales';
 import { textOn } from './ChordStrip';
 import { PianoRoll } from './PianoRoll';
-import { MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, formatLength, perfLength } from '../utils/performance';
+import { YouTubeBox, YTControl, youTubeId } from './YouTubeBox';
+import { BackingSeg, MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, formatLength, perfLength } from '../utils/performance';
 import { SavePerformance } from './ModeSandbox';
 import { Labels, ModeCtx, ModeParts } from './modeTypes';
-import tracksData from '../data/tracks.json';
 import youtubeData from '../data/youtube.json';
 
 /**
@@ -28,7 +28,6 @@ interface YouTubeVideo {
   mode?: 'major' | 'minor';
   chords?: string;
 }
-const TRACKS = (tracksData as { tracks: BackingTrack[] }).tracks;
 const VIDEOS = (youtubeData as { videos: YouTubeVideo[] }).videos;
 
 /**
@@ -60,13 +59,6 @@ const JAM_KEYS = KEYS.filter((k) => k.mode === 'major' || ['Am', 'Em', 'Dm'].inc
 /** The pitch classes of a key's scale (major, or natural minor). */
 const scalePcs = (k: KeyDef) => (k.mode === 'major' ? MAJOR_SCALE.slice(0, 7) : [0, 2, 3, 5, 7, 8, 10]).map((s) => pc(k.tonic + s));
 
-/** "https://youtu.be/ID", "...watch?v=ID", "/embed/ID", "/shorts/ID" or a bare id -> the video id. */
-export function youTubeId(text: string): string | null {
-  const t = text.trim();
-  const m = t.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/) ?? t.match(/^([A-Za-z0-9_-]{11})$/);
-  return m ? m[1] : null;
-}
-
 /** Read numerals typed by a student ("I V vi IV", "I - IV - V7"). Unreadable ones are dropped. */
 export function readNumerals(k: KeyDef, text: string): Diatonic[] {
   return text
@@ -76,70 +68,6 @@ export function readNumerals(k: KeyDef, text: string): Diatonic[] {
     .filter((d): d is Diatonic => !!d)
     .slice(0, 16);
 }
-
-// ---- The YouTube IFrame player (loaded only when a video is picked) ----
-interface YTPlayer {
-  setVolume(v: number): void;
-  destroy(): void;
-}
-type YTNamespace = { Player: new (el: HTMLElement, opts: object) => YTPlayer };
-let ytReady: Promise<YTNamespace> | null = null;
-function loadYouTube(): Promise<YTNamespace> {
-  const w = window as unknown as { YT?: YTNamespace & { loaded?: number }; onYouTubeIframeAPIReady?: () => void };
-  if (w.YT?.Player) return Promise.resolve(w.YT);
-  ytReady ??= new Promise((resolve, reject) => {
-    w.onYouTubeIframeAPIReady = () => resolve(w.YT!);
-    const s = document.createElement('script');
-    s.src = 'https://www.youtube.com/iframe_api';
-    s.onerror = () => {
-      ytReady = null;
-      reject(new Error('blocked'));
-    };
-    document.head.appendChild(s);
-    window.setTimeout(() => reject(new Error('timeout')), 10000);
-  });
-  return ytReady;
-}
-
-const YouTubeBox: React.FC<{ videoId: string; volume: number }> = ({ videoId, volume }) => {
-  const el = useRef<HTMLDivElement>(null);
-  const player = useRef<YTPlayer | null>(null);
-  const [err, setErr] = useState('');
-  useEffect(() => {
-    let gone = false;
-    setErr('');
-    loadYouTube()
-      .then((YT) => {
-        if (gone || !el.current) return;
-        // youtube-nocookie: no tracking cookies until a video is played.
-        player.current = new YT.Player(el.current, {
-          videoId,
-          host: 'https://www.youtube-nocookie.com',
-          playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
-          events: { onReady: () => player.current?.setVolume(Math.round(Math.min(1, volume) * 100)) },
-        });
-      })
-      .catch(() => !gone && setErr("YouTube didn't load. It may be blocked on this network."));
-    return () => {
-      gone = true;
-      player.current?.destroy();
-      player.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoId]);
-  useEffect(() => {
-    try {
-      player.current?.setVolume(Math.round(Math.min(1, volume) * 100));
-    } catch {
-      /* not ready yet */
-    }
-  }, [volume]);
-  return (
-    <div className="relative aspect-video h-full max-h-full max-w-full" data-testid="youtube">
-      {err ? <div className="flex h-full items-center justify-center px-6 text-center text-[16px] text-line2">{err}</div> : <div ref={el} className="h-full w-full" />}
-    </div>
-  );
-};
 
 /** A small level meter (0-1), updated by the parent's animation loop. */
 const Meter: React.FC<{ level: number }> = ({ level }) => (
@@ -191,8 +119,23 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, track?.id, key.id, progId, custom]);
 
+  // What played behind the performance, and when (saved with it so play back sounds the way the student heard it).
+  const segs = useRef<BackingSeg[]>([]);
+  /** The performance's clock starts at the first note or the first backing, whichever comes first. */
+  const clockNow = () => {
+    const now = performance.now();
+    if (rollT0.current === null) rollT0.current = now - (perfLength(rollRef.current) ? perfLength(rollRef.current) + SHORT_GAP : 0);
+    lastAt.current = now;
+    return now - rollT0.current;
+  };
+  const openSeg = () => segs.current.find((x) => x.until === undefined);
+  const closeSeg = () => {
+    const o = openSeg();
+    if (o && rollT0.current !== null) o.until = Math.round(performance.now() - rollT0.current);
+  };
   const stop = () => {
     if (Groove.isMade()) Groove.get().stop();
+    closeSeg();
     setPlaying(false);
     setBeat(-Infinity);
   };
@@ -224,7 +167,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
         if (rollT0.current === null) {
           const end = perfLength(rollRef.current);
           rollT0.current = now - (end ? end + SHORT_GAP : 0);
-        } else if (now - lastAt.current > LONG_GAP) rollT0.current += now - lastAt.current - SHORT_GAP;
+        } else if (now - lastAt.current > LONG_GAP && !openSeg()) rollT0.current += now - lastAt.current - SHORT_GAP; // (not while a backing plays: it would fall out of step)
         const t = now - rollT0.current;
         if (t > MAX_PERF_MS) return setFull(true);
         lastAt.current = now;
@@ -266,12 +209,18 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     g.setLevel(backVol);
     if (source === 'groove') {
       const style = GROOVES.find((x) => x.id === grooveId) ?? GROOVES[0];
-      g.startGroove(style, bpm, chords.length ? chords.map((d) => d.chord.root) : [key.tonic]);
+      const pos = clockNow();
+      const heard = g.startGroove(style, bpm, chords.length ? chords.map((d) => d.chord.root) : [key.tonic]);
+      closeSeg();
+      segs.current.push({ k: 'g', at: Math.round(pos + heard - performance.now()), g: style.id, key: key.id, n: chords.map((d) => d.numeral), bpm });
       setPlaying(true);
     } else if (source === 'track' && track) {
       setLoading(true);
       try {
         await g.startTrack(track);
+        const pos = clockNow();
+        closeSeg();
+        segs.current.push({ k: 't', at: Math.round(pos + g.trackStartHeard(track) - performance.now()), tr: track.id });
         setPlaying(true);
       } finally {
         setLoading(false);
@@ -481,7 +430,18 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
         {videoId ? (
           // Half see-through, so the notes rising up the Stage show on top of it.
           <div className="h-full max-h-full opacity-50" data-testid="youtube-wrap">
-            <YouTubeBox videoId={videoId} volume={backVol} />
+            <YouTubeBox
+              videoId={videoId}
+              volume={backVol}
+              onPlayState={(on, seconds) => {
+                // The video playing / pausing is recorded too, with where it was, so play back can line it up.
+                if (on) {
+                  const pos = clockNow();
+                  closeSeg();
+                  segs.current.push({ k: 'y', at: Math.round(pos), v: videoId, vt: Math.round(seconds * 10) / 10 });
+                } else closeSeg();
+              }}
+            />
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 px-6 text-center">
@@ -548,6 +508,8 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
             className="btn px-2 py-1 text-[13px]"
             data-testid="jam-clear-yes"
             onClick={() => {
+              stop();
+              segs.current = [];
               setRollNotes([]);
               rollT0.current = null;
               setFull(false);
@@ -595,6 +557,6 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     tint,
     dim,
     silence,
-    overlay: saveOpen ? <SavePerformance notes={finished} onClose={() => setSaveOpen(false)} /> : undefined,
+    overlay: saveOpen ? <SavePerformance notes={finished} backing={segs.current.map((x) => ({ ...x }))} onClose={() => setSaveOpen(false)} /> : undefined,
   };
 }

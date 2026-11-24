@@ -1,5 +1,6 @@
 import * as Tone from 'tone';
 import { AudioEngine } from './audioEngine';
+import tracksData from '../data/tracks.json';
 
 /**
  * Jam Room backing (SPEC section 10): grooves the app makes from the chosen progression (drums + bass, no downloads,
@@ -44,6 +45,9 @@ export interface BackingTrack {
   offset?: number;
 }
 
+/** Mr. Comiskey's tracks (`src/data/tracks.json`). */
+export const TRACKS = (tracksData as { tracks: BackingTrack[] }).tracks;
+
 export class Groove {
   private static inst: Groove | null = null;
   static get() {
@@ -86,6 +90,8 @@ export class Groove {
     this.bass.connect(this.out);
     this.out.connect(this.meter);
     this.out.toDestination();
+    // For browser tests: where the groove is (no student data).
+    (window as unknown as { __groove?: Groove }).__groove = this;
   }
 
   /** Backing fader, 0-1.5 (squared, like the metronome's volume). */
@@ -102,17 +108,18 @@ export class Groove {
    * Start an app-made groove: `roots` = each bar's chord root (pitch class), repeating. Starts `lead` seconds from now
    * (a 1-bar count-in of clicks first). Returns when beat 1 of bar 1 will be heard (performance.now() ms).
    */
-  startGroove(style: GrooveStyle, bpm: number, roots: number[], lead = 0.3): number {
+  startGroove(style: GrooveStyle, bpm: number, roots: number[], lead = 0.3, fromBeat = -4): number {
     this.stop();
     const engine = AudioEngine.get();
     this.spb = 60 / bpm;
     const now = Tone.getContext().currentTime;
-    // A bar of clicks to count in, then the groove from beat 1.
-    this.t0 = now + lead + 4 * this.spb;
-    for (let i = 0; i < 4; i++) engine.clickAt(now + lead + i * this.spb, i);
+    // A bar of clicks to count in (beats -4 to -1), then the groove from beat 1 (beat 0). Play back of a saved
+    // performance can start part-way through (`fromBeat`): beat `fromBeat` sounds `lead` seconds from now.
+    this.t0 = now + lead - fromBeat * this.spb;
+    for (let b = -4; b < 0; b++) if (b >= fromBeat - 0.01) engine.clickAt(this.t0 + b * this.spb, b + 4);
     this.running = true;
     const sixteenth = this.spb / 4;
-    let step = 0; // 16ths scheduled so far
+    let step = Math.max(0, Math.ceil(fromBeat * 4 - 0.01)); // the next 16th to schedule
     const pump = () => {
       if (!this.running) return;
       const horizon = Tone.getContext().currentTime + 0.3;
@@ -148,7 +155,7 @@ export class Groove {
   }
 
   /** Play one of the teacher's tracks (loaded the first time it's picked). Returns when its first downbeat is heard. */
-  async startTrack(track: BackingTrack, lead = 0.3): Promise<number> {
+  async startTrack(track: BackingTrack, lead = 0.3, fileOffset = 0): Promise<number> {
     this.stop();
     if (!this.player || this.playerUrl !== track.url) {
       this.player?.dispose();
@@ -158,10 +165,15 @@ export class Groove {
     }
     this.spb = 60 / track.bpm;
     const start = Tone.getContext().currentTime + lead;
-    this.player.start(start);
+    this.player.start(start, Math.max(0, fileOffset));
     this.running = true;
-    this.t0 = start + (track.offset ?? 0);
+    this.t0 = start + (track.offset ?? 0) - fileOffset;
     return AudioEngine.get().audioToPerf(this.t0);
+  }
+
+  /** When the start of the current track's file is (or was) heard, performance.now() ms. */
+  trackStartHeard(track: BackingTrack) {
+    return AudioEngine.get().audioToPerf(this.t0 - (track.offset ?? 0));
   }
 
   stop() {

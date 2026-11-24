@@ -4,6 +4,9 @@ import { MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, downloadMidi, formatLength, pack
 import { Labels, LABEL_ORDER, ModeCtx, ModeParts } from './modeTypes';
 import { PianoRoll, makeRollMap } from './PianoRoll';
 import { MidiTrack, readMidiFile } from '../utils/midiImport';
+import { BackingSeg } from '../utils/performance';
+import { backingEnd, playBacking } from '../audio/backing';
+import { YouTubeBox, YTControl } from './YouTubeBox';
 
 /** A pause longer than this is shortened to SHORT_GAP, so stepping away doesn't fill the recording with silence. */
 const LONG_GAP = 8000;
@@ -31,6 +34,12 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const [mute, setMute] = useState(false);
   const muteRef = useRef(false);
   muteRef.current = mute;
+  // A Jam Room performance's backing (from a link): played along with the notes. While there is one, speed stays 100%.
+  const [backing, setBacking] = useState<BackingSeg[]>([]);
+  const backingRef = useRef<BackingSeg[]>([]);
+  backingRef.current = backing;
+  const stopBacking = useRef<(() => void) | null>(null);
+  const ytControl = useRef<YTControl | null>(null);
   const [imported, setImported] = useState<null | { all: PerfNote[]; trackOf: number[]; tracks: MidiTrack[] }>(null);
   const [trackPick, setTrackPick] = useState(-1);
 
@@ -53,9 +62,10 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     if (!p) return;
     void readPerfParam(p).then((loaded) => {
       if (loaded) {
-        setNotes(loaded);
+        setNotes(loaded.notes);
+        setBacking(loaded.backing);
         t0.current = null;
-        setLoadedMsg('Loaded from a link. Press Play back.');
+        setLoadedMsg(loaded.backing.length ? 'A Jam Room performance, with its backing. Press Play back.' : 'Loaded from a link. Press Play back.');
       } else setLoadedMsg('That performance link is damaged or cut off.');
     });
   }, []);
@@ -102,6 +112,8 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     const p = playRef.current;
     if (p) p.timers.forEach((id) => window.clearTimeout(id));
     playRef.current = null;
+    stopBacking.current?.();
+    stopBacking.current = null;
     setPlaying(false);
     setPlayLit((lit) => {
       lit.forEach((m) => ctx.engine.noteOff(m));
@@ -148,7 +160,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     setAtStart(false);
     await ctx.engine.unlock();
     const LEAD = 50;
-    const sp = speedRef.current;
+    const sp = backingRef.current.length ? 1 : speedRef.current;
     const timers: number[] = [];
     for (const n of done) {
       const end = n.t + n.d;
@@ -172,9 +184,13 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
         }, LEAD + (end - from) / sp),
       );
     }
-    timers.push(window.setTimeout(stop, LEAD + (perfLength(done) - from) / sp + 1500));
+    const endAt = Math.max(perfLength(done), backingEnd(backingRef.current));
+    timers.push(window.setTimeout(stop, LEAD + (endAt - from) / sp + 1500));
     // The roll's clock reads the performance's own time (slowed by the speed), so it scrolls the notes in as they play.
-    playRef.current = { start: performance.now() + LEAD - from / sp, timers };
+    const start = performance.now() + LEAD - from / sp;
+    playRef.current = { start, timers };
+    // The backing it was played with (Jam Room), lined up with the notes.
+    if (backingRef.current.length) stopBacking.current = playBacking(backingRef.current, () => performance.now() - start, ytControl.current);
     setPlaying(true);
   };
   const playRefFn = useRef(play);
@@ -260,6 +276,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
       held.current.clear();
       setFull(false);
       setNotes(got.notes);
+      setBacking([]);
       setImported(got.tracks.length > 1 ? { all: got.notes, trackOf: got.trackOf, tracks: got.tracks } : null);
       setTrackPick(-1);
       // Wait at the very start, so Play back (or the space bar) brings the notes up out of the keys from the beginning.
@@ -276,6 +293,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     setAsking(null);
     stop();
     setImported(null);
+    setBacking([]);
     setNotes([]);
     held.current.clear();
     t0.current = null;
@@ -316,7 +334,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
         <div className="flex items-center gap-1 text-[13px]" data-testid="perf-speed">
           <span className="h w-12 shrink-0 text-wal3">Speed</span>
           {[0.5, 0.75, 1].map((v) => (
-            <button key={v} className={`btn flex-1 px-1 py-0.5 text-[13px] ${speed === v ? 'btn-brass' : ''}`} aria-pressed={speed === v} data-testid={`perf-speed-${v * 100}`} onClick={() => { if (playRef.current) pause(); setSpeed(v); }}>
+            <button key={v} disabled={backing.length > 0 && v !== 1} title={backing.length ? 'A performance with a backing plays at 100%' : undefined} className={`btn flex-1 px-1 py-0.5 text-[13px] ${(backing.length ? 1 : speed) === v ? 'btn-brass' : ''}`} aria-pressed={speed === v} data-testid={`perf-speed-${v * 100}`} onClick={() => { if (playRef.current) pause(); setSpeed(v); }}>
               {v * 100}%
             </button>
           ))}
@@ -401,8 +419,15 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     </div>
   );
 
+  const video = backing.find((x): x is Extract<BackingSeg, { k: 'y' }> => x.k === 'y');
   const stage = (
     <div className="relative h-full w-full">
+      {video && (
+        // A Jam Room performance played with a YouTube video: the video, half see-through, under the roll.
+        <div className="absolute inset-0 flex items-center justify-center p-3 opacity-50" data-testid="perf-video">
+          <YouTubeBox videoId={video.v} volume={1} control={ytControl} />
+        </div>
+      )}
       {/* Matches the piano below: the stage's wood border is 10px, the piano's cheeks 12px. */}
       <div className="absolute inset-y-0 left-[2px] right-[2px]">
         <PianoRoll notes={notes} start={ctx.viewStart} now={now} offset={rollOffset} canScroll={!playing} onScrub={onScrub} />
@@ -434,7 +459,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
 const restingNow = (notes: PerfNote[]) => perfLength(notes) + 60_000;
 
 /** Save performance: a code for Classroom, a link, or a MIDI file. */
-export const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void }> = ({ notes, onClose }) => {
+export const SavePerformance: React.FC<{ notes: PerfNote[]; backing?: BackingSeg[]; onClose: () => void }> = ({ notes, backing = [], onClose }) => {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState<'' | 'code' | 'link'>('');
@@ -442,7 +467,8 @@ export const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void 
     if (!name.trim()) return setCode('');
     setCopied('');
     // The name lives only inside the code, never in the browser.
-    void encodeSubmission({ name, assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone: false, results: [], perf: packPerf(notes) }).then(setCode);
+    void encodeSubmission({ name, assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone: false, results: [], perf: packPerf(notes), ...(backing.length ? { jam: backing } : {}) }).then(setCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, notes]);
   /** If copying is blocked, the text shows in a box to copy by hand (no browser pop-ups: they freeze the page). */
   const [manual, setManual] = useState('');
@@ -479,7 +505,7 @@ export const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void 
           <section>
             <div className="h text-[15px] text-wal3">Share a link</div>
             <div className="text-[13px] text-muted">Anyone with the link can play it back in PianoLab. No name is in it.</div>
-            <button className="btn mt-1 w-full" data-testid="perf-link" onClick={() => void perfLink(notes).then((l) => copy(l, 'link'))}>
+            <button className="btn mt-1 w-full" data-testid="perf-link" onClick={() => void perfLink(notes, backing).then((l) => copy(l, 'link'))}>
               {copied === 'link' ? 'Link copied ✓' : 'Copy link'}
             </button>
           </section>

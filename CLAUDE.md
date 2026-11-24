@@ -314,6 +314,16 @@ YouTube ungraded):
 - Jam Room saves performances (his request; the plan's Play Along "take"): everything played is kept in memory (Sandbox
   limits, long pauses shortened); Save performance (Sandbox's `SavePerformance`: code with name inside / link / .mid) and
   Clear (asks Clear it / Keep it) in the Stage's top-right corner. Piano notes only, not the backing.
+- **Jam Room play back with its backing** (his request): a saved Jam Room performance also stores what played behind
+  it and when (`BackingSeg` list in `utils/performance.ts`: groove id + key + numerals + BPM, his track id, or YouTube
+  video id + video time; `at`/`until` on the performance's clock). Code key `j` (still v1; `cleanBacking` checks it);
+  links carry `{p, j}` (old links = just the notes list, still open). The performance clock starts at the first note or
+  the first backing; long pauses aren't shortened while a backing plays. Play back (Sandbox, `audio/backing.ts`
+  `playBacking`) restarts each segment at the right moment, joining part-way after a pause (`startGroove(..., fromBeat)`,
+  `startTrack(..., fileOffset)`, YouTube seek); speed stays 100% with a backing; a YouTube performance shows the video
+  (50% see-through) under the roll. The batch view has "▶ With backing" (opens the Sandbox link). `e40`: notes land on
+  the same groove beat within ~0.05 beat, also after pause/resume. `YouTubeBox.tsx` is shared (seek/play/pause control,
+  play/pause reports). Test hook `window.__groove`.
 - Sandbox MIDI import: Speed 50/75/100% (roll and sound slow together), Track picker for multi-track files (shown until
   you record on top), Mute (notes still come up and light, silently, to play the part yourself).
 

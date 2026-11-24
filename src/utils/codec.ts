@@ -87,6 +87,7 @@ export async function encodeSubmission(sub: Submission): Promise<string> {
   if (sub.learned?.length) packed.L = sub.learned.slice(0, 40); // lesson ids whose Learn is finished (Phase 2)
   if (sub.take) packed.m = sub.take; // reserved for Play Along takes (later phase)
   if (sub.perf?.length) packed.p = sub.perf; // a Sandbox performance (packPerf)
+  if (sub.jam?.length) packed.j = sub.jam; // its Jam Room backing (BackingSeg list)
   const json = JSON.stringify(packed);
   return `v${FORMAT_VERSION}.${await compress(json)}.${checksum(json)}`;
 }
@@ -123,6 +124,7 @@ async function decodeV1(body: string, sum: string): Promise<Submission | null> {
       results,
       ...(typeof d.m === 'string' ? { take: d.m } : {}),
       ...(Array.isArray(d.p) ? { perf: (d.p as unknown[]).map(Number).filter(Number.isFinite) } : {}),
+      ...(Array.isArray(d.j) ? { jam: d.j as unknown[] } : {}),
     };
   } catch {
     return null;

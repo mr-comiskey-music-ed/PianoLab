@@ -60,20 +60,57 @@ export const formatLength = (ms: number) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
 
+// ---------- Backing (Jam Room) ----------
+/**
+ * What was playing behind a Jam Room performance, so play back sounds the way the student heard it. Each time a backing
+ * starts there's a segment; `at` / `until` are ms on the performance's clock (`until` missing = to the end).
+ *  g = an app-made groove (`at` = when beat 1 of bar 1 was heard; the count-in is the bar before it)
+ *  t = one of Mr. Comiskey's tracks (`at` = when the file's start was heard)
+ *  y = a YouTube video (`vt` = the video's time, in seconds, at `at`)
+ * Stored in codes (key `j`) and links. Ids that no longer exist are skipped at play back.
+ */
+export type BackingSeg =
+  | { k: 'g'; at: number; until?: number; g: string; key: string; n: string[]; bpm: number }
+  | { k: 't'; at: number; until?: number; tr: string }
+  | { k: 'y'; at: number; until?: number; v: string; vt: number };
+
+const num = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) ? Math.round(x) : null);
+const str = (x: unknown, max = 40) => (typeof x === 'string' && x.length <= max ? x : null);
+/** Keep only well-formed segments (codes and links can be hand-edited). */
+export function cleanBacking(x: unknown): BackingSeg[] {
+  if (!Array.isArray(x)) return [];
+  const out: BackingSeg[] = [];
+  for (const s of x.slice(0, 60)) {
+    if (!s || typeof s !== 'object') continue;
+    const o = s as Record<string, unknown>;
+    const at = num(o.at);
+    if (at === null) continue;
+    const until = num(o.until);
+    const base = until !== null ? { at, until } : { at };
+    if (o.k === 'g' && str(o.g) && str(o.key, 4) && Array.isArray(o.n) && num(o.bpm)) {
+      out.push({ k: 'g', ...base, g: o.g as string, key: o.key as string, n: (o.n as unknown[]).filter((v): v is string => !!str(v, 8)).slice(0, 16), bpm: Math.max(40, Math.min(200, num(o.bpm)!)) });
+    } else if (o.k === 't' && str(o.tr)) out.push({ k: 't', ...base, tr: o.tr as string });
+    else if (o.k === 'y' && str(o.v, 11) && typeof o.vt === 'number' && Number.isFinite(o.vt)) out.push({ k: 'y', ...base, v: o.v as string, vt: Math.max(0, Math.round(o.vt * 10) / 10) });
+  }
+  return out;
+}
+
 // ---------- Link ----------
-/** A link that opens PianoLab's Sandbox with this performance ready to play. */
-export async function perfLink(notes: PerfNote[]): Promise<string> {
-  const data = await compress(JSON.stringify(packPerf(notes)));
+/** A link that opens PianoLab's Sandbox with this performance (and its backing, if any) ready to play. */
+export async function perfLink(notes: PerfNote[], backing: BackingSeg[] = []): Promise<string> {
+  // Older links hold just the notes list; links with a backing hold { p: notes, j: backing }.
+  const data = await compress(JSON.stringify(backing.length ? { p: packPerf(notes), j: backing } : packPerf(notes)));
   return `${window.location.origin}/?perf=${data}`;
 }
 
 /** Read a performance out of a `?perf=` value. Returns null if it is damaged. */
-export async function readPerfParam(value: string): Promise<PerfNote[] | null> {
+export async function readPerfParam(value: string): Promise<{ notes: PerfNote[]; backing: BackingSeg[] } | null> {
   const json = await decompress(value);
   if (!json) return null;
   try {
-    const notes = unpackPerf(JSON.parse(json));
-    return notes.length ? notes : null;
+    const d = JSON.parse(json);
+    const notes = unpackPerf(Array.isArray(d) ? d : d?.p);
+    return notes.length ? { notes, backing: Array.isArray(d) ? [] : cleanBacking(d?.j) } : null;
   } catch {
     return null;
   }
