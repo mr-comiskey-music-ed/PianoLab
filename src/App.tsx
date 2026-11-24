@@ -7,7 +7,9 @@ import { CustomSynthPanel } from './components/CustomSynthPanel';
 import { SYNTH_KEYS_WARM } from './data/defaults';
 import { loadCurrentPatch } from './utils/synthPresets';
 import { SynthParams } from './types';
-import { BatchModal, LatencyModal } from './components/Modals';
+import { AssignModal, BatchModal, LatencyModal } from './components/Modals';
+import { Assignment, applyAssignment, decodeAssignment } from './utils/assignment';
+import { ALL_LEVELS } from './utils/batch';
 import { GradeReport } from './components/GradeReport';
 import { LessonPicker } from './components/LessonPicker';
 import { ChordStrip } from './components/ChordStrip';
@@ -45,7 +47,12 @@ export default function App() {
   const [results, setResults] = useState<LevelResult[]>([]);
   // Lessons: the picker in the left panel. Learn progress is kept per lesson.
   const [lessonId, setLessonId] = useState(LESSONS[0].id);
-  const lesson = LESSONS.find((l) => l.id === lessonId) ?? LESSONS[0];
+  // A teacher's assignment link (?a=...): only the assigned lessons and levels, with its limits.
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const assignRef = useRef(assignment);
+  assignRef.current = assignment;
+  const lessons = useMemo(() => applyAssignment(LESSONS, assignment), [assignment]);
+  const lesson = lessons.find((l) => l.id === lessonId) ?? lessons[0];
   const [learnMap, setLearnMap] = useState<Record<string, LearnProgress>>({});
   const learnDone = learnMap[lesson.id]?.done ?? false;
   const learnStep = learnMap[lesson.id]?.step ?? 0;
@@ -105,7 +112,7 @@ export default function App() {
   const [states, setStates] = useState<Record<string, LoadState>>({});
   const [metro, setMetro] = useState<Metro>({ on: false, bpm: 80, sound: 'wood', vol: 1 });
   const [latency, setLatency] = useState<number | null>(() => loadLatency());
-  const [modal, setModal] = useState<null | 'latency' | 'batch'>(null);
+  const [modal, setModal] = useState<null | 'latency' | 'batch' | 'assign'>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [customParams, setCustomParams] = useState<SynthParams>(() => {
     const p = loadCurrentPatch() ?? SYNTH_KEYS_WARM;
@@ -123,8 +130,9 @@ export default function App() {
     // Drop results for levels that no longer exist (e.g. the removed octave level), so they don't go into new codes.
     setResults(snap.results.filter((r) => levelInfo(r.levelId)));
     setLearnMap(snap.learn);
-    if (LESSONS.some((l) => l.id === snap.lessonId)) setLessonId(snap.lessonId);
-    if (snap.soundId) void pickSound(snap.soundId);
+    if (applyAssignment(LESSONS, assignRef.current).some((l) => l.id === snap.lessonId)) setLessonId(snap.lessonId);
+    // An assignment's sound wins over the saved one.
+    if (snap.soundId && !assignRef.current?.sound) void pickSound(snap.soundId);
   };
 
   useEffect(() => {
@@ -142,6 +150,21 @@ export default function App() {
     void engine.select(DEFAULT_SOUND);
   }, []);
 
+  // Open an assignment link: decode it, go to its first lesson's Challenges, set its sound.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('a');
+    if (!q) return;
+    void decodeAssignment(q, ALL_LEVELS.map((l) => l.id)).then((a) => {
+      if (!a) return;
+      setAssignment(a);
+      const first = applyAssignment(LESSONS, a)[0];
+      if (first) setLessonId(first.id);
+      setMode('challenge');
+      if (a.sound) void pickSound(a.sound);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const pickSound = useCallback(async (id: string) => {
     setSoundId(id);
     await engine.select(id);
@@ -149,6 +172,9 @@ export default function App() {
     if (engine.current !== id) setSoundId(engine.current);
   }, []);
 
+  const metroRef = useRef(metro);
+  metroRef.current = metro;
+  const onMetroRef = useRef<(m: Metro) => void>(() => {});
   const onMetro = (m: Metro) => {
     const soundChanged = m.sound !== metro.sound;
     setMetro(m);
@@ -160,6 +186,8 @@ export default function App() {
       if (soundChanged && !m.on) engine.previewMetro(m.sound);
     });
   };
+
+  onMetroRef.current = onMetro;
 
   // ---- Notes ----
   const listeners = useRef(new Set<(midi: number) => void>());
@@ -215,6 +243,9 @@ export default function App() {
     getHeld,
     lesson,
     keyDef: stripKey,
+    latency: latency ?? 0,
+    stopMetronome: () => metroRef.current.on && onMetroRef.current({ ...metroRef.current, on: false }),
+    minTempo: assignment?.tempo,
     results,
     setResults,
     learnDone,
@@ -319,16 +350,27 @@ export default function App() {
         </div>
       </header>
 
+      {assignment && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 border-b border-brass2 bg-[#fbeecb] px-3 py-1 text-[13px] text-wal3" data-testid="assignment-banner">
+          <span className="h text-[14px]">Assignment: {assignment.title}</span>
+          <span>Lesson{lessons.length > 1 ? 's' : ''} {lessons.map((l) => l.number).join(', ')}</span>
+          {assignment.labels === 'c' && <span>Note names: Cs only</span>}
+          {assignment.labels === 'off' && <span>Note names: hidden</span>}
+          {assignment.tempo && <span>Timed levels: {assignment.tempo} BPM or faster</span>}
+          {assignment.sound && <span>Sound set by your teacher</span>}
+          <span className="text-muted">Turn it in from the Grade Report tab.</span>
+        </div>
+      )}
       {mode === 'report' ? (
         <main className="min-h-0 flex-1 overflow-auto">
-          <GradeReport results={results} learned={learned} onTeacher={() => setModal('batch')} />
+          <GradeReport results={results} learned={learned} assignment={assignment} onTeacher={() => setModal('batch')} onAssign={() => setModal('assign')} />
         </main>
       ) : (
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_250px]">
         {/* Left panel */}
         <aside className="min-h-0 overflow-auto border-r border-line bg-page p-3 order-2 lg:order-none" data-testid="left-panel">
           {(mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
-            <LessonPicker lessons={LESSONS} current={lessonId} learned={learned} results={results} onPick={setLessonId} />
+            <LessonPicker lessons={lessons} current={lesson.id} learned={learned} results={results} onPick={setLessonId} />
           )}
           {parts.left}
           <div className="mt-3 border-t border-line pt-2" data-testid="left-bottom">
@@ -434,6 +476,7 @@ export default function App() {
             soundId={soundId}
             states={states}
             onSelect={pickSound}
+            soundLocked={!!assignment?.sound}
             metro={metro}
             onMetro={onMetro}
             onOpenCustom={() => {
@@ -472,6 +515,7 @@ export default function App() {
       {parts.overlay}
       {modal === 'latency' && <LatencyModal engine={engine} subscribe={subscribe} onDone={setLatency} onClose={() => setModal(null)} pauseMetro={() => onMetro({ ...metro, on: false })} />}
       {modal === 'batch' && <BatchModal engine={engine} onClose={() => setModal(null)} />}
+      {modal === 'assign' && <AssignModal lessons={LESSONS} onClose={() => setModal(null)} />}
     </div>
   );
 }

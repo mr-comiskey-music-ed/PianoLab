@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AudioEngine } from '../audio/audioEngine';
-import { LevelResult } from '../types';
+import { Lesson, LevelResult } from '../types';
+import { Assignment, applyAssignment, assignmentLink, encodeAssignment } from '../utils/assignment';
+import { SOUNDS } from '../audio/audioEngine';
+import { Labels } from './modeTypes';
 import { encodeSubmission, DEFAULT_ASSIGNMENT } from '../utils/codec';
 import { parseBatch, BatchResult, BatchEntry, ALL_LESSONS } from '../utils/batch';
 import { floored, passed, bestByLevel } from '../utils/grading';
@@ -22,7 +25,10 @@ const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; chil
 );
 
 // ---------------- Get my code (shown on the Grade Report tab) ----------------
-export const CodePanel: React.FC<{ results: LevelResult[]; learned: string[] }> = ({ results, learned }) => {
+export const CodePanel: React.FC<{ results: LevelResult[]; learned: string[]; assignment?: Assignment | null }> = ({ results: allResults, learned, assignment }) => {
+  // With an assignment, the code (and the list) has only the assigned levels, and carries the assignment's title.
+  const results = assignment ? allResults.filter((r) => assignment.levels.includes(r.levelId)) : allResults;
+  const shownLessons = applyAssignment(ALL_LESSONS, assignment ?? null);
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState(false);
   // The name is typed fresh each time and is never saved by the app. It lives only inside the code.
@@ -31,8 +37,9 @@ export const CodePanel: React.FC<{ results: LevelResult[]; learned: string[] }> 
   useEffect(() => {
     if (!name.trim()) return setCode('');
     setCopied(false);
-    void encodeSubmission({ name, assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone: learned.includes('lesson-1'), learned, results }).then(setCode);
-  }, [results, learned, name]);
+    void encodeSubmission({ name, assignment: assignment?.title ?? DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone: learned.includes('lesson-1'), learned, results }).then(setCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allResults, learned, name, assignment]);
   const best = bestByLevel(results);
   const copy = async () => {
     try {
@@ -51,7 +58,7 @@ export const CodePanel: React.FC<{ results: LevelResult[]; learned: string[] }> 
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="off" data-testid="name" placeholder="Your Name" className="mt-0.5 w-full rounded-lg border border-line2 bg-white px-2 py-1.5 text-[15px]" />
       </label>
       <div className="mt-3 flex flex-col gap-2 rounded-lg border border-line bg-page p-2 text-[14px]" data-testid="report-levels">
-        {ALL_LESSONS.map((les) => (
+        {shownLessons.map((les) => (
           <div key={les.id}>
             <div className="flex justify-between">
               <span className="h text-wal3">
@@ -247,7 +254,14 @@ const PerfPlayer: React.FC<{ engine: AudioEngine; perf: number[] }> = ({ engine,
 const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle: () => void }> = ({ e, engine, open, toggle }) => (
   <div className="rounded-lg border border-line bg-panel">
     <button className="flex w-full items-center gap-3 px-3 py-2 text-left" onClick={toggle}>
-      <span className="h w-40 truncate text-[14px] text-wal3">{e.label || `Student ${e.id}`}</span>
+      <span className="flex w-40 flex-col">
+        <span className="h truncate text-[14px] text-wal3">{e.label || `Student ${e.id}`}</span>
+        {e.submission.assignment !== DEFAULT_ASSIGNMENT && (
+          <span className="truncate text-[11px] text-muted" data-testid="batch-assignment" title={`Assignment: ${e.submission.assignment}`}>
+            {e.submission.assignment}
+          </span>
+        )}
+      </span>
       {/* One chip per lesson: the average of the levels done in it (raw before the floor in brackets), and a dot for Learn. */}
       <span className="flex flex-1 flex-wrap gap-1">
         {ALL_LESSONS.map((les) => {
@@ -287,3 +301,125 @@ const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle:
     )}
   </div>
 );
+
+// ---------------- Assignment link (teacher) ----------------
+const LABEL_CHOICES: [Labels, string][] = [
+  ['all', 'Each level’s own setting'],
+  ['c', 'At most Cs'],
+  ['off', 'No note names'],
+];
+/**
+ * The teacher picks levels (lesson by lesson), the most help with note names, the slowest tempo for timed levels and a
+ * sound, and gets a link to post in Google Classroom. Students who open it see only that work, and their codes say
+ * which assignment they're for.
+ */
+export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> = ({ lessons, onClose }) => {
+  const [title, setTitle] = useState('');
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [labels, setLabels] = useState<Labels>('all');
+  const [tempo, setTempo] = useState('');
+  const [sound, setSound] = useState('');
+  const [link, setLink] = useState('');
+  const [copied, setCopied] = useState(false);
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const tempoNum = Number(tempo);
+  const tempoOk = tempo === '' || (Number.isFinite(tempoNum) && tempoNum >= 40 && tempoNum <= 200);
+  const ready = title.trim() !== '' && picked.size > 0 && tempoOk;
+
+  useEffect(() => {
+    setCopied(false);
+    if (!ready) return setLink('');
+    // Keep the lessons' order, whatever order the boxes were ticked in.
+    const levels = lessons.flatMap((l) => l.levels.map((v) => v.id)).filter((id) => picked.has(id));
+    void encodeAssignment({ title, levels, labels, ...(tempo ? { tempo: tempoNum } : {}), ...(sound ? { sound } : {}) }).then((t) => setLink(assignmentLink(t)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, picked, labels, tempo, sound, ready]);
+
+  const toggle = (ids: string[], on: boolean) =>
+    setPicked((p) => {
+      const n = new Set(p);
+      ids.forEach((id) => (on ? n.add(id) : n.delete(id)));
+      return n;
+    });
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      ref.current?.select();
+      document.execCommand('copy');
+    }
+    setCopied(true);
+  };
+  const box = 'rounded-lg border border-line2 bg-white px-2 py-1 text-[14px]';
+
+  return (
+    <Shell title="Make an assignment link" onClose={onClose} wide>
+      <div className="flex flex-col gap-3 text-[14px] text-wal2" data-testid="assign-modal">
+        <p className="text-wal1">Pick the levels. Students who open the link see only those lessons and levels, with your limits. Their codes show the assignment’s name in the batch grader.</p>
+        <label className="flex flex-col">
+          <span className="h text-wal3">Assignment name</span>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder="e.g. Week 3: Pop progressions" className={box} data-testid="assign-title" />
+        </label>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {lessons.map((les) => {
+            const ids = les.levels.map((v) => v.id);
+            const all = ids.every((id) => picked.has(id));
+            return (
+              <div key={les.id} className="rounded-lg border border-line bg-page p-2">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={all} onChange={(e) => toggle(ids, e.target.checked)} data-testid={`assign-lesson-${les.number}`} className="accent-[#b8862c]" />
+                  <span className="h text-wal3">
+                    Lesson {les.number}: {les.title}
+                  </span>
+                </label>
+                {les.levels.map((v) => (
+                  <label key={v.id} className="ml-5 flex items-center gap-2 text-[13px]">
+                    <input type="checkbox" checked={picked.has(v.id)} onChange={(e) => toggle([v.id], e.target.checked)} data-testid={`assign-level-${v.id}`} className="accent-[#b8862c]" />
+                    {v.title}
+                  </label>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-4">
+          <label className="flex flex-col">
+            <span className="h text-wal3">Note names on the keys</span>
+            <select value={labels} onChange={(e) => setLabels(e.target.value as Labels)} className={box} data-testid="assign-labels">
+              {LABEL_CHOICES.map(([v, t]) => (
+                <option key={v} value={v}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col">
+            <span className="h text-wal3">Slowest tempo (timed levels)</span>
+            <input value={tempo} onChange={(e) => setTempo(e.target.value.replace(/\D/g, ''))} placeholder="Level’s own" inputMode="numeric" className={`${box} w-36 ${tempoOk ? '' : 'border-bad'}`} data-testid="assign-tempo" />
+            {!tempoOk && <span className="text-[12px] text-bad">40 to 200 BPM</span>}
+          </label>
+          <label className="flex flex-col">
+            <span className="h text-wal3">Sound</span>
+            <select value={sound} onChange={(e) => setSound(e.target.value)} className={box} data-testid="assign-sound">
+              <option value="">Student’s choice</option>
+              {SOUNDS.filter((x) => x.id !== 'custom').map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.category === x.label ? x.label : `${x.category}: ${x.label}`}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <textarea ref={ref} readOnly value={link} rows={3} placeholder={ready ? '' : 'Name the assignment and tick at least one level. The link shows up here.'} className="w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px] break-all" data-testid="assign-link" onFocus={(e) => e.currentTarget.select()} />
+        <div className="flex gap-2">
+          <button className="btn btn-brass flex-1" onClick={copy} disabled={!link} data-testid="assign-copy">
+            {copied ? 'Copied ✓' : 'Copy link'}
+          </button>
+          <a className={`btn ${link ? '' : 'pointer-events-none opacity-50'}`} href={link || undefined} target="_blank" rel="noreferrer">
+            Try it
+          </a>
+        </div>
+      </div>
+    </Shell>
+  );
+};

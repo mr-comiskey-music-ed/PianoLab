@@ -1,3 +1,4 @@
+import { Pattern } from './data/pattern';
 // Synth types are copied from SynthLab (src/types.ts) so SynthLab patch codes load here unchanged.
 export type WaveformType = 'sine' | 'triangle' | 'sawtooth' | 'square' | 'noise';
 export type VoiceMode = 'poly' | 'mono';
@@ -35,7 +36,12 @@ export type NoteLabels = 'off' | 'c' | 'all';
  * (its name, numeral, function or inversion). halfStep: a key lights up, play the key `step` half steps away.
  * earCheck: listen, pick (e.g. Major / Minor). smooth: Smooth Mover, move to the next chord as little as possible.
  */
-export type AssessmentType = 'findIt' | 'nameIt' | 'buildIt' | 'nameChord' | 'halfStep' | 'earCheck' | 'smooth';
+export type AssessmentType = 'findIt' | 'nameIt' | 'buildIt' | 'nameChord' | 'halfStep' | 'earCheck' | 'smooth' | 'play' | 'echo' | 'speed';
+
+/** Progression Play: what scrolls down the waterfall. Falling blocks is easiest; nothing is hardest. */
+export type ScreenHelp = 'blocks' | 'names' | 'off';
+/** Echo: how much help while the app plays. Watch & Play (keys light) is easiest; Ear only is hardest. */
+export type EchoHelp = 'watch' | 'hint' | 'ear';
 
 export interface Prompt {
   /** What the app asks, e.g. "Play every F". */
@@ -54,6 +60,8 @@ export interface Prompt {
   step?: number;
   /** This question's own answer buttons (overrides the level's `choices`). */
   choices?: string[];
+  /** echo: the notes the app plays, to be played back in order (any octave), e.g. ["C4","D4","E4"]. */
+  notes?: string[];
 }
 
 export interface Level {
@@ -69,6 +77,15 @@ export interface Level {
   labels: 'all' | 'c' | 'off';
   /** nameIt / nameChord / earCheck: the answer buttons (nameIt default: the seven letters). */
   choices?: string[];
+  /** play (Progression Play): the pattern to play in time (SPEC section 6). Its tempo is the slowest allowed. */
+  pattern?: Pattern;
+  /** play: the most help allowed on screen (and the starting setting). Students can take less, never more. */
+  screen?: ScreenHelp;
+  /** echo: the most help allowed (and the starting setting). */
+  echo?: EchoHelp;
+  /** speed (Speed Round): seconds on the clock, and how many right answers make 100%. */
+  seconds?: number;
+  target?: number;
   /** nameChord: also play the chord out loud (with "Hear it again"). */
   playChord?: boolean;
   /** smooth: the first chord's keys, e.g. ["C4","E4","G4"]. */

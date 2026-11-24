@@ -3,6 +3,8 @@ import lessons from './lessons.json';
 import { Lesson } from '../types';
 import { KEYS, chordName, diatonic, keyById, parseChord } from '../utils/chords';
 import { parseNote, pcOf } from '../utils/music';
+import { validatePattern } from './pattern';
+import { buildTimeline } from '../utils/patternEngine';
 
 const LESSONS = lessons.lessons as unknown as Lesson[];
 
@@ -37,12 +39,34 @@ describe('lesson content', () => {
       for (const v of l.levels)
         for (const p of v.prompts) {
           const where = `${v.id}: ${p.text}`;
-          if (['buildIt', 'nameChord', 'earCheck', 'smooth'].includes(v.type)) expect(parseChord(p.chord ?? ''), where).not.toBeNull();
+          if (['buildIt', 'nameChord', 'earCheck', 'smooth', 'speed'].includes(v.type)) expect(parseChord(p.chord ?? ''), where).not.toBeNull();
           if (['nameChord', 'earCheck', 'nameIt'].includes(v.type) && (p.choices ?? v.choices)) for (const a of p.answer ?? []) expect(p.choices ?? v.choices, where).toContain(a);
           if (v.type === 'nameChord') expect((p.choices ?? v.choices ?? []).length, where).toBeGreaterThan(1);
           if (v.type === 'findIt') for (const a of p.answer ?? []) expect(pcOf(a), where).not.toBeNull();
           if (v.type === 'nameIt' || v.type === 'halfStep') expect(pcOf(p.show ?? ''), where).not.toBeNull();
           if (v.type === 'halfStep') expect(Math.abs(p.step ?? 0), where).toBeGreaterThan(0);
+          if (v.type === 'echo') {
+            expect((p.notes ?? []).length, where).toBeGreaterThan(1);
+            for (const n of p.notes ?? []) expect(parseNote(n), `${where} ${n}`).not.toBeNull();
+          }
         }
+  });
+  it('timed levels are well formed', () => {
+    for (const l of LESSONS)
+      for (const v of l.levels) {
+        if (v.type === 'play') {
+          expect(v.pattern, v.id).toBeDefined();
+          expect(validatePattern(v.pattern!), v.id).toEqual([]);
+          const t = buildTimeline(v.pattern!);
+          // every bar's numeral is in the key, and every note fits on the 25 keys (C3-C5)
+          expect(t.bars.length, v.id).toBe(v.pattern!.bars);
+          for (const h of t.hits) for (const n of h.notes) expect(n >= 48 && n <= 72, `${v.id} note ${n}`).toBe(true);
+        }
+        if (v.type === 'speed') {
+          expect(v.seconds, v.id).toBeGreaterThan(0);
+          expect(v.target, v.id).toBeGreaterThan(0);
+          expect(v.prompts.length, v.id).toBeGreaterThan(3);
+        }
+      }
   });
 });

@@ -516,6 +516,33 @@ export class AudioEngine {
   now() {
     return Tone.now();
   }
+
+  /**
+   * Wood-block clicks for a timed level (count-in and beats), at exact times on the audio clock. `startInMs` is how long
+   * from now the first click sounds; returns a cancel function. Uses the metronome's volume.
+   */
+  scheduleBeatClicks(startInMs: number, count: number, bpm: number, beatsPerBar = 4): () => void {
+    const start = Tone.getContext().currentTime + startInMs / 1000;
+    const gap = 60 / bpm;
+    let cancelled = false;
+    // Schedule a little ahead in batches, so stopping a run stops the clicks within a beat or two.
+    let next = 0;
+    const pump = () => {
+      if (cancelled) return;
+      const horizon = Tone.getContext().currentTime + 1.5;
+      while (next < count && start + next * gap < horizon) {
+        this.tick('wood', next % beatsPerBar, start + next * gap);
+        next++;
+      }
+      if (next < count) timer = window.setTimeout(pump, 400);
+    };
+    let timer = 0;
+    pump();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }
 }
 
 function samplerVoice(s: Tone.Sampler): Voice {

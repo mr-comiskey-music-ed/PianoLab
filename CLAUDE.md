@@ -210,15 +210,43 @@ because the app is about chords - no mono leads), My sounds, name + Save. Shrunk
 Rhodes now has all 5 velocity layers (~1.8 MB); top notes missing a layer borrow the nearest layer of the same note.
 Metronome sounds are in `audioEngine.ts` `tick()`.
 
+**Phase 3 (Time) built** (all at once, his choice; timed activities live inside the lessons):
+- Pattern engine `utils/patternEngine.ts` (pattern -> timeline of hits; one chord per bar; textures, rhythms, voicings
+  root/smoothest kept on C3-C5). Timing judge `utils/timing.ts`: the first key of a chord counts, other keys within 80 ms
+  belong to it; Perfect ±50 ms, Good ±100 ms, otherwise Miss; latency is taken off first. Grade = half timing (Perfect 1,
+  Good 0.75) + half right notes. Tests: `timing.test.ts`.
+- Progression Play (`type: "play"`, `components/PlayLevel.tsx` + `Waterfall.tsx`): blocks in the bar's degree colour fall
+  onto a brass line above the keys; bar labels show chord + numeral. Start screen: tempo (never slower than the level or
+  the assignment), Show = Falling blocks / Chord names only / Nothing (the level's `screen` is the most help allowed),
+  Listen first, Start. 4-click count-in (wood block, on the audio clock), Perfect/Good/Early/Late pops, Stop. The
+  global metronome is turned off for it. Result shows Perfect/Good/Miss, timing % and right-notes %.
+- Echo (`type: "echo"`, prompt `notes`): the app plays a short tune, then the student plays it back (any octave, same
+  order). Help: Watch & Play (keys light) / Hint (first key lights) / Ear only (no lights, 2 replays); level `echo` is
+  the most help allowed.
+- Speed Round (`type: "speed"`, `seconds`, `target`): Build It rules, as many as possible; wrong = try again, Skip
+  button; grade = right answers / target (max 100%).
+- New levels (appended, ids saved in codes): `l1-echo`, `l2-play-roots`, `l2-play-cfg`, `l3-play-pop`, `l3-play-doowop`,
+  `l5-speed`, `l6-play-smooth`. Lesson 5 has 9 levels; the level list was tightened so it still fits a Chromebook.
+- Level titles on the Stage are no longer in capitals (capitals turned "vi" into "VI").
+- Assignment link (core, `utils/assignment.ts`): Grade Report > Teacher > "Make an assignment link": name, levels (by
+  lesson), note names (level's own / at most Cs / none), slowest tempo, sound. Link = `?a=<compressed>.<checksum>`
+  (keys t, v, n, b, s; never change their meaning). Opening it: banner, only the assigned lessons/levels, note names never
+  easier than the limit, tempo floor, sound set and locked, opens on Challenges. The code's existing `a` key carries the
+  assignment name (no format change); the batch view shows it under the student's name; the code then holds only the
+  assigned levels. A broken link opens the normal app.
+- Test hooks (no student data): `window.__play` (hit times) and `window.__echo` (the tune) for browser tests.
+
 ## Open items (last updated end of Phase 1 testing)
 - Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (gentler crackle), Pad (softer swell).
 - MIDI import choices to confirm (see SPEC section 10): merge all tracks, drop drums, 3-minute cap, replace not append.
 - Grading confirmed: second try = half credit, 80% pass. Lesson 1 has four levels; the octave level (`l1-octave`) was removed
   before anything reached students (he doesn't care about the octave). Old saves drop results for removed levels.
 - Teacher button should eventually assign anything (SPEC section 8, "Everything is assignable"). Today it only batch grades.
-- Not built yet: About screen with full credits (credits are in a small right-panel list), Phases 3-4 (SPEC section 17).
+- Not built yet: About screen with full credits (credits are in a small right-panel list), Phase 4 (SPEC section 17).
+- Phase 3 to try on the Chromebook: timing feel with the real MIDI keyboard (run the latency check first), Echo,
+  Speed Round, an assignment link end to end.
 - Phase 2 to try on the Chromebook: every lesson's Learn, the chord levels with the MIDI keyboard, Smooth Mover, the strip.
-- Later: the Teacher's assignment link picks the lesson/levels (SPEC section 8).
+- Assignment link: core built (Phase 3). Later: assign Learn-only lessons, due dates, more settings (SPEC section 8).
 - Confirm the Vercel preview for branch `claude/charming-wozniak-94lfxk` builds; nothing is on `main` yet (merge only on his
   say-so, after class).
 - Latency check result varied (88-141 ms in tests); worth a second look once timing grades exist (Phase 3).

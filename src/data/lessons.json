@@ -460,6 +460,102 @@
             }
           ],
           "labels": "off"
+        },
+        {
+          "id": "l1-echo",
+          "title": "Echo",
+          "blurb": "Listen to a short tune, then play it back. Any octave counts.",
+          "type": "echo",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Echo 3 notes.",
+              "notes": [
+                "C4",
+                "D4",
+                "E4"
+              ]
+            },
+            {
+              "text": "Echo 3 notes.",
+              "notes": [
+                "E4",
+                "D4",
+                "C4"
+              ]
+            },
+            {
+              "text": "Echo 3 notes.",
+              "notes": [
+                "C4",
+                "E4",
+                "G4"
+              ]
+            },
+            {
+              "text": "Echo 3 notes.",
+              "notes": [
+                "G4",
+                "F4",
+                "E4"
+              ]
+            },
+            {
+              "text": "Echo 3 notes.",
+              "notes": [
+                "F4",
+                "G4",
+                "A4"
+              ]
+            },
+            {
+              "text": "Echo 4 notes.",
+              "notes": [
+                "C4",
+                "D4",
+                "E4",
+                "F4"
+              ]
+            },
+            {
+              "text": "Echo 3 notes.",
+              "notes": [
+                "G4",
+                "E4",
+                "C4"
+              ]
+            },
+            {
+              "text": "Echo 4 notes.",
+              "notes": [
+                "A4",
+                "G4",
+                "F4",
+                "E4"
+              ]
+            },
+            {
+              "text": "Echo 4 notes.",
+              "notes": [
+                "D4",
+                "E4",
+                "F4",
+                "G4"
+              ]
+            },
+            {
+              "text": "Echo 4 notes.",
+              "notes": [
+                "C4",
+                "G4",
+                "E4",
+                "C4"
+              ]
+            }
+          ],
+          "echo": "watch"
         }
       ],
       "practice": "Play anything you like. Notice the pattern of 2 and 3 black keys. Try to find every C, then every F, without looking at the labels."
@@ -865,6 +961,60 @@
               "chord": "Am"
             }
           ]
+        },
+        {
+          "id": "l2-play-roots",
+          "title": "Roots in time",
+          "blurb": "Play the root of each chord, one note per bar, in time with the clicks.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l2-roots",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "bass",
+            "rhythm": "whole",
+            "voicing": "root",
+            "tempo": 70,
+            "bars": 4
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l2-play-cfg",
+          "title": "C, F and G in time",
+          "blurb": "Play each triad when its block reaches the line: two per bar.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l2-cfg",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "block",
+            "rhythm": "half",
+            "voicing": "root",
+            "tempo": 70,
+            "bars": 4
+          },
+          "screen": "blocks"
         }
       ]
     },
@@ -1235,6 +1385,60 @@
               "chord": "Em"
             }
           ]
+        },
+        {
+          "id": "l3-play-pop",
+          "title": "I – V – vi – IV in time",
+          "blurb": "Play the pop progression in time: two chords per bar.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l3-pop",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V",
+              "vi",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "half",
+            "voicing": "root",
+            "tempo": 76,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l3-play-doowop",
+          "title": "I – vi – IV – V in time",
+          "blurb": "Root on beat 1, then the chord on beat 3, in time.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l3-doowop",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi",
+              "IV",
+              "V"
+            ],
+            "texture": "bassChord",
+            "rhythm": "half",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 8
+          },
+          "screen": "blocks"
         }
       ]
     },
@@ -2457,6 +2661,83 @@
               "chord": "F#m"
             }
           ]
+        },
+        {
+          "id": "l5-speed",
+          "title": "Speed Round",
+          "blurb": "Play as many major and minor chords as you can in 60 seconds. Skip one if you get stuck.",
+          "type": "speed",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play C.",
+              "chord": "C"
+            },
+            {
+              "text": "Play D.",
+              "chord": "D"
+            },
+            {
+              "text": "Play E.",
+              "chord": "E"
+            },
+            {
+              "text": "Play F.",
+              "chord": "F"
+            },
+            {
+              "text": "Play G.",
+              "chord": "G"
+            },
+            {
+              "text": "Play A.",
+              "chord": "A"
+            },
+            {
+              "text": "Play B♭.",
+              "chord": "Bb"
+            },
+            {
+              "text": "Play E♭.",
+              "chord": "Eb"
+            },
+            {
+              "text": "Play Cm.",
+              "chord": "Cm"
+            },
+            {
+              "text": "Play Dm.",
+              "chord": "Dm"
+            },
+            {
+              "text": "Play Em.",
+              "chord": "Em"
+            },
+            {
+              "text": "Play Fm.",
+              "chord": "Fm"
+            },
+            {
+              "text": "Play Gm.",
+              "chord": "Gm"
+            },
+            {
+              "text": "Play Am.",
+              "chord": "Am"
+            },
+            {
+              "text": "Play Bm.",
+              "chord": "Bm"
+            },
+            {
+              "text": "Play F♯m.",
+              "chord": "F#m"
+            }
+          ],
+          "seconds": 60,
+          "target": 12
         }
       ]
     },
@@ -2775,6 +3056,33 @@
             "E4",
             "G4"
           ]
+        },
+        {
+          "id": "l6-play-smooth",
+          "title": "Smooth moves in time",
+          "blurb": "Play I – IV – V – I with the smoothest moves, in time. The blocks show the voicing.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l6-smooth",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
         }
       ]
     }

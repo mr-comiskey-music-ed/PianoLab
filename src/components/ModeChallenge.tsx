@@ -1,18 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
-import { Level, Prompt } from '../types';
-import { KEY_COUNT, isBlack, parseNote, pc, pcOf, pretty } from '../utils/music';
+import { EchoHelp, Level, Prompt } from '../types';
+import { KEY_COUNT, isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
 import { Chord, chordLongName, chordName, detectChord, matchesChord, moveDistance, parseChord, smoothestVoicing, voicing } from '../utils/chords';
 import { accuracy, credit, floored, passed } from '../utils/grading';
 import { shuffleNoRepeats } from '../utils/shuffle';
+import { TimingSummary } from '../utils/timing';
 import { loadBest, saveBest } from '../utils/autosave';
 import { KeyMark } from './Piano';
 import { LABEL_ORDER, Labels, ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
+import { usePlayLevel } from './PlayLevel';
 
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+/** Echo help, most to least: keys light up, only the first key lights up, nothing lights up (and only 2 replays). */
+const ECHO_ORDER: EchoHelp[] = ['watch', 'hint', 'ear'];
+const ECHO_LABEL: Record<EchoHelp, string> = { watch: 'Watch & Play', hint: 'Hint', ear: 'Ear only' };
+const EAR_REPLAYS = 2;
 
 /** Two questions are "the same" when they ask the same thing about the same note or chord. */
-const sameQuestion = (p: Prompt) => [p.text, p.chord ?? '', p.show ?? '', p.inv ?? '', p.step ?? '', (p.answer ?? []).join('/')].join('|');
+const sameQuestion = (p: Prompt) => [p.text, p.chord ?? '', p.show ?? '', p.inv ?? '', p.step ?? '', (p.answer ?? []).join('/'), (p.notes ?? []).join()].join('|');
 
 interface Run {
   level: Level;
@@ -23,6 +29,9 @@ interface Run {
   misses: number;
   /** Smooth Mover: the chord the student is moving from (stays lit), and half steps moved so far vs the best possible. */
   prev?: number[];
+  /** Speed Round: when time is up (performance.now() ms), and right answers so far. */
+  endsAt?: number;
+  count?: number;
   moved?: number;
   bestMoves?: number;
 }
@@ -30,6 +39,11 @@ interface Finished {
   level: Level;
   raw: number;
   best: number;
+  /** Progression Play: the timing breakdown, and the tempo played at. */
+  timing?: TimingSummary;
+  tempo?: number;
+  /** Speed Round: right answers in the time. */
+  speedCount?: number;
   /** Smooth Mover: half steps moved, and the fewest possible. */
   moved?: number;
   bestMoves?: number;
@@ -87,6 +101,17 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   const [reveal, setReveal] = useState<number[] | null>(null);
   const busy = useRef(false);
   const [marks, setMarks] = useState<Map<number, KeyMark>>(new Map());
+  // Echo: the help setting per level (Watch & Play / Hint / Ear only), keys lit while the app plays, what's been played
+  // back so far, and replays used (Ear only allows 2).
+  const [echoPick, setEchoPick] = useState<Record<string, EchoHelp>>({});
+  const [echoLit, setEchoLit] = useState<Set<number> | null>(null);
+  const [echoPlaying, setEchoPlaying] = useState(false);
+  const [echoGot, setEchoGot] = useState<number[]>([]);
+  const echoBuf = useRef<number[]>([]);
+  const [replays, setReplays] = useState(0);
+  const echoTimers = useRef<number[]>([]);
+  // Speed Round: a clock that ticks the display.
+  const [, setTick] = useState(0);
   const [best, setBest] = useState<Record<string, number>>(() => loadBest());
   const [labelPick, setLabelPick] = useState<Record<string, Labels>>({});
   const runRef = useRef<Run | null>(null);
@@ -144,8 +169,55 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   };
   const listens = (level: Level) => level.type === 'earCheck' || (level.type === 'nameChord' && !!level.playChord);
 
+  /** Echo help for a level: the student's pick, but never more help than the level allows. */
+  const echoHelp = (level: Level): EchoHelp => {
+    const min = level.echo ?? 'watch';
+    const pick = echoPick[level.id] ?? min;
+    return ECHO_ORDER.indexOf(pick) >= ECHO_ORDER.indexOf(min) ? pick : min;
+  };
+  const stopEcho = () => {
+    echoTimers.current.forEach((t) => window.clearTimeout(t));
+    echoTimers.current = [];
+    setEchoLit(null);
+    setEchoPlaying(false);
+  };
+  /** Echo: the app plays the melody (keys light up as the help setting allows), then it's the student's turn. */
+  const playEcho = (level: Level, p: Prompt | undefined) => {
+    const notes = (p?.notes ?? []).map((n) => parseNote(n)).filter((n): n is number => n !== null);
+    if (!notes.length) return;
+    stopEcho();
+    const help = echoHelp(level);
+    // For browser tests: the tune being played (no student data).
+    (window as unknown as { __echo?: number[] }).__echo = notes;
+    busy.current = true;
+    setEchoPlaying(true);
+    echoBuf.current = [];
+    setEchoGot([]);
+    const GAP = 560;
+    void ctx.engine.unlock().then(() => {
+      notes.forEach((n, i) => {
+        echoTimers.current.push(
+          window.setTimeout(() => {
+            ctx.engine.noteOn(n, 0.75);
+            setEchoLit(help === 'watch' || (help === 'hint' && i === 0) ? new Set([n]) : null);
+          }, i * GAP),
+        );
+        echoTimers.current.push(window.setTimeout(() => ctx.engine.noteOff(n), i * GAP + GAP * 0.8));
+      });
+      echoTimers.current.push(
+        window.setTimeout(() => {
+          setEchoLit(null);
+          setEchoPlaying(false);
+          busy.current = false;
+        }, notes.length * GAP),
+      );
+    });
+  };
+
   const start = (id: string) => {
     const level = levelById(id);
+    stopEcho();
+    setReplays(0);
     setFinished(null);
     setMsg('');
     // Never the same question twice in a row (and not a repeat of the one that ended the last try).
@@ -159,8 +231,22 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       while (Math.max(...prev) > v + KEY_COUNT - 1 && Math.min(...prev) - 12 >= v) prev = prev.map((n) => n - 12);
       while (Math.min(...prev) < v && Math.max(...prev) + 12 <= v + KEY_COUNT - 1) prev = prev.map((n) => n + 12);
     }
+    if (level.type === 'speed') {
+      // As many as you can: plenty of questions, shuffled, never the same twice in a row.
+      let many: Prompt[] = [];
+      while (many.length < 150) many = [...many, ...shuffleNoRepeats(level.prompts, sameQuestion, many.length ? sameQuestion(many[many.length - 1]) : undefined)];
+      busy.current = false;
+      setRunNow({ level, prompts: many, idx: 0, points: 0, misses: 0, endsAt: performance.now() + (level.seconds ?? 60) * 1000, count: 0 });
+      return;
+    }
     setRunNow({ level, prompts: ordered, idx: 0, points: 0, misses: 0, prev, moved: 0, bestMoves: 0 });
     busy.current = false;
+    if (level.type === 'echo') {
+      // "Listen…" right away; the tune starts a moment later.
+      busy.current = true;
+      setEchoPlaying(true);
+      window.setTimeout(() => playEcho(level, ordered[0]), 400);
+    }
     setReveal(null);
     setReady(!listens(level));
     if (listens(level)) window.setTimeout(() => playChord(level, ordered[0], 0), 300);
@@ -170,6 +256,18 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   const answer = (correct: boolean, keys: number[] = [], why = 'Not quite. Try again.', extra: Partial<Run> = {}) => {
     const r = runRef.current;
     if (!r || busy.current) return;
+    if (r.level.type === 'speed') {
+      // Speed Round: right = +1 and the next one; wrong = try again (no penalty but the time).
+      if (!correct) {
+        if (keys.length) flash(keys, 'bad');
+        setMsg(why);
+        return;
+      }
+      if (keys.length) flash(keys, 'ok');
+      setFb({ kind: 'good', text: '✓ Right!' }, 700);
+      setRunNow({ ...r, idx: r.idx + 1, count: (r.count ?? 0) + 1 });
+      return;
+    }
     if (!correct) {
       if (keys.length) flash(keys, 'bad');
       setMsg(why);
@@ -198,6 +296,21 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     advance(r, extra);
   };
 
+  /** Save a finished attempt (best on this device, the result for the code) and show the result screen. */
+  const recordResult = (level: Level, raw: number, extra: Partial<Finished> = {}) => {
+    setRunNow(null);
+    const prevBest = best[level.id] ?? 0;
+    saveBest(level.id, raw);
+    setBest(loadBest());
+    ctx.setResults((prev) => {
+      const old = prev.find((x) => x.levelId === level.id);
+      if (old && old.raw >= raw) return prev;
+      const rest = prev.filter((x) => x.levelId !== level.id);
+      return [...rest, { levelId: level.id, raw, labels: effective(level), at: Date.now() }];
+    });
+    setFinished({ level, raw, best: Math.max(prevBest, raw), ...extra });
+  };
+
   /** Score a right answer and go to the next question (or the result). */
   const advance = (r: Run, extra: Partial<Run>) => {
     const points = r.points + credit(r.misses);
@@ -205,21 +318,16 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const next = { ...r, ...extra };
     if (idx >= r.prompts.length) {
       lastAsked.current[r.level.id] = sameQuestion(r.prompts[r.idx]);
-      const raw = accuracy(points, r.prompts.length);
-      setRunNow(null);
-      const prevBest = best[r.level.id] ?? 0;
-      saveBest(r.level.id, raw);
-      setBest(loadBest());
-      ctx.setResults((prev) => {
-        const old = prev.find((x) => x.levelId === r.level.id);
-        if (old && old.raw >= raw) return prev;
-        const rest = prev.filter((x) => x.levelId !== r.level.id);
-        return [...rest, { levelId: r.level.id, raw, labels: effective(r.level), at: Date.now() }];
-      });
-      setFinished({ level: r.level, raw, best: Math.max(prevBest, raw), moved: next.moved, bestMoves: next.bestMoves });
+      recordResult(r.level, accuracy(points, r.prompts.length), { moved: next.moved, bestMoves: next.bestMoves });
     } else {
       setRunNow({ ...next, idx, points, misses: 0 });
       if (listens(r.level)) window.setTimeout(() => playChord(r.level, r.prompts[idx], idx), 400);
+      if (r.level.type === 'echo') {
+        setReplays(0);
+        busy.current = true;
+        setEchoPlaying(true);
+        window.setTimeout(() => playEcho(r.level, r.prompts[idx]), 900);
+      }
     }
   };
 
@@ -228,6 +336,21 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       const r = runRef.current;
       if (!r) return;
       const p = r.prompts[r.idx];
+      if (r.level.type === 'echo') {
+        // Play it back: the same notes in the same order (any octave). Judged once you've played as many notes.
+        if (busy.current) return;
+        const want = (p.notes ?? []).map((n) => pc(parseNote(n) ?? 0));
+        echoBuf.current = [...echoBuf.current, pc(midi)];
+        setEchoGot(echoBuf.current);
+        if (echoBuf.current.length < want.length) return;
+        const got = echoBuf.current;
+        echoBuf.current = [];
+        window.setTimeout(() => setEchoGot([]), 600);
+        const ok = got.every((x, i) => x === want[i]);
+        const names = got.map((x) => pretty(letterOf(x + 60))).join(' – ');
+        answer(ok, [midi], `Not quite: you played ${names}. ${echoHelp(r.level) === 'ear' ? 'Try again.' : 'Press ▶ Hear it again, watch the keys, and try.'}`);
+        return;
+      }
       if (r.level.type === 'findIt') {
         const answers = (p.answer ?? []).map(pcOf);
         if (isBlack(midi) && !ctx.lesson.blackKeys && !answers.some((a) => a !== null && [1, 3, 6, 8, 10].includes(a))) {
@@ -254,7 +377,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   // Playing chords: Build It and Smooth Mover. One chord (3+ keys held together) = one answer.
   useChordWatcher(ctx.getHeld, ctx.subscribeNotes, (held) => {
       const r = runRef.current;
-      if (!r || (r.level.type !== 'buildIt' && r.level.type !== 'smooth')) return;
+      if (!r || (r.level.type !== 'buildIt' && r.level.type !== 'smooth' && r.level.type !== 'speed')) return;
       const p = r.prompts[r.idx];
       const c = parseChord(p.chord ?? '');
       if (!c) return;
@@ -262,7 +385,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       // Short and long names together, e.g. "C♯m (C♯ minor)".
       const gotName = got ? `${got.symbol} (${got.longName})` : null;
       const want = (ch: Chord) => `${chordName(ch)} (${chordLongName(ch)})`;
-      if (r.level.type === 'buildIt') {
+      if (r.level.type === 'buildIt' || r.level.type === 'speed') {
         const ok = matchesChord(held, c, p.inv);
         const right = matchesChord(held, c);
         const why = right && p.inv !== undefined
@@ -295,6 +418,31 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       answer(true, held, '', { prev: held, moved: (r.moved ?? 0) + moved, bestMoves: (r.bestMoves ?? 0) + bestMove });
   });
 
+  // Speed Round: the clock. When time is up, the grade is right answers out of the level's target.
+  useEffect(() => {
+    if (!run || run.level.type !== 'speed') return;
+    const id = window.setInterval(() => {
+      const r = runRef.current;
+      if (!r || r.level.type !== 'speed' || r.endsAt === undefined) return;
+      if (performance.now() >= r.endsAt) {
+        const count = r.count ?? 0;
+        recordResult(r.level, Math.min(100, Math.round((count / (r.level.target ?? 12)) * 100)), { speedCount: count });
+      } else setTick((t) => t + 1);
+    }, 200);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [run?.level.id, run?.endsAt]);
+  // Leaving the screen stops an Echo that's playing.
+  useEffect(() => () => stopEcho(), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const selLevel = levelById(selected);
+  // Progression Play levels run in time (PlayLevel.tsx); the other levels are question by question.
+  const play = usePlayLevel(ctx, selLevel, {
+    minTempo: ctx.minTempo,
+    onFinish: (raw, s, set) => recordResult(selLevel, raw, { timing: s, tempo: set.tempo }),
+  });
+  const isPlay = selLevel.type === 'play';
+
   // What to light for the current prompt.
   const prompt = run?.prompts[run.idx];
   let lit: Set<number> | undefined;
@@ -309,15 +457,15 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     } else if (t === 'smooth' && run.prev) lit = new Set(run.prev);
   }
   if (reveal) lit = new Set(reveal);
-
-  const selLevel = levelById(selected);
+  if (run?.level.type === 'echo') lit = echoLit ?? undefined;
+  if (isPlay && !finished) lit = play.lit;
   const left = (
     <div className="flex flex-col gap-2">
       <div>
         <div className="h text-[11px] uppercase text-muted">Lesson {ctx.lesson.number} · Challenges</div>
         <h2 className="h text-[19px] leading-tight text-wal3">{ctx.lesson.title}</h2>
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-0.5">
         {levels.map((l, k) => {
           const r = bestResult(l.id);
           const sel = l.id === selected;
@@ -327,11 +475,12 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
               data-testid={`level-${l.id}`}
               onClick={() => {
                 setSelected(l.id);
+                stopEcho();
                 setRunNow(null);
                 setFinished(null);
                 setMsg('');
               }}
-              className={`flex items-center justify-between gap-2 rounded-lg border px-2.5 py-1 text-left ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
+              className={`flex items-center justify-between gap-2 rounded-lg border px-2.5 py-[3px] text-left ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
             >
               {/* One line per level ("1 · Name C, F and G"), so a lesson with 6 levels still fits a Chromebook screen. */}
               <span className="min-w-0 text-[14px] font-semibold leading-tight text-wal3">
@@ -355,7 +504,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     const li = levels.findIndex((l) => l.id === finished.level.id);
     stage = (
       <div className="pop flex h-full flex-col items-center justify-center gap-2 text-center" data-testid="result">
-        <div className="h text-[12px] uppercase tracking-wider text-brass">{finished.level.title}</div>
+        <div className="h text-[14px] tracking-wide text-brass">{finished.level.title}</div>
         <div className="h text-[72px] leading-none text-panel" data-testid="result-grade">
           {floored(finished.raw)}%
         </div>
@@ -367,9 +516,24 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             Half steps moved: {finished.moved} (the smoothest possible: {finished.bestMoves})
           </div>
         )}
+        {finished.timing && (
+          <div className="flex flex-col items-center gap-0.5 text-[15px] text-line2" data-testid="timing-total">
+            <div>
+              <span className="text-[#cfe3b4]">Perfect {finished.timing.perfect}</span> · <span className="text-[#f6e3b8]">Good {finished.timing.good}</span> · <span className="text-[#f0c4bf]">Miss {finished.timing.miss}</span>
+            </div>
+            <div>
+              Timing {finished.timing.timing}% · Right notes {finished.timing.notes}% · {finished.tempo} BPM
+            </div>
+          </div>
+        )}
+        {finished.speedCount !== undefined && (
+          <div className="text-[15px] text-line2" data-testid="speed-total">
+            {finished.speedCount} right in {finished.level.seconds ?? 60} seconds (the goal: {finished.level.target ?? 12})
+          </div>
+        )}
         <div className="text-[14px] text-line2">Your best on this device: {floored(finished.best)}%</div>
         <div className="mt-1 flex gap-2">
-          <button className="btn btn-brass" onClick={() => start(finished.level.id)}>
+          <button className="btn btn-brass" onClick={() => (finished.level.type === 'play' ? setFinished(null) : start(finished.level.id))} data-testid="try-again">
             Try again
           </button>
           {li < levels.length - 1 && (
@@ -390,8 +554,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
   } else if (run && prompt) {
     stage = (
       <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-        <div className="h text-[12px] uppercase tracking-wider text-brass">
-          {run.level.title} · {run.idx + 1} of {run.prompts.length}
+        <div className="h text-[14px] tracking-wide text-brass">
+          {run.level.type === 'speed' ? `${run.level.title} · ${run.count ?? 0} right` : `${run.level.title} · ${run.idx + 1} of ${run.prompts.length}`}
         </div>
         <div className="h text-[36px] leading-tight text-panel" data-testid="prompt">
           {prompt.text}
@@ -400,6 +564,41 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
           <div className="text-[15px] text-line2">
             From the lit chord ({detectChord(run.prev) ? chordName(detectChord(run.prev)!.chord) : ''}). Half steps moved so far: {run.moved ?? 0}
           </div>
+        )}
+        {run.level.type === 'echo' && (
+          <div className="flex flex-col items-center gap-2">
+            <div className="h text-[15px] text-line2" data-testid="echo-status">
+              {echoPlaying ? 'Listen…' : 'Your turn: play it back.'}
+            </div>
+            {/* One dot per note: filled as you play them. */}
+            <div className="flex gap-1.5">
+              {(prompt.notes ?? []).map((_, i) => (
+                <span key={i} className={`h-3 w-3 rounded-full ${i < echoGot.length ? 'bg-brass' : 'bg-wal2'}`} />
+              ))}
+            </div>
+            {(() => {
+              const ear = echoHelp(run.level) === 'ear';
+              const left = EAR_REPLAYS - replays;
+              return (
+                <button
+                  className="btn btn-dark"
+                  disabled={echoPlaying || (ear && left <= 0)}
+                  data-testid="hear-again"
+                  onClick={() => {
+                    setReplays((x) => x + 1);
+                    playEcho(run.level, prompt);
+                  }}
+                >
+                  ▶ Hear it again{ear ? ` (${Math.max(0, left)} left)` : ''}
+                </button>
+              );
+            })()}
+          </div>
+        )}
+        {run.level.type === 'speed' && (
+          <button className="btn btn-dark px-3 py-1 text-[13px]" data-testid="skip" onClick={() => setRunNow({ ...run, idx: run.idx + 1 })}>
+            Skip
+          </button>
         )}
         {listens(run.level) && (
           <button className="btn btn-dark" onClick={() => playChord(run.level, prompt, run.idx)} disabled={!!reveal} data-testid="hear-again">
@@ -430,21 +629,53 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
           {fb?.text ?? '.'}
         </div>
         <div className="h-2 w-64 overflow-hidden rounded-full bg-wal2">
-          <div className="h-full bg-brass transition-all" style={{ width: `${(run.idx / run.prompts.length) * 100}%` }} />
+          {run.level.type === 'speed' && run.endsAt !== undefined ? (
+            <div className="h-full bg-brass" data-testid="time-bar" style={{ width: `${Math.max(0, (run.endsAt - performance.now()) / ((run.level.seconds ?? 60) * 10))}%` }} />
+          ) : (
+            <div className="h-full bg-brass transition-all" style={{ width: `${(run.idx / run.prompts.length) * 100}%` }} />
+          )}
         </div>
+        {run.level.type === 'speed' && run.endsAt !== undefined && (
+          <div className="h text-[14px] text-line2" data-testid="time-left">
+            {Math.max(0, Math.ceil((run.endsAt - performance.now()) / 1000))} s left
+          </div>
+        )}
         <button className="btn btn-dark px-3 py-1 text-[13px]" onClick={() => start(run.level.id)} data-testid="restart">
           Restart
         </button>
       </div>
     );
+  } else if (isPlay) {
+    stage = play.stage;
   } else {
+    const minHelp = selLevel.echo ?? 'watch';
     stage = (
       <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
-        <div className="h text-[12px] uppercase tracking-wider text-brass">Level: {selLevel.title}</div>
+        <div className="h text-[14px] tracking-wide text-brass">Level: {selLevel.title}</div>
         <div className="h text-[30px] text-panel">{selLevel.blurb}</div>
         <div className="text-[15px] text-line2">
-          {selLevel.prompts.length} questions · {selLevel.pass}% to pass · first try counts full, second try counts half
+          {selLevel.type === 'speed'
+            ? `${selLevel.seconds ?? 60} seconds · as many as you can · ${selLevel.target ?? 12} right = 100% · ${selLevel.pass}% to pass`
+            : `${selLevel.prompts.length} questions · ${selLevel.pass}% to pass · first try counts full, second try counts half`}
         </div>
+        {selLevel.type === 'echo' && (
+          <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Echo help">
+            <span className="h text-[12px] uppercase tracking-wider text-brass">Help</span>
+            {ECHO_ORDER.map((h) => (
+              <button
+                key={h}
+                role="radio"
+                aria-checked={echoHelp(selLevel) === h}
+                disabled={ECHO_ORDER.indexOf(h) < ECHO_ORDER.indexOf(minHelp)}
+                data-testid={`echo-${h}`}
+                className={`btn px-2 py-0.5 text-[13px] ${echoHelp(selLevel) === h ? 'btn-brass' : 'btn-dark'} disabled:opacity-40`}
+                onClick={() => setEchoPick((x) => ({ ...x, [selLevel.id]: h }))}
+              >
+                {ECHO_LABEL[h]}
+              </button>
+            ))}
+          </div>
+        )}
         <button className="btn btn-brass mt-2 text-[18px]" data-testid="start" onClick={() => start(selected)}>
           Start
         </button>
@@ -462,7 +693,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       value: effective(selLevel),
       allowed: LABEL_ORDER.filter((l) => LABEL_ORDER.indexOf(l) >= LABEL_ORDER.indexOf(selLevel.labels)),
       set: (l) => setLabelPick((p) => ({ ...p, [selLevel.id]: l })),
-      locked: !!run,
+      locked: !!run || play.running,
     },
     start: { label: 'Start', onClick: () => start(selected), disabled: !!run },
     restart: { label: 'Restart', onClick: () => start(selected), disabled: !run },

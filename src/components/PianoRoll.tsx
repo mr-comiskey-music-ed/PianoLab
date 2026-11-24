@@ -49,7 +49,7 @@ export function makeRollMap(notes: PerfNote[]) {
 }
 
 /** Left edge and width (0-1 of the piano's width) of a key, laid out exactly like Piano.tsx. */
-function keyBox(midi: number, start: number): { x: number; w: number } | null {
+export function keyBox(midi: number, start: number): { x: number; w: number } | null {
   if (midi < start || midi >= start + KEY_COUNT) return null;
   let whites = 0;
   for (let m = start; m < start + KEY_COUNT; m++) if (!isBlack(m)) whites++;

@@ -30,6 +30,12 @@ export interface ModeCtx {
   lesson: Lesson;
   /** The chord strip's key (for Roman numerals). */
   keyDef: KeyDef;
+  /** The student's latency from the latency check (ms), taken off timing grades. 0 if not checked. */
+  latency: number;
+  /** Turn the metronome off (timed levels bring their own clicks). */
+  stopMetronome: () => void;
+  /** A teacher's assignment can set the slowest tempo allowed for timed levels. */
+  minTempo?: number;
   results: LevelResult[];
   setResults: (fn: (prev: LevelResult[]) => LevelResult[]) => void;
   /** Learn progress for the current lesson. */

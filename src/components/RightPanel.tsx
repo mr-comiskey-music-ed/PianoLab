@@ -175,6 +175,8 @@ interface Props {
   soundId: string;
   states: Record<string, LoadState>;
   onSelect: (id: string) => void;
+  /** A teacher's assignment set the sound: the list can't be changed. */
+  soundLocked?: boolean;
   metro: Metro;
   onMetro: (m: Metro) => void;
   onOpenCustom: () => void;
@@ -184,7 +186,7 @@ const stateText: Record<LoadState, string> = { idle: '', loading: 'loading…', 
 const CATEGORIES = ['Grand Piano', 'Electric Piano', 'Soft Piano', 'Synth Keys'] as const;
 const MIX_DEFAULT = { eq: 0, comp: 0, len: 1.8, color: 0.7, wet: 0.12 };
 
-export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect, metro, onMetro, onOpenCustom }) => {
+export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect, soundLocked, metro, onMetro, onOpenCustom }) => {
   const [mixOpen, setMixOpen] = useState(false);
   const [mix, setMix] = useState(MIX_DEFAULT);
 
@@ -199,7 +201,7 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
     <div className="flex flex-col gap-3" data-testid="right-panel">
       <div className="relative">
         <div className="mb-1 flex items-center justify-between">
-          <div className="h text-[11px] uppercase text-muted">Sound</div>
+          <div className="h text-[11px] uppercase text-muted">Sound{soundLocked ? ' · set by your teacher' : ''}</div>
           <button
             onClick={() => setMixOpen((v) => !v)}
             data-testid="mix-button"
@@ -235,8 +237,9 @@ export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect,
                 <button
                   key={s.id}
                   data-testid={`sound-${s.id}`}
+                  disabled={soundLocked && !sel}
                   onClick={() => (s.id === 'custom' ? onOpenCustom() : onSelect(s.id))}
-                  className={`mt-0.5 flex w-full items-center justify-between rounded-lg border px-2 py-1.5 text-left text-[14px] ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
+                  className={`mt-0.5 flex w-full items-center justify-between rounded-lg border px-2 py-1.5 text-left text-[14px] ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'} disabled:opacity-45 disabled:hover:bg-panel`}
                   title={s.note}
                 >
                   <span className="font-semibold text-wal3">{s.label}</span>
