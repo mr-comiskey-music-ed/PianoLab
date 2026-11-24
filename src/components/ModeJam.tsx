@@ -5,7 +5,8 @@ import { KEY_COUNT, pc, pcOf } from '../utils/music';
 import { MAJOR_SCALE } from '../utils/scales';
 import { textOn } from './ChordStrip';
 import { PianoRoll } from './PianoRoll';
-import { PerfNote } from '../utils/performance';
+import { MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, formatLength, perfLength } from '../utils/performance';
+import { SavePerformance } from './ModeSandbox';
 import { Labels, ModeCtx, ModeParts } from './modeTypes';
 import tracksData from '../data/tracks.json';
 import youtubeData from '../data/youtube.json';
@@ -30,19 +31,30 @@ interface YouTubeVideo {
 const TRACKS = (tracksData as { tracks: BackingTrack[] }).tracks;
 const VIDEOS = (youtubeData as { videos: YouTubeVideo[] }).videos;
 
-/** Progressions to jam over (Roman numerals, one per bar). The last one is the student's own. */
-export const PROGRESSIONS: { id: string; name: string; numerals: string[] }[] = [
-  { id: 'pop', name: 'Pop: I – V – vi – IV', numerals: ['I', 'V', 'vi', 'IV'] },
-  { id: '50s', name: "'50s: I – vi – IV – V", numerals: ['I', 'vi', 'IV', 'V'] },
-  { id: 'sad', name: 'Sad pop: vi – IV – I – V', numerals: ['vi', 'IV', 'I', 'V'] },
-  { id: 'rock', name: 'Rock: I – ♭VII – IV – I', numerals: ['I', '♭VII', 'IV', 'I'] },
-  { id: 'jazz', name: 'Jazz: ii7 – V7 – Imaj7', numerals: ['ii7', 'V7', 'Imaj7', 'Imaj7'] },
-  { id: 'blues', name: '12-bar blues (7ths)', numerals: ['I7', 'I7', 'I7', 'I7', 'IV7', 'IV7', 'I7', 'I7', 'V7', 'IV7', 'I7', 'V7'] },
-  { id: 'minor', name: 'Minor: i – VI – III – VII', numerals: ['i', 'VI', 'III', 'VII'] },
+/**
+ * Progressions to jam over (Roman numerals, one per bar), each with a major-key and a minor-key version: in A minor the
+ * Pop progression is i – VI – III – VII (Am F C G), not the major numerals read in a minor key (his bug report).
+ */
+export const PROGRESSIONS: { id: string; label: string; major: string[]; minor: string[] }[] = [
+  { id: 'pop', label: 'Pop', major: ['I', 'V', 'vi', 'IV'], minor: ['i', 'VI', 'III', 'VII'] },
+  { id: '50s', label: "'50s", major: ['I', 'vi', 'IV', 'V'], minor: ['i', 'VI', 'iv', 'V'] },
+  { id: 'sad', label: 'Sad pop', major: ['vi', 'IV', 'I', 'V'], minor: ['i', 'VII', 'VI', 'VII'] },
+  { id: 'rock', label: 'Rock', major: ['I', '♭VII', 'IV', 'I'], minor: ['i', 'VI', 'VII', 'i'] },
+  { id: 'jazz', label: 'Jazz', major: ['ii7', 'V7', 'Imaj7', 'Imaj7'], minor: ['iiø7', 'V7', 'i7', 'i7'] },
+  {
+    id: 'blues',
+    label: '12-bar blues',
+    major: ['I7', 'I7', 'I7', 'I7', 'IV7', 'IV7', 'I7', 'I7', 'V7', 'IV7', 'I7', 'V7'],
+    minor: ['i7', 'i7', 'i7', 'i7', 'iv7', 'iv7', 'i7', 'i7', 'v7', 'iv7', 'i7', 'v7'],
+  },
 ];
-/** The roll keeps the latest notes only (it's a view, not a recording). */
-const ROLL_MAX = 800;
-const ROLL_KEEP = 500;
+/** A preset's numerals for a key: its minor version in a minor key. */
+export const presetNumerals = (p: (typeof PROGRESSIONS)[number], k: KeyDef) => (k.mode === 'minor' ? p.minor : p.major);
+/** "Pop: i – VI – III – VII" (the numerals for the key picked). */
+const presetName = (p: (typeof PROGRESSIONS)[number], k: KeyDef) => (p.id === 'blues' ? `${p.label} (7ths)` : `${p.label}: ${presetNumerals(p, k).join(' – ')}`);
+/** A pause longer than this is shortened to SHORT_GAP in a saved performance (same as the Sandbox). */
+const LONG_GAP = 8000;
+const SHORT_GAP = 2000;
 const JAM_KEYS = KEYS.filter((k) => k.mode === 'major' || ['Am', 'Em', 'Dm'].includes(k.id));
 
 /** The pitch classes of a key's scale (major, or natural minor). */
@@ -156,10 +168,17 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   const [meters, setMeters] = useState({ back: 0, piano: 0 });
   const [held, setHeld] = useState<number[]>([]);
   const [labels, setLabels] = useState<Labels>('c');
-  // What the student plays rises up the Stage as a piano roll, like the Sandbox (kept in memory only, not saved).
+  // What the student plays rises up the Stage as a piano roll, like the Sandbox, and is kept (in memory only) so it can be
+  // saved as a performance: a code, a link or a .mid file. Same limits as the Sandbox; long pauses are shortened.
   const [rollNotes, setRollNotes] = useState<PerfNote[]>([]);
+  const rollRef = useRef<PerfNote[]>([]);
+  rollRef.current = rollNotes;
   const rollT0 = useRef<number | null>(null);
+  const lastAt = useRef(0);
   const rollOffset = useRef(0);
+  const [full, setFull] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [clearAsk, setClearAsk] = useState(false);
 
   const track = TRACKS.find((t) => t.id === trackId);
   const key: KeyDef =
@@ -168,7 +187,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     if (source === 'youtube') return [];
     if (source === 'track') return track ? readNumerals(key, track.progression.join(' ')) : [];
     const p = PROGRESSIONS.find((x) => x.id === progId);
-    return readNumerals(key, p ? p.numerals.join(' ') : custom);
+    return readNumerals(key, p ? presetNumerals(p, key).join(' ') : custom);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, track?.id, key.id, progId, custom]);
 
@@ -201,11 +220,17 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
       setHeld(ctx.getHeld());
       const now = performance.now();
       if (e.on) {
-        if (rollT0.current === null) rollT0.current = now;
+        if (rollRef.current.length >= MAX_PERF_NOTES) return setFull(true);
+        if (rollT0.current === null) {
+          const end = perfLength(rollRef.current);
+          rollT0.current = now - (end ? end + SHORT_GAP : 0);
+        } else if (now - lastAt.current > LONG_GAP) rollT0.current += now - lastAt.current - SHORT_GAP;
         const t = now - rollT0.current;
-        // Keep it light: only the most recent notes.
-        setRollNotes((prev) => [...(prev.length > ROLL_MAX ? prev.slice(-ROLL_KEEP) : prev), { t, d: -1, m: e.midi, v: Math.max(1, Math.round(e.vel * 127)) }]);
+        if (t > MAX_PERF_MS) return setFull(true);
+        lastAt.current = now;
+        setRollNotes((prev) => [...prev, { t, d: -1, m: e.midi, v: Math.max(1, Math.round(e.vel * 127)) }]);
       } else if (rollT0.current !== null) {
+        lastAt.current = now;
         const end = now - rollT0.current;
         setRollNotes((prev) => {
           for (let i = prev.length - 1; i >= 0; i--)
@@ -327,7 +352,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
             <select className={sel} value={progId} data-testid="jam-prog" onChange={pick((v) => changeSetting(() => setProgId(v)))}>
               {PROGRESSIONS.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
+                  {presetName(p, key)}
                 </option>
               ))}
               <option value="custom">My own…</option>
@@ -506,8 +531,46 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
       </div>
     );
 
+  const finished = rollNotes.filter((n) => n.d > 0);
+  const saveBar = (
+    // Save / Clear what you've played (top corner of the Stage; the left panel is full on a Chromebook).
+    <div className="absolute right-3 top-2 z-20 flex items-center gap-1.5" data-testid="jam-save-bar">
+      <span className="h text-[12px] text-line2" data-testid="jam-length">
+        {full ? 'Full · ' : ''}
+        {formatLength(perfLength(finished))}
+      </span>
+      <button className="btn btn-brass px-2.5 py-1 text-[13px]" disabled={!finished.length} onClick={() => setSaveOpen(true)} data-testid="jam-save">
+        Save performance
+      </button>
+      {clearAsk ? (
+        <>
+          <button
+            className="btn px-2 py-1 text-[13px]"
+            data-testid="jam-clear-yes"
+            onClick={() => {
+              setRollNotes([]);
+              rollT0.current = null;
+              setFull(false);
+              setClearAsk(false);
+            }}
+          >
+            Clear it
+          </button>
+          <button className="btn btn-dark px-2 py-1 text-[13px]" onClick={() => setClearAsk(false)}>
+            Keep it
+          </button>
+        </>
+      ) : (
+        <button className="btn btn-dark px-2 py-1 text-[13px]" disabled={!rollNotes.length} onClick={() => setClearAsk(true)} data-testid="jam-clear" title="Start your performance over">
+          Clear
+        </button>
+      )}
+    </div>
+  );
+
   const stage = (
     <div className="relative h-full w-full">
+      {saveBar}
       {source === 'youtube' ? (
         <>
           <div className="absolute inset-0">{inner}</div>
@@ -523,5 +586,15 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   );
 
   // Note names: the student's choice, like Practice.
-  return { left, stage, labels, labelControl: { value: labels, allowed: ['all', 'c', 'off'], set: setLabels, title: 'Note names' }, detector: true, tint, dim, silence };
+  return {
+    left,
+    stage,
+    labels,
+    labelControl: { value: labels, allowed: ['all', 'c', 'off'], set: setLabels, title: 'Note names' },
+    detector: true,
+    tint,
+    dim,
+    silence,
+    overlay: saveOpen ? <SavePerformance notes={finished} onClose={() => setSaveOpen(false)} /> : undefined,
+  };
 }

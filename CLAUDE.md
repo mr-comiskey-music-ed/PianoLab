@@ -306,9 +306,14 @@ YouTube ungraded):
   chord". Melody mode (brass dot on the key's notes, `tint`), Key lock (other notes greyed and silent: `dim`/`silence`,
   handled in App's noteOn). Mix: Backing and Piano faders (double-click resets) with meters. Note names: student's
   choice. Dropdowns give the typing keyboard back after a pick (blur on change).
-- Jam Room Stage shows a live piano roll of what the student plays (Sandbox's `PianoRoll`, latest ~500-800 notes, in
-  memory only, never saved): behind the chord chart for Groove/Tracks; on top of the YouTube video, which is 50%
+- Jam Room Stage shows a live piano roll of what the student plays (Sandbox's `PianoRoll`, the whole performance): behind the chord chart for Groove/Tracks; on top of the YouTube video, which is 50%
   see-through (his call), with the roll not taking clicks so the video's controls still work.
+- Jam Room progressions have major and minor versions (his bug: A minor showed A–E–Fm–D): Pop i–VI–III–VII, '50s
+  i–VI–iv–V, Sad pop i–VII–VI–VII, Rock i–VI–VII–i, Jazz iiø7–V7–i7, minor blues i7/iv7/v7; the dropdown names show the
+  numerals for the key picked. ("Minor" preset removed: every preset has a minor version.)
+- Jam Room saves performances (his request; the plan's Play Along "take"): everything played is kept in memory (Sandbox
+  limits, long pauses shortened); Save performance (Sandbox's `SavePerformance`: code with name inside / link / .mid) and
+  Clear (asks Clear it / Keep it) in the Stage's top-right corner. Piano notes only, not the backing.
 - Sandbox MIDI import: Speed 50/75/100% (roll and sound slow together), Track picker for multi-track files (shown until
   you record on top), Mute (notes still come up and light, silently, to play the part yourself).
 

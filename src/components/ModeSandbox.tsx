@@ -434,7 +434,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
 const restingNow = (notes: PerfNote[]) => perfLength(notes) + 60_000;
 
 /** Save performance: a code for Classroom, a link, or a MIDI file. */
-const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void }> = ({ notes, onClose }) => {
+export const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void }> = ({ notes, onClose }) => {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState<'' | 'code' | 'link'>('');
@@ -444,12 +444,15 @@ const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void }> = ({
     // The name lives only inside the code, never in the browser.
     void encodeSubmission({ name, assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone: false, results: [], perf: packPerf(notes) }).then(setCode);
   }, [name, notes]);
+  /** If copying is blocked, the text shows in a box to copy by hand (no browser pop-ups: they freeze the page). */
+  const [manual, setManual] = useState('');
   const copy = async (text: string, what: 'code' | 'link') => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(what);
+      setManual('');
     } catch {
-      window.prompt('Copy this:', text);
+      setManual(text);
     }
   };
   return (
@@ -480,6 +483,9 @@ const SavePerformance: React.FC<{ notes: PerfNote[]; onClose: () => void }> = ({
               {copied === 'link' ? 'Link copied ✓' : 'Copy link'}
             </button>
           </section>
+          {manual && (
+            <textarea readOnly value={manual} rows={3} autoFocus onFocus={(e) => e.currentTarget.select()} aria-label="Copy this" className="w-full rounded-lg border border-brass2 bg-white p-2 font-mono text-[11px] break-all" />
+          )}
           <section>
             <div className="h text-[15px] text-wal3">MIDI file</div>
             <div className="text-[13px] text-muted">Opens in Soundtrap, BandLab, GarageBand and other music apps.</div>
