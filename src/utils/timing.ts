@@ -3,7 +3,8 @@
  * A chord's time is when its FIRST key goes down (his choice); the other keys count if they land within GROUP_MS of it.
  * The student's latency (from the latency check) is taken off every key press first.
  *
- * Each hit is graded twice: timing (Perfect = 1, Good = 0.75, Miss = 0) and notes (the right note names, any octave).
+ * Each hit is graded twice: timing (Perfect = 1, Good = 0.8, Early/Late = 0.5, Miss = 0; his call: Early or Late is not
+ * a pure miss) and notes (the right note names, any octave).
  * Grade = half timing, half notes. A press more than MATCH_MS away from every hit doesn't match anything.
  */
 export const PERFECT_MS = 50;
@@ -12,7 +13,9 @@ export const GOOD_MS = 100;
 export const MATCH_MS = 220;
 /** Keys within this long of a chord's first key belong to the same chord. */
 export const GROUP_MS = 80;
-const GOOD_CREDIT = 0.75;
+const GOOD_CREDIT = 0.8;
+/** Played, but further off than Good (up to MATCH_MS): Early or Late. Half credit for timing. */
+const OFF_CREDIT = 0.5;
 
 export interface ExpectedHit {
   /** Milliseconds from the start (the first downbeat after the count-in). */
@@ -20,7 +23,8 @@ export interface ExpectedHit {
   pcs: number[];
 }
 
-export type HitStatus = 'perfect' | 'good' | 'miss';
+/** 'off' = Early or Late (played, but more than GOOD_MS away); 'miss' = not played for this hit at all. */
+export type HitStatus = 'perfect' | 'good' | 'off' | 'miss';
 export interface HitResult {
   status: HitStatus;
   /** The right note names were played. */
@@ -32,6 +36,8 @@ export interface HitResult {
 export interface TimingSummary {
   perfect: number;
   good: number;
+  /** Early or Late. */
+  off: number;
   miss: number;
   notesRight: number;
   total: number;
@@ -50,10 +56,11 @@ export function summarize(results: (HitResult | undefined)[]): TimingSummary {
   const r = results.map((x) => x ?? { status: 'miss' as const, notesRight: false });
   const perfect = r.filter((x) => x.status === 'perfect').length;
   const good = r.filter((x) => x.status === 'good').length;
+  const off = r.filter((x) => x.status === 'off').length;
   const notesRight = r.filter((x) => x.notesRight).length;
-  const timing = total ? ((perfect + GOOD_CREDIT * good) / total) * 100 : 0;
+  const timing = total ? ((perfect + GOOD_CREDIT * good + OFF_CREDIT * off) / total) * 100 : 0;
   const notes = total ? (notesRight / total) * 100 : 0;
-  return { perfect, good, miss: total - perfect - good, notesRight, total, timing: Math.round(timing), notes: Math.round(notes), raw: Math.round((timing + notes) / 2) };
+  return { perfect, good, off, miss: total - perfect - good - off, notesRight, total, timing: Math.round(timing), notes: Math.round(notes), raw: Math.round((timing + notes) / 2) };
 }
 
 /**
@@ -111,7 +118,7 @@ export class TimingJudge {
     const want = this.hits[best].pcs;
     const notesRight = g.pcs.size === want.length && want.every((p) => g.pcs.has(p));
     const a = Math.abs(bestDt);
-    const status: HitStatus = a <= PERFECT_MS ? 'perfect' : a <= GOOD_MS ? 'good' : 'miss';
+    const status: HitStatus = a <= PERFECT_MS ? 'perfect' : a <= GOOD_MS ? 'good' : 'off';
     const r = { status, notesRight, dt: Math.round(bestDt) };
     this.results[best] = r;
     this.onResult(best, r);

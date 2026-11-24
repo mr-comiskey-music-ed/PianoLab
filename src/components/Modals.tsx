@@ -104,12 +104,12 @@ export const LatencyModal: React.FC<{
 
   useEffect(() => {
     return subscribe(() => {
-      if (phase === 'running') taps.current.push(engine.now());
+      if (phase === 'running') taps.current.push(performance.now());
     });
   }, [phase, subscribe, engine]);
 
   const tap = () => {
-    if (phase === 'running') taps.current.push(engine.now());
+    if (phase === 'running') taps.current.push(performance.now());
   };
 
   const start = async () => {
@@ -117,13 +117,15 @@ export const LatencyModal: React.FC<{
     pauseMetro();
     taps.current = [];
     clicks.current = engine.scheduleClicks(BEATS, BPM);
+    // For browser tests: when each click is heard (no student data).
+    (window as unknown as { __clicks?: number[] }).__clicks = clicks.current;
     setPhase('running');
     window.setTimeout(() => {
       // For each tap, how late was it compared with the nearest click? The middle value is the latency.
       const offs = taps.current
         .map((t) => {
           const nearest = clicks.current.reduce((a, c) => (Math.abs(c - t) < Math.abs(a - t) ? c : a), clicks.current[0]);
-          return (t - nearest) * 1000;
+          return t - nearest; // both in ms on the performance.now() clock (clicks = when they are heard)
         })
         .filter((ms) => Math.abs(ms) < 250)
         .slice(2); // skip the first couple of taps while the student finds the beat

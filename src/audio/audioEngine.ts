@@ -252,10 +252,10 @@ export class AudioEngine {
         // Split the 0-1 velocity range evenly across the layers.
         const s = samplers[Math.min(samplers.length - 1, Math.floor(Math.max(0, vel) * samplers.length))];
         used.set(midi, s);
-        s.triggerAttack(noteName(midi), Tone.now(), vel);
+        s.triggerAttack(noteName(midi), Tone.immediate(), vel);
       },
       off: (midi) => {
-        used.get(midi)?.triggerRelease(noteName(midi), Tone.now());
+        used.get(midi)?.triggerRelease(noteName(midi), Tone.immediate());
         used.delete(midi);
       },
       allOff: () => {
@@ -504,13 +504,29 @@ export class AudioEngine {
     this.tick(kind, 1, now + 0.42);
   }
 
-  /** Schedule clicks for latency calibration. Returns the audio-clock time of each click. */
+  /** Schedule clicks for latency calibration. Returns when each click will be HEARD, on the performance.now() clock. */
   scheduleClicks(count: number, bpm: number, lead = 0.6): number[] {
-    const start = Tone.now() + lead;
+    const start = Tone.getContext().currentTime + lead;
     const gap = 60 / bpm;
     const times = Array.from({ length: count }, (_, i) => start + i * gap);
     times.forEach((t, i) => this.calClick.triggerAttackRelease(i % 4 === 0 ? 'G5' : 'C5', '32n', t));
-    return times;
+    return times.map((t) => this.audioToPerf(t));
+  }
+
+  /**
+   * When a sound scheduled at audio-clock time `t` actually comes out of the speakers/headphones, on the
+   * performance.now() clock (ms): the gap to the audio clock now, plus the device's output delay. Timed levels and the
+   * latency check both use this, so whatever small error it has cancels out in the student's latency setting.
+   */
+  /** How long after a "play now" a sound is heard (ms): the device's output delay. */
+  outputDelayMs(): number {
+    return this.audioToPerf(Tone.getContext().rawContext.currentTime) - performance.now();
+  }
+
+  audioToPerf(t: number): number {
+    const raw = Tone.getContext().rawContext as unknown as { currentTime: number; baseLatency?: number; outputLatency?: number };
+    const out = (raw.outputLatency || raw.baseLatency || 0) * 1000;
+    return performance.now() + (t - raw.currentTime) * 1000 + out;
   }
 
   now() {
@@ -519,9 +535,11 @@ export class AudioEngine {
 
   /**
    * Wood-block clicks for a timed level (count-in and beats), at exact times on the audio clock. `startInMs` is how long
-   * from now the first click sounds; returns a cancel function. Uses the metronome's volume.
+   * from now the first click is scheduled. Returns a cancel function and when the first click will be HEARD
+   * (performance.now() ms), so the waterfall and the timing judge line up with what the student hears. Uses the
+   * metronome's volume.
    */
-  scheduleBeatClicks(startInMs: number, count: number, bpm: number, beatsPerBar = 4): () => void {
+  scheduleBeatClicks(startInMs: number, count: number, bpm: number, beatsPerBar = 4): { cancel: () => void; firstHeardAt: number } {
     const start = Tone.getContext().currentTime + startInMs / 1000;
     const gap = 60 / bpm;
     let cancelled = false;
@@ -538,17 +556,20 @@ export class AudioEngine {
     };
     let timer = 0;
     pump();
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
+    return {
+      cancel: () => {
+        cancelled = true;
+        window.clearTimeout(timer);
+      },
+      firstHeardAt: this.audioToPerf(start),
     };
   }
 }
 
 function samplerVoice(s: Tone.Sampler): Voice {
   return {
-    on: (midi, vel) => s.triggerAttack(noteName(midi), Tone.now(), vel),
-    off: (midi) => s.triggerRelease(noteName(midi), Tone.now()),
+    on: (midi, vel) => s.triggerAttack(noteName(midi), Tone.immediate(), vel),
+    off: (midi) => s.triggerRelease(noteName(midi), Tone.immediate()),
     allOff: () => s.releaseAll(),
     dispose: () => s.dispose(),
   };

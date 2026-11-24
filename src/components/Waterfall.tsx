@@ -103,7 +103,7 @@ export const Waterfall: React.FC<{
           g.roundRect(8, top, W - 16, Math.max(6, y2 - top), 8);
           g.fill();
           if (r && r.status !== 'miss' && r.notesRight) {
-            g.strokeStyle = r.status === 'perfect' ? '#f7f1e6' : 'rgba(247,241,230,0.6)';
+            g.strokeStyle = r.status === 'perfect' ? '#f7f1e6' : r.status === 'good' ? 'rgba(247,241,230,0.6)' : 'rgba(247,241,230,0.3)';
             g.lineWidth = 2;
             g.stroke();
           }
@@ -135,7 +135,7 @@ export const Waterfall: React.FC<{
             g.roundRect(k.x * W + 2, top, Math.max(4, k.w * W - 4), Math.max(4, Math.min(bottom, lineY) - top), 5);
             g.fill();
             if (r && r.status !== 'miss' && r.notesRight) {
-              g.strokeStyle = r.status === 'perfect' ? '#f7f1e6' : 'rgba(247,241,230,0.6)';
+              g.strokeStyle = r.status === 'perfect' ? '#f7f1e6' : r.status === 'good' ? 'rgba(247,241,230,0.6)' : 'rgba(247,241,230,0.3)';
               g.lineWidth = 2;
               g.stroke();
             }

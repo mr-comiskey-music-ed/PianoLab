@@ -35,7 +35,7 @@ export function usePlayLevel(
   const [phase, setPhase] = useState<Phase>('idle');
   const [startAt, setStartAt] = useState<number | null>(null);
   const [results, setResults] = useState<(HitResult | undefined)[]>([]);
-  const [pop, setPop] = useState<{ text: string; kind: 'perfect' | 'good' | 'miss'; id: number } | null>(null);
+  const [pop, setPop] = useState<{ text: string; kind: 'perfect' | 'good' | 'off' | 'miss'; id: number } | null>(null);
   const [count, setCount] = useState(0);
   const [litNow, setLitNow] = useState<Set<number> | undefined>(undefined);
   const judge = useRef<TimingJudge | null>(null);
@@ -72,25 +72,30 @@ export function usePlayLevel(
     ctx.stopMetronome();
     void ctx.engine.unlock();
     const bm = beatMs(tempo);
-    const t0 = performance.now() + LEAD_MS + COUNT_IN * bm;
+    // Everything follows the clicks as they are HEARD (audio clock + the device's output delay), so the blocks land on
+    // the line with the click and a key played with the click is on time.
+    const clicks = ctx.engine.scheduleBeatClicks(LEAD_MS, COUNT_IN + timeline.beats, tempo);
+    stopClicks.current = clicks.cancel;
+    const heard = clicks.firstHeardAt - performance.now();
+    const t0 = clicks.firstHeardAt + COUNT_IN * bm;
     setStartAt(t0);
     setResults(timeline.hits.map(() => undefined));
     setPop(null);
     setPhase(listenOnly ? 'listen' : 'count');
-    stopClicks.current = ctx.engine.scheduleBeatClicks(LEAD_MS, COUNT_IN + timeline.beats, tempo);
     // Count-in numbers on the Stage: 1, 2, 3, 4 with the clicks, like counting a band in.
-    for (let i = 0; i < COUNT_IN; i++) timers.current.push(window.setTimeout(() => setCount(i + 1), LEAD_MS + i * bm));
-    timers.current.push(window.setTimeout(() => setPhase((p) => (p === 'count' ? 'run' : p)), LEAD_MS + COUNT_IN * bm - 120));
+    for (let i = 0; i < COUNT_IN; i++) timers.current.push(window.setTimeout(() => setCount(i + 1), heard + i * bm));
+    timers.current.push(window.setTimeout(() => setPhase((p) => (p === 'count' ? 'run' : p)), heard + COUNT_IN * bm - 120));
     if (listenOnly) {
-      // The app plays it, keys lit, nothing graded.
+      // The app plays it, keys lit, nothing graded. Notes start early by the output delay, so they're heard with the click.
+      const out = ctx.engine.outputDelayMs();
       for (const h of timeline.hits) {
         timers.current.push(window.setTimeout(() => {
           h.notes.forEach((n) => ctx.engine.noteOn(n, 0.7));
           setLitNow(new Set(h.notes));
-        }, t0 - performance.now() + h.beat * bm));
+        }, t0 - performance.now() + h.beat * bm - out));
         timers.current.push(window.setTimeout(() => {
           h.notes.forEach((n) => ctx.engine.noteOff(n));
-        }, t0 - performance.now() + (h.beat + h.dur * 0.92) * bm));
+        }, t0 - performance.now() + (h.beat + h.dur * 0.92) * bm - out));
       }
     } else {
       const expected = timeline.hits.map((h) => ({ t: t0 + h.beat * bm, pcs: h.pcs }));
@@ -101,7 +106,7 @@ export function usePlayLevel(
       judge.current = new TimingJudge(expected, ctx.latency, (i, r) => {
         results[i] = r;
         setResults([...results]);
-        const text = !r.notesRight && r.dt !== undefined ? 'Wrong notes' : r.status === 'perfect' ? 'Perfect!' : r.status === 'good' ? 'Good' : r.dt !== undefined ? (r.dt < 0 ? 'Early' : 'Late') : 'Miss';
+        const text = !r.notesRight && r.dt !== undefined ? 'Wrong notes' : r.status === 'perfect' ? 'Perfect!' : r.status === 'good' ? 'Good' : r.status === 'off' ? ((r.dt ?? 0) < 0 ? 'Early' : 'Late') : 'Miss';
         setPop({ text, kind: !r.notesRight ? 'miss' : r.status, id: ++id });
       });
     }
@@ -230,7 +235,7 @@ export function usePlayLevel(
       )}
       {pop && phase === 'run' && (
         <div key={pop.id} className={`pop pointer-events-none absolute left-1/2 -translate-x-1/2 ${screen === 'names' ? 'top-3' : 'bottom-8'}`} data-testid="hit-pop">
-          <span className={`h rounded-lg px-3 py-1 text-[22px] ${pop.kind === 'perfect' ? 'bg-[#cfe3b4] text-good' : pop.kind === 'good' ? 'bg-[#f6e3b8] text-wal2' : 'bg-[#f0c4bf] text-[#7a2420]'}`}>{pop.text}</span>
+          <span className={`h rounded-lg px-3 py-1 text-[22px] ${pop.kind === 'perfect' ? 'bg-[#cfe3b4] text-good' : pop.kind === 'good' ? 'bg-[#f6e3b8] text-wal2' : pop.kind === 'off' ? 'bg-[#efd6a8] text-wal2' : 'bg-[#f0c4bf] text-[#7a2420]'}`}>{pop.text}</span>
         </div>
       )}
     </div>

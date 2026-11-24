@@ -96,16 +96,18 @@ export function clearSaved() {
 
 // ---------- Per-device settings (never hold a name) ----------
 export function loadLatency(): number | null {
+  // Saved as "2:<ms>". Plain numbers are from before the timing fix (they wrongly included the sound library's 100 ms
+  // look-ahead), so they are ignored and the student is asked to check again.
   try {
-    const v = Number(window.localStorage.getItem(LATENCY_KEY));
-    return Number.isFinite(v) && window.localStorage.getItem(LATENCY_KEY) !== null ? v : null;
+    const m = (window.localStorage.getItem(LATENCY_KEY) ?? '').match(/^2:(-?\d+)$/);
+    return m ? Number(m[1]) : null;
   } catch {
     return null;
   }
 }
 export function saveLatency(ms: number) {
   try {
-    window.localStorage.setItem(LATENCY_KEY, String(Math.round(ms)));
+    window.localStorage.setItem(LATENCY_KEY, `2:${Math.round(ms)}`);
   } catch {
     /* storage blocked */
   }

@@ -27,8 +27,9 @@ Drills are the means; students making music is the goal.
 - Inputs: Web MIDI, computer keyboard (A row = white, W row = black, Z/X = octave), touch/mouse (`src/input/`).
 
 ## Reused from other apps (copied, not shared packages)
-- `src/audio/synthEngine.ts` = SynthLab's engine. **One local change**: `setOutput()` so it feeds the Mix panel. Re-copy and
-  re-apply that change if SynthLab's engine improves.
+- `src/audio/synthEngine.ts` = SynthLab's engine. **Two local changes**: `setOutput()` so it feeds the Mix panel, and
+  notes start/stop at `Tone.immediate()` instead of `Tone.now()` (no 100 ms look-ahead on played keys). Re-copy and
+  re-apply both if SynthLab's engine improves.
 - `src/utils/codec.ts` = AudioPlot/SynthLab code compression (deflate-raw + base64url + checksum), new submission format.
 - `src/utils/autosave.ts`, `batch.ts`, `components/SaveUI.tsx`, `Modals.tsx` follow SynthLab's autosave and batch grader.
 
@@ -213,8 +214,18 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
 **Phase 3 (Time) built** (all at once, his choice; timed activities live inside the lessons):
 - Pattern engine `utils/patternEngine.ts` (pattern -> timeline of hits; one chord per bar; textures, rhythms, voicings
   root/smoothest kept on C3-C5). Timing judge `utils/timing.ts`: the first key of a chord counts, other keys within 80 ms
-  belong to it; Perfect ±50 ms, Good ±100 ms, otherwise Miss; latency is taken off first. Grade = half timing (Perfect 1,
-  Good 0.75) + half right notes. Tests: `timing.test.ts`.
+  belong to it; Perfect ±50 ms, Good ±100 ms, Early/Late up to ±220 ms, otherwise Miss (not played); latency is taken off
+  first. Grade = half timing (his call: Perfect 1, Good 0.8, Early/Late 0.5, Miss 0) + half right notes. Result screen:
+  Perfect · Good · Early/Late · Miss. Tests: `timing.test.ts`.
+- **Timing clock (fixed after his Chromebook test: he was "early" while with the click).** Two bugs: (1) every played key
+  used `Tone.now()`, which is 100 ms in the future (Tone's look-ahead), so students heard their own notes late and pushed
+  early; live notes now use `Tone.immediate()`. (2) The latency check compared taps on `Tone.now()` with clicks on the
+  audio clock, adding ~100 ms to every latency. Now everything uses when a sound is HEARD on the `performance.now()` clock
+  (`engine.audioToPerf`: audio clock + the device's output delay): the latency check's clicks, the timed level's clicks
+  (`scheduleBeatClicks` returns `firstHeardAt`; the waterfall and judge start from it), and "Listen first" (notes start
+  early by `outputDelayMs()`). Latency is saved as `"2:<ms>"` in `pianolab:v1:latency`; old plain numbers (inflated) are
+  ignored, so everyone re-checks. `e29` tests the chain (40 ms keyboard delay -> latency 40 -> all Perfect). Test hook
+  `window.__clicks` (latency check click times).
 - Progression Play (`type: "play"`, `components/PlayLevel.tsx` + `Waterfall.tsx`): blocks in the bar's degree colour fall
   onto a brass line above the keys; bar labels show chord + numeral. Start screen: tempo (never slower than the level or
   the assignment), Show = Falling Note Blocks / Chord Names Only (the level's `screen` is the most help allowed; "Nothing (memory)" removed at his request),
@@ -264,4 +275,4 @@ Metronome sounds are in `audioEngine.ts` `tick()`.
 - Assignment link: core built (Phase 3). Later: assign Learn-only lessons, due dates, more settings (SPEC section 8).
 - Confirm the Vercel preview for branch `claude/charming-wozniak-94lfxk` builds; nothing is on `main` yet (merge only on his
   say-so, after class).
-- Latency check result varied (88-141 ms in tests); worth a second look once timing grades exist (Phase 3).
+- Latency: the old 88-141 ms readings included a 100 ms bug (fixed). Expect much smaller numbers now; re-check on the Chromebook.

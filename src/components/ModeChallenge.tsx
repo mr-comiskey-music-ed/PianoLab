@@ -522,7 +522,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
         {finished.timing && (
           <div className="flex flex-col items-center gap-0.5 text-[15px] text-line2" data-testid="timing-total">
             <div>
-              <span className="text-[#cfe3b4]">Perfect {finished.timing.perfect}</span> · <span className="text-[#f6e3b8]">Good {finished.timing.good}</span> · <span className="text-[#f0c4bf]">Miss {finished.timing.miss}</span>
+              <span className="text-[#cfe3b4]">Perfect {finished.timing.perfect}</span> · <span className="text-[#f6e3b8]">Good {finished.timing.good}</span> · <span className="text-[#efd6a8]">Early/Late {finished.timing.off}</span> · <span className="text-[#f0c4bf]">Miss {finished.timing.miss}</span>
             </div>
             <div>
               Timing {finished.timing.timing}% · Right notes {finished.timing.notes}% · {finished.tempo} BPM

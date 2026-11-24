@@ -363,7 +363,8 @@ class Voice {
       this.sine.start();
       this.sineRunning = true;
     }
-    const now = Tone.now();
+    // Tone.immediate(), not Tone.now(): a played key sounds right away, without Tone's 100 ms look-ahead (PianoLab change).
+    const now = Tone.immediate();
     // Dial the LFO in over a few tens of ms rather than letting it hit mid-wave
     // (or over the LFO delay time, when the Soundtrap guide sets one).
     const delay = Math.max(0, this.engine.getExtras().lfoDelay ?? 0);
@@ -394,7 +395,7 @@ class Voice {
   release() {
     if (!this.held) return;
     this.held = false;
-    const now = Tone.now();
+    const now = Tone.immediate(); // PianoLab change: see triggerAttack
     this.ampEnv.triggerRelease(now);
     this.filterEnv.triggerRelease(now);
     // Stop the oscillators once the note has faded, so idle voices cost nothing.
