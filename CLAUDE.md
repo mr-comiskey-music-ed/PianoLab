@@ -341,6 +341,6 @@ YouTube ungraded):
   Speed Round, an assignment link end to end.
 - Phase 2 to try on the Chromebook: every lesson's Learn, the chord levels with the MIDI keyboard, Smooth Mover, the strip.
 - Assignment link: core built (Phase 3). Later: assign Learn-only lessons, due dates, more settings (SPEC section 8).
-- Confirm the Vercel preview for branch `claude/charming-wozniak-94lfxk` builds; nothing is on `main` yet (merge only on his
-  say-so, after class).
+- Phases 1-4 merged to `main` on 2026-11-24 (his say-so; a fast-forward, main had only his uploaded files). Keep working
+  on the branch; merge again only when he says, after class. Check that Vercel's production build (main) works.
 - Latency: the old 88-141 ms readings included a 100 ms bug (fixed). Expect much smaller numbers now; re-check on the Chromebook.
