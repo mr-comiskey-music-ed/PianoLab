@@ -289,9 +289,11 @@ YouTube ungraded):
   match need all 4 notes (any inversion), `diatonicSevenths` (Imaj7 ii7 iii7 IVmaj7 V7 vi7 viiø7), and `parseNumeral`
   reads any numeral in a key (V7, ii7, Imaj7, blues I7/IV7, borrowed ♭VII/♭VI). The chord listeners wait for 4 keys when
   a 7th chord is asked for (Learn and Challenges `minNotes`).
-- Lesson 7 "Scales and the circle of 5ths" (`utils/scales.ts`: W W H W W W H, right-hand fingerings, sharps/flats,
-  fifthUp/Down). Learn: steps, fingers (finger numbers as key tags on show steps only; `lessons.test` enforces tags only
-  on show steps), C/G/F/D with `tryScale` (note by note, a wrong note starts over, 8 dots). Levels: Play the scale
+- Lesson 7 "Major scales" (renamed from "Scales and the circle of 5ths"; `utils/scales.ts`: W W H W W W H, right-hand
+  fingerings, sharps/flats, fifthUp/Down). Learn (his reorder: the circle-of-5ths step removed as clunky): Major scales
+  (steps, fingers, play C) · Sharps: G and D (show + try each) · Flats: F (why some scales use flats: to keep the
+  whole/half pattern, each letter once; show + try). Finger numbers as key tags on show steps only (`lessons.test`
+  enforces it); `tryScale` = note by note, a wrong note starts over, 8 dots. Timed levels in the order C, G, D, F. Levels: Play the scale
   (`scale` type, fingering shown as a hint) · Sharps and flats (`quiz` type: buttons, nothing lit) · The circle of 5ths
   (quiz) · C/G/F/D major in time (pattern texture `scale`: up and down, one note per beat; Falling Note Blocks only) ·
   More keys (A, B♭, E, E♭).
@@ -333,7 +335,8 @@ YouTube ungraded):
 Oct − / Oct + · ♪ (Sound drawer) · ⋯ (MIDI/latency/saved chips); the bar above the keys and the "C3–C5" text are gone on
 phones (no off-screen-notes label there; the Oct buttons still flash). The ☰ button became a labelled menu button (his
 "not obvious" note): "Lesson 3 / Step 2 ▾" (Learn), "Lesson 3 / Level 2 ▾" (Challenges, `navLabel` from the modes),
-"Lesson 3 ▾" (Practice), "Options ▾" (Sandbox), "Jam setup ▾"; a brass hint bubble "Lessons and levels are here" shows
+"Lesson 3 / Practice ▾", "Sandbox / Options ▾", "Jam Room / Setup ▾": always two lines, fixed 92 px wide (the
+Grade tab's logo takes the same width), so the tabs never shift (his report); a brass hint bubble "Lessons and levels are here" shows
 once per visit under it (6 s or the first tap; nothing saved). Phone tab "Jam Room" -> "Jam". Drawers slide over (backdrop closes). Chord strip
 hidden. Stage contents at 80% (`.phone-stage` zoom) and laid out LEFT TO RIGHT (`StageRow.tsx`: `StageBox` + `Col`, used
 by Challenges (start / question / result: score | passed + best | buttons), Learn (explanation | try | buttons),
