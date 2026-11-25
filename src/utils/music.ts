@@ -29,7 +29,7 @@ export const pc = (midi: number) => ((midi % 12) + 12) % 12;
 export const BLACK_NAMES: Record<number, string> = { 1: 'C♯/D♭', 3: 'D♯/E♭', 6: 'F♯/G♭', 8: 'G♯/A♭', 10: 'A♯/B♭' };
 
 /** "C#" -> "C♯", "Bb" -> "B♭" (for showing text). */
-export const pretty = (s: string) => s.replace(/#/g, '♯').replace(/(?<=[A-G])b/g, '♭');
+export const pretty = (s: string) => s.replace(/#/g, '♯').replace(/([A-G])b/g, '$1♭');
 
 /** The 25-key default view: C3 to C5. */
 export const DEFAULT_START = 48;

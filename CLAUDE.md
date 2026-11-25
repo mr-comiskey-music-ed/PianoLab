@@ -398,6 +398,14 @@ key it reaches and lets go of the one it left; keys another finger holds aren't 
   `sync:tresillo` (= `sync:pop`), `sync:offbeats`, `sync:push`. Timed levels can have a `groove` (Jam Room style id): an
   app-made drums + bass backing on each bar's root with its own count-in bar, "Backing: groove / Clicks" on the start
   screen (`PlayLevel`). Arpeggio levels are Falling Note Blocks only, like scales. `e54` tests it.
+- **Full debug pass (before the 2nd merge to main):** `e55` sweeps every lesson's Learn steps, every level's start
+  screen, Practice and the other tabs on a Chromebook and a phone (page errors, console errors, Stage overflow): no errors
+  anywhere. Fixed: (1) leaving Challenges mid-run stops a timed level (its clicks/groove played on and it was still
+  graded; `useChallenge(ctx, active)`); (2) phone Stage columns (`Col`) centre with auto margins and scroll from the top
+  when too tall (long Learn text lost its first lines above the edge); phone Learn text 16px; the rhythm box is compact on
+  phones; (3) **no regex lookbehind `(?<=` anywhere**: iPhone Safari before 16.4 can't parse it and the whole app would fail
+  to load (removed from `sentences`, `pretty`, `readChordSheet`). Older browser tests re-run with `nowelcome.cjs` preloaded
+  (marks the welcome as seen): all pass except test-side drift (lesson numbers moved; e31's old "Not smooth = Miss" rule).
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
 ## Open items (last updated end of Phase 1 testing)

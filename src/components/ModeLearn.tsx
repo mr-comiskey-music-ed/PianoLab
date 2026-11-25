@@ -26,7 +26,8 @@ export function isWhiteTriad(held: number[]): boolean {
 /** Split an explanation into sentences (and at any line break in the text), so each shows on its own line. */
 export const sentences = (text: string) =>
   text
-    .split(/\n|(?<=[.!?])\s+(?=[A-Z0-9"“(])/)
+    .replace(/([.!?])\s+(?=[A-Z0-9"“(])/g, '$1\n')
+    .split('\n')
     .map((t) => t.trim())
     .filter(Boolean);
 
@@ -472,7 +473,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         {step.section === step.title ? step.title : `${step.section} · ${step.title}`}
       </div>
       {/* One sentence per line, so each idea stands on its own. */}
-      <div className="mt-1 flex flex-col gap-1 text-[18px] leading-snug text-line">
+      <div className={`mt-1 flex flex-col gap-1 leading-snug text-line ${ctx.phone ? 'text-[16px]' : 'text-[18px]'}`}>
         {sentences(step.say).map((line, k) => (
           <p key={k}>{line}</p>
         ))}
@@ -528,7 +529,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       <Col phone={ctx.phone} className="max-w-[46%]">
       <div className={`w-full max-w-[720px] pt-2.5 ${ctx.phone ? '' : 'border-t border-wal1'}`}>
         <div className="h text-[12px] uppercase tracking-wider text-brass">Now you try</div>
-        <div className={`h leading-tight text-panel ${ctx.phone || step.rhythm ? 'text-[22px]' : 'text-[28px]'}`} data-testid="learn-prompt">
+        <div className={`h leading-tight text-panel ${ctx.phone && step.rhythm ? 'text-[18px]' : ctx.phone || step.rhythm ? 'text-[22px]' : 'text-[28px]'}`} data-testid="learn-prompt">
           {step.tryText}
         </div>
       </div>

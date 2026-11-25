@@ -117,19 +117,19 @@ export const RhythmBox: React.FC<{
   const slotNow = phase !== 'idle' && pos >= 0 ? Math.floor(pos * 2) : -1;
   return (
     <div className="flex w-full max-w-[760px] flex-col items-center gap-1.5" data-testid="rhythm-box">
-      <div className="relative w-full rounded-lg bg-[#2a2118] px-2 pb-1.5 pt-1" data-testid="rhythm-grid">
+      <div className={`relative w-full rounded-lg bg-[#2a2118] px-2 ${ctx.phone ? 'pb-1 pt-0.5' : 'pb-1.5 pt-1'}`} data-testid="rhythm-grid">
         <div className="flex">
           {Array.from({ length: bars }, (_, b) => (
             <div key={b} className="flex flex-1 border-l-2 border-wal1 first:border-l-0">
               {COUNTS.map((c, k) => (
-                <span key={k} className={`h flex-1 text-center text-[15px] ${b * 8 + k === slotNow ? 'text-brass' : c === '+' ? 'text-line2/50' : 'text-line2'}`}>
+                <span key={k} className={`h flex-1 text-center ${ctx.phone ? 'text-[12px]' : 'text-[15px]'} ${b * 8 + k === slotNow ? 'text-brass' : c === '+' ? 'text-line2/50' : 'text-line2'}`}>
                   {c}
                 </span>
               ))}
             </div>
           ))}
         </div>
-        <div className="relative mt-0.5 h-8">
+        <div className={`relative mt-0.5 ${ctx.phone ? 'h-6' : 'h-8'}`}>
           {tl.hits.map((h, k) => {
             const color = tl.bars[h.bar]?.color ?? '#d9a441';
             const label = h.kind === 'chord' ? tl.bars[h.bar]?.symbol : pretty(letterOf(h.notes[0]));

@@ -301,7 +301,7 @@ export default function App() {
   };
   const learn = useLearn(ctx);
   const practice = usePractice(ctx);
-  const challenge = useChallenge(ctx);
+  const challenge = useChallenge(ctx, mode === 'challenge');
   const sandbox = useSandbox(ctx, mode === 'sandbox');
   const jam = useJam(ctx, mode === 'jam');
   const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : mode === 'sandbox' ? sandbox : mode === 'jam' ? jam : challenge;

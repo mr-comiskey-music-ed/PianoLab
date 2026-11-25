@@ -16,4 +16,10 @@ export const StageBox: React.FC<{ phone?: boolean; className?: string; testid?: 
 
 /** One column of a Stage screen on a phone; on a Chromebook its parts simply stack with the rest. */
 export const Col: React.FC<{ phone?: boolean; className?: string; children: React.ReactNode }> = ({ phone, className = '', children }) =>
-  phone ? <div className={`flex min-w-0 flex-col items-center justify-center gap-1.5 ${className}`}>{children}</div> : <>{children}</>;
+  // Centred with auto margins (not justify-center), so a column taller than the short phone Stage scrolls from its top
+  // instead of losing its first lines above the edge.
+  phone ? (
+    <div className={`flex max-h-full min-w-0 flex-col items-center gap-1.5 overflow-y-auto [&>:first-child]:mt-auto [&>:last-child]:mb-auto ${className}`}>{children}</div>
+  ) : (
+    <>{children}</>
+  );

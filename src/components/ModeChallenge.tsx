@@ -91,7 +91,7 @@ function litChord(start: number, c: Chord, inv: number, idx: number): number[] {
  * Note labels: each level has an easiest setting (the starting one). Students can go harder, never easier.
  * The chord detector is OFF here (it would give answers away).
  */
-export function useChallenge(ctx: ModeCtx): ModeParts {
+export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
   // A teacher's assignment can give a lesson's Learn only (no levels): the hooks below still need levels to point at.
   const none = ctx.lesson.levels.length === 0;
   const levels = none ? (ALL_LESSONS.find((l) => l.id === ctx.lesson.id) ?? ALL_LESSONS[0]).levels : ctx.lesson.levels;
@@ -493,6 +493,11 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     onFinish: (raw, s, set) => recordResult(selLevel, raw, { timing: s, tempo: set.tempo }),
   });
   const isPlay = selLevel.type === 'play';
+  // Leaving Challenges stops a timed level (its clicks or groove would play on, and the run would still be graded).
+  useEffect(() => {
+    if (!active && play.running) play.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
 
   // What to light for the current prompt.
   const prompt = run?.prompts[run.idx];

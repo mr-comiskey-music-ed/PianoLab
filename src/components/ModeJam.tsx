@@ -86,7 +86,7 @@ export const sameFamily = (a: Chord, b: Chord) => a.root === b.root && MINORISH.
 export function readChordSheet(k: KeyDef, text: string): SheetChord[] {
   const inKey = [...diatonic(k), ...diatonicSevenths(k)];
   const out: SheetChord[] = [];
-  for (const tok of text.split(/[\s,|–—]+|\s-\s|(?<=[^\s])-(?=[A-G])/).filter(Boolean)) {
+  for (const tok of text.replace(/(\S)-([A-G])/g, '$1 $2').split(/[\s,|–—]+/).filter(Boolean)) {
     const t = tok.replace(/[()]/g, '');
     let chord = parseChord(t.split('/')[0]);
     if (!chord) {
@@ -95,7 +95,7 @@ export function readChordSheet(k: KeyDef, text: string): SheetChord[] {
     }
     if (chord) {
       const d = inKey.find((x) => x.chord.root === chord!.root && x.chord.quality === chord!.quality) ?? diatonic(k).find((x) => sameFamily(x.chord, chord!));
-      out.push({ text: t.replace('#', '♯').replace(/(?<=^[A-G])b/, '♭'), chord, numeral: d?.numeral ?? '', color: d?.color ?? '#66584a' });
+      out.push({ text: t.replace('#', '♯').replace(/^([A-G])b/, '$1♭'), chord, numeral: d?.numeral ?? '', color: d?.color ?? '#66584a' });
     } else {
       const d = parseNumeral(k, t);
       if (d) out.push({ text: chordName(d.chord), chord: d.chord, numeral: d.numeral, color: d.color });
