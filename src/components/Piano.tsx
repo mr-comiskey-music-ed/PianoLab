@@ -28,6 +28,9 @@ interface Props {
 /** 25 keys, C to C. Mouse and multitouch both work: each finger is tracked by its own pointer id. */
 export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks, labels, keyText, blackNames, tint, dim, onDown, onUp }) => {
   const held = useRef(new Map<number, number>()); // pointerId -> midi
+  const root = useRef<HTMLDivElement>(null);
+  /** Is this key held by any finger other than `pointerId`? (Gliding over or off it then leaves it sounding.) */
+  const heldByOther = (midi: number, pointerId: number) => [...held.current].some(([id, m]) => id !== pointerId && m === midi);
   const keys = Array.from({ length: KEY_COUNT }, (_, i) => start + i);
   const whites = keys.filter((m) => !isBlack(m));
   const wW = 100 / whites.length;
@@ -46,7 +49,22 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
     const midi = held.current.get(e.pointerId);
     if (midi === undefined) return;
     held.current.delete(e.pointerId);
-    onUp(midi);
+    if (!heldByOther(midi, e.pointerId)) onUp(midi);
+  };
+  /**
+   * Glissando: sliding a held finger (or the mouse with its button down) across the keys plays each key it reaches and
+   * lets go of the one it left, like rolling a finger up or down a real keyboard.
+   */
+  const move = (e: React.PointerEvent) => {
+    const cur = held.current.get(e.pointerId);
+    if (cur === undefined) return;
+    const el = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.closest('[data-midi]') as HTMLElement | null;
+    if (!el || !root.current?.contains(el)) return;
+    const next = Number(el.dataset.midi);
+    if (next === cur || !Number.isFinite(next)) return;
+    held.current.set(e.pointerId, next);
+    if (!heldByOther(cur, e.pointerId)) onUp(cur);
+    if (!heldByOther(next, e.pointerId)) onDown(next);
   };
 
   const cls = (midi: number, black: boolean) => {
@@ -70,7 +88,7 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
 
   let wi = -1;
   return (
-    <div className="relative w-full h-full select-none" style={{ touchAction: 'none' }} data-testid="piano">
+    <div ref={root} className="relative w-full h-full select-none" style={{ touchAction: 'none' }} data-testid="piano">
       {keys.map((midi) => {
         const black = isBlack(midi);
         if (!black) wi++;
@@ -84,6 +102,7 @@ export const Piano: React.FC<Props> = ({ start, pressed, lit, forceLabel, marks,
             aria-label={`${letterOf(midi)}${octaveOf(midi)}`}
             data-midi={midi}
             onPointerDown={(e) => press(e, midi)}
+            onPointerMove={move}
             onPointerUp={release}
             onPointerCancel={release}
             className={`absolute top-0 ${black ? 'h-[62%] z-10 rounded-b-md shadow-[0_3px_4px_rgba(0,0,0,0.5)]' : 'h-full rounded-b-lg border border-line2'} ${cls(midi, black)} transition-colors duration-75`}

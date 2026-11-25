@@ -58,6 +58,11 @@ export const CodePanel: React.FC<{ results: LevelResult[]; learned: string[]; as
         <span className="h text-wal3">Your Name</span>
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="off" data-testid="name" placeholder="Your Name" className="mt-0.5 w-full rounded-lg border border-line2 bg-white px-2 py-1.5 text-[15px]" />
       </label>
+      {/* The code right under the name (his call: no scrolling down to find it), then the levels it holds. */}
+      <textarea ref={ref} readOnly value={code} rows={3} placeholder="Your code shows up here once you type your name." data-testid="code" className="mt-2 w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px] break-all" onFocus={(e) => e.currentTarget.select()} />
+      <button className="btn btn-brass mt-1 w-full" onClick={copy} disabled={!code} data-testid="copy-code">
+        {copied ? 'Copied ✓' : 'Copy code'}
+      </button>
       <div className="mt-3 flex flex-col gap-2 rounded-lg border border-line bg-page p-2 text-[14px]" data-testid="report-levels">
         {shownLessons.map((les) => (
           <div key={les.id}>
@@ -79,10 +84,6 @@ export const CodePanel: React.FC<{ results: LevelResult[]; learned: string[]; as
           </div>
         ))}
       </div>
-      <textarea ref={ref} readOnly value={code} rows={4} placeholder="Your code shows up here once you type your name." data-testid="code" className="mt-3 w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px] break-all" onFocus={(e) => e.currentTarget.select()} />
-      <button className="btn btn-brass mt-2 w-full" onClick={copy} disabled={!code}>
-        {copied ? 'Copied ✓' : 'Copy code'}
-      </button>
     </div>
   );
 };

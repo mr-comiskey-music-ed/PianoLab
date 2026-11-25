@@ -345,6 +345,12 @@ the waterfall lines up with the keys. Upright: "Turn your phone sideways to play
 always works on phones (his requirement); Android Chrome takes USB/Bluetooth MIDI controllers; iPhone Safari has no
 Web MIDI (touch only); the silent switch mutes web audio. Still to check on phones: Sandbox, Jam Room, Grade Report.
 
+**His round 3 (phone + general):** Grade Report: the code box and Copy button sit right under "Your Name" (then the level
+list), all screens. Jam Room: the "You're playing" line has a fixed height (`h-12`) so the chord chart doesn't jump. YouTube
+iframes fill their frame (`[data-testid='youtube'] iframe` in index.css; YouTube's default 640x390 made a box in a box).
+**Glissando** (`Piano.tsx` `move`): sliding a held finger, or the mouse with its button down, across the keys plays each
+key it reaches and lets go of the one it left; keys another finger holds aren't cut off. `e41` tests these.
+
 ## Open items (last updated end of Phase 1 testing)
 - Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (gentler crackle), Pad (softer swell).
 - MIDI import choices to confirm (see SPEC section 10): merge all tracks, drop drums, 3-minute cap, replace not append.

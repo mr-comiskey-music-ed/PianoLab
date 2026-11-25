@@ -105,3 +105,10 @@ textarea, input { user-select: text; -webkit-user-select: text; }
 .phone-stage {
   zoom: 0.8;
 }
+
+/* YouTube's player sets its own fixed size (640 x 390); make it fill the Jam Room's video frame instead. */
+[data-testid='youtube'] iframe {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}

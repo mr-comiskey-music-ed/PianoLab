@@ -404,8 +404,9 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     </div>
   );
 
+  // Always the same height, so the chord chart above doesn't jump when a chord name appears (his phone report).
   const nowPlaying = det ? (
-    <div className="flex items-center gap-3" data-testid="jam-playing">
+    <div className="flex h-12 items-center gap-3" data-testid="jam-playing">
       <span className="h text-[14px] uppercase tracking-wider text-line2">You're playing</span>
       <span className="h text-[30px] text-panel">{det.symbol}</span>
       {want && (
@@ -415,7 +416,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
       )}
     </div>
   ) : (
-    <div className="h text-[15px] text-line2">{playing ? 'Play along!' : ' '}</div>
+    <div className="h flex h-12 items-center text-[15px] text-line2">{playing ? 'Play along!' : ' '}</div>
   );
 
   const roll = (
