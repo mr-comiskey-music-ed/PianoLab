@@ -422,6 +422,8 @@ key it reaches and lets go of the one it left; keys another finger holds aren't 
   Speed Round, an assignment link end to end.
 - Phase 2 to try on the Chromebook: every lesson's Learn, the chord levels with the MIDI keyboard, Smooth Mover, the strip.
 - Assignment link: core built (Phase 3). Later: assign Learn-only lessons, due dates, more settings (SPEC section 8).
+- Second merge to `main` on 2026-11-25 (his say-so, after the debug pass; a fast-forward): Chord rhythms lesson, everything
+  assignable, welcome walkthrough, YouTube chord sheet, phone fixes.
 - Phases 1-4 merged to `main` on 2026-11-24 (his say-so; a fast-forward, main had only his uploaded files). Keep working
   on the branch; merge again only when he says, after class. Check that Vercel's production build (main) works.
 - Latency: the old 88-141 ms readings included a 100 ms bug (fixed). Expect much smaller numbers now; re-check on the Chromebook.
