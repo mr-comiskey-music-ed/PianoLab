@@ -3802,7 +3802,7 @@
           "id": "lr-learn-split",
           "section": "Broken chords",
           "title": "Split hands",
-          "say": "Now spread it out: the left hand plays the root low, on the left of the keyboard.\nThe right hand plays the whole chord up high, on the right.\nThat is how a lot of piano accompaniment sounds.",
+          "say": "Now spread it out: the left hand plays the root low, on the left of the keyboard.\nThe right hand plays the whole chord up high, on the right.\nC is C E G. G is played as an inversion, D G B (its 2nd inversion, from Lesson 6), so it fits on the keys and your right hand barely moves.\nThat is how a lot of piano accompaniment sounds.",
           "need": 0,
           "rhythm": {
             "id": "lr-l-split",
@@ -3824,9 +3824,9 @@
           "id": "lr-try-split",
           "section": "Broken chords",
           "title": "Play split hands",
-          "say": "Left hand: the root, low. Right hand: the chord, high.",
+          "say": "Left hand: the root, low. Right hand: the chord, high.\nFor G, use the inversion D G B up high (2nd inversion).",
           "need": 1,
-          "tryText": "Play C, then G: low root on 1 and 3, the chord up high on 2 and 4.",
+          "tryText": "Play C, then G: low root on 1 and 3, the chord up high on 2 and 4 (G as D G B).",
           "rhythm": {
             "id": "lr-t-split",
             "key": "C",
@@ -4158,7 +4158,7 @@
         {
           "id": "lr-split",
           "title": "Split hands",
-          "blurb": "Low root in the left hand, the chord high in the right.",
+          "blurb": "Low root in the left hand, the chord high in the right. G is the inversion D G B.",
           "type": "play",
           "octave": "any",
           "pass": 80,
