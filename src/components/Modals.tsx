@@ -387,6 +387,7 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
   const [jBpm, setJBpm] = useState('');
   const [jTrack, setJTrack] = useState(TRACKS[0]?.id ?? '');
   const [jVideo, setJVideo] = useState('');
+  const [jSheet, setJSheet] = useState('');
   const [jKeyLock, setJKeyLock] = useState<Choice>('choose');
   const [jMelody, setJMelody] = useState<Choice>('choose');
   const [link, setLink] = useState('');
@@ -415,7 +416,7 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
           melody: jMelody,
           ...(jSource === 'groove' ? { groove: jGroove, key: jKey, prog: jProg, ...(jProg === 'custom' ? { custom: jCustom } : {}), ...(jBpm ? { bpm: num(jBpm) } : {}) } : {}),
           ...(jSource === 'track' ? { track: jTrack } : {}),
-          ...(jSource === 'youtube' && videoId ? { video: videoId, key: jKey } : {}),
+          ...(jSource === 'youtube' && videoId ? { video: videoId, key: jKey, ...(jSheet.trim() ? { custom: jSheet.trim() } : {}) } : {}),
         }
       : undefined;
     void encodeAssignment({
@@ -432,7 +433,7 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
       ...(jam ? { jam } : {}),
     }).then((t) => setLink(assignmentLink(t)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, note, picked, learn, labels, echo, screen, tempo, sound, open, jamOn, jSource, jGroove, jKey, jProg, jCustom, jBpm, jTrack, videoId, jKeyLock, jMelody, ready]);
+  }, [title, note, picked, learn, labels, echo, screen, tempo, sound, open, jamOn, jSource, jGroove, jKey, jProg, jCustom, jBpm, jTrack, videoId, jSheet, jKeyLock, jMelody, ready]);
 
   const toggle = (ids: string[], on: boolean) =>
     setPicked((p) => {
@@ -641,6 +642,7 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
                           if (!v) return;
                           setJVideo(v.url);
                           setJKey(v.mode === 'minor' ? `${v.key}m` : v.key);
+                          setJSheet(v.chords ?? '');
                         }}
                         className={box}
                         data-testid="assign-jam-videos"
@@ -660,6 +662,7 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
                       {jVideo && !videoId && <span className="text-[12px] text-bad">That isn’t a YouTube link</span>}
                     </>,
                   )}
+                  {field('Chords (optional, shown in order)', <input value={jSheet} onChange={(e) => setJSheet(e.target.value)} maxLength={80} placeholder="e.g. Am F C G" className={`${box} w-56`} data-testid="assign-jam-sheet" />)}
                   {field(
                     'Key (for Melody mode / Key lock)',
                     <select value={jKey} onChange={(e) => setJKey(e.target.value)} className={box} data-testid="assign-jam-key">

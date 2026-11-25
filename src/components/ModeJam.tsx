@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GROOVES, Groove, TRACKS } from '../audio/groove';
-import { Diatonic, KEYS, KeyDef, chordName, chordPcs, detectChord, keyById, makeKey, parseNumeral } from '../utils/chords';
+import { Chord, Diatonic, KEYS, KeyDef, Quality, chordName, chordPcs, detectChord, diatonic, diatonicSevenths, keyById, makeKey, parseChord, parseNumeral } from '../utils/chords';
 import { KEY_COUNT, pc, pcOf } from '../utils/music';
 import { MAJOR_SCALE } from '../utils/scales';
 import { textOn } from './ChordStrip';
@@ -69,6 +69,42 @@ export function readNumerals(k: KeyDef, text: string): Diatonic[] {
     .slice(0, 16);
 }
 
+/** One chord box from a chord sheet a student found online (YouTube jams): what they typed, and the chord it means. */
+export interface SheetChord {
+  text: string;
+  chord: Chord;
+  numeral: string;
+  color: string;
+}
+const MINORISH: Quality[] = ['min', 'min7', 'dim', 'hdim7', 'dim7'];
+/** Same chord for "you're on it": same root, and both minor-ish or both major-ish (a plain triad counts for a sus or add9). */
+export const sameFamily = (a: Chord, b: Chord) => a.root === b.root && MINORISH.includes(a.quality) === MINORISH.includes(b.quality);
+/**
+ * Read a chord sheet: chord names as found online ("Am F C G", "Am - F - C - G", "C/E", "Gsus4", "Cadd9") or numerals
+ * ("vi IV I V"). Chords this app can't name exactly count as their plain major/minor triad; anything else is skipped.
+ */
+export function readChordSheet(k: KeyDef, text: string): SheetChord[] {
+  const inKey = [...diatonic(k), ...diatonicSevenths(k)];
+  const out: SheetChord[] = [];
+  for (const tok of text.split(/[\s,|–—]+|\s-\s|(?<=[^\s])-(?=[A-G])/).filter(Boolean)) {
+    const t = tok.replace(/[()]/g, '');
+    let chord = parseChord(t.split('/')[0]);
+    if (!chord) {
+      const m = t.split('/')[0].match(/^([A-G][#b♯♭]?)(.*)$/);
+      if (m) chord = parseChord(m[1] + (/^(m(?!aj)|min|-)/.test(m[2]) ? 'm' : ''));
+    }
+    if (chord) {
+      const d = inKey.find((x) => x.chord.root === chord!.root && x.chord.quality === chord!.quality) ?? diatonic(k).find((x) => sameFamily(x.chord, chord!));
+      out.push({ text: t.replace('#', '♯').replace(/(?<=^[A-G])b/, '♭'), chord, numeral: d?.numeral ?? '', color: d?.color ?? '#66584a' });
+    } else {
+      const d = parseNumeral(k, t);
+      if (d) out.push({ text: chordName(d.chord), chord: d.chord, numeral: d.numeral, color: d.color });
+    }
+    if (out.length >= 24) break;
+  }
+  return out;
+}
+
 /** A small level meter (0-1), updated by the parent's animation loop. */
 const Meter: React.FC<{ level: number }> = ({ level }) => (
   <div className="h-2 w-full overflow-hidden rounded-full bg-[#ddd0bc]">
@@ -86,6 +122,9 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   const [trackId, setTrackId] = useState(TRACKS[0]?.id ?? '');
   const [ytText, setYtText] = useState('');
   const [videoId, setVideoId] = useState<string | null>(null);
+  /** YouTube jams: a chord sheet the student found online (not in time, just in order). */
+  const [ytChords, setYtChords] = useState('');
+  const [sheetPlace, setSheetPlace] = useState(-1);
   const [melody, setMelody] = useState(false);
   const [keyLock, setKeyLock] = useState(false);
   const [backVol, setBackVol] = useState(1);
@@ -117,7 +156,10 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     if (setup.groove) setGrooveId(setup.groove);
     if (setup.key) setKeyId(setup.key);
     if (setup.prog) setProgId(setup.prog);
-    if (setup.custom) setCustom(setup.custom);
+    if (setup.custom) {
+      if (setup.source === 'youtube') setYtChords(setup.custom);
+      else setCustom(setup.custom);
+    }
     setBpm(setup.bpm ?? GROOVES.find((g) => g.id === setup.groove)?.bpm ?? GROOVES[0].bpm);
     if (setup.track) setTrackId(setup.track);
     if (setup.video) setVideoId(setup.video);
@@ -262,6 +304,23 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   // On the chord: the bar's chord tones are all there (a triad over a 7th, or the 7th itself, both count).
   const onChord = !!(want && held.length >= 3 && chordPcs(want.chord).slice(0, 3).every((p) => held.some((h) => pc(h) === p)) && held.every((h) => chordPcs(want.chord).includes(pc(h))));
 
+  // YouTube jams: the student's chord sheet, in order. The box you're playing lights up and the next one is outlined
+  // (it follows what you play; it can't know where the video is).
+  const sheet = useMemo(() => (source === 'youtube' ? readChordSheet(key, ytChords) : []), [source, key, ytChords]);
+  useEffect(() => setSheetPlace(-1), [ytChords]);
+  useEffect(() => {
+    if (!det || !sheet.length) return;
+    setSheetPlace((p) => {
+      const n = sheet.length;
+      if (p >= 0 && sameFamily(sheet[p].chord, det.chord)) return p;
+      const next = (p + 1) % n;
+      if (sameFamily(sheet[next].chord, det.chord)) return next;
+      const any = sheet.findIndex((x) => sameFamily(x.chord, det.chord));
+      return any >= 0 ? any : p;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [det?.symbol, sheet]);
+
   const sel = 'w-full rounded-md border border-line2 bg-white px-1.5 py-1 text-[13px]';
   /** Dropdowns hand the typing keyboard back to the piano once something is picked. */
   const pick = (fn: (v: string) => void) => (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -289,6 +348,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
             {key.label}
           </div>
           {source === 'groove' && <div className="text-wal1">{chords.map((d) => d.numeral).join(' – ')}</div>}
+          {source === 'youtube' && sheet.length > 0 && <div className="text-wal1">{sheet.map((c) => c.text).join(' – ')}</div>}
           {source === 'groove' && (
             <div className="flex items-center gap-2">
               <span className="h w-14 shrink-0 text-wal3">Tempo</span>
@@ -389,7 +449,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
       {source === 'youtube' && (
         <>
           {VIDEOS.length > 0 && (
-            <select className={sel} value="" data-testid="jam-videos" onChange={pick((v) => { const vid = VIDEOS[Number(v)]; setVideoId(youTubeId(vid.url)); setKeyId(vid.mode === 'minor' ? `${vid.key}m` : vid.key); })}>
+            <select className={sel} value="" data-testid="jam-videos" onChange={pick((v) => { const vid = VIDEOS[Number(v)]; setVideoId(youTubeId(vid.url)); setKeyId(vid.mode === 'minor' ? `${vid.key}m` : vid.key); setYtChords(vid.chords ?? ''); })}>
               <option value="">Pick a video…</option>
               {VIDEOS.map((v, i) => (
                 <option key={i} value={i}>
@@ -413,6 +473,10 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
                 </option>
               ))}
             </select>
+          </label>
+          <label className="flex flex-col gap-0.5">
+            <span className="h text-wal3">Chords (optional)</span>
+            <input className={sel} value={ytChords} onChange={(e) => setYtChords(e.target.value)} placeholder="Found them online? e.g. Am F C G" aria-label="The song's chords" data-testid="jam-yt-chords" />
           </label>
         </>
       )}
@@ -497,6 +561,27 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
             <div className="h text-[26px] text-panel">Jam along with a YouTube video</div>
             <div className="text-[15px] text-line2">Paste a link on the left (or pick one from the list).</div>
             <div className="text-[15px] text-line2">Set the key, then turn on Melody mode or Key lock to help.</div>
+          </div>
+        )}
+        {sheet.length > 0 && (
+          // The chord sheet, over the video (top left; Save is top right). Not in time: just in order.
+          <div className={`pointer-events-none absolute left-3 top-2 z-20 flex flex-wrap gap-1 ${ctx.phone ? 'right-[300px]' : 'right-[290px]'}`} data-testid="jam-sheet">
+            {sheet.map((c, i) => {
+              const on = i === sheetPlace && !!det && sameFamily(c.chord, det.chord);
+              const next = i === (sheetPlace + 1) % sheet.length && !on;
+              return (
+                <div
+                  key={i}
+                  data-testid="jam-sheet-chord"
+                  data-on={on ? 'yes' : next ? 'next' : 'no'}
+                  className={`flex min-w-[52px] flex-col items-center rounded-md px-1.5 py-0.5 leading-tight shadow transition-transform ${on ? 'scale-110 ring-2 ring-panel' : next ? 'outline-2 outline-offset-1 outline-dashed outline-brass' : 'opacity-80'}`}
+                  style={{ background: c.color, color: textOn(c.color) }}
+                >
+                  <span className="h text-[18px]">{c.text}</span>
+                  {c.numeral && <span className="h text-[11px]">{c.numeral}</span>}
+                </div>
+              );
+            })}
           </div>
         )}
         {nowPlaying}

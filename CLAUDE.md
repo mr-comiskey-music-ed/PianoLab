@@ -380,6 +380,12 @@ key it reaches and lets go of the one it left; keys another finger holds aren't 
   latency check · Sandbox and Jam Room · turning in a code; phone wording differs). Shows on a first visit only (not for a
   returning student who gets the restore prompt); reopen with "?" in the top bar (phones: ⋯ > How it works). The phone
   nav hint waits until it closes. **Browser tests must set `pianolab:v1:welcomed` = "1"** or the welcome covers the page.
+- **YouTube chord sheet** (his request): with a YouTube backing, "Chords (optional)" takes a progression found online
+  (`readChordSheet` in ModeJam: chord names as sheets write them, "Am - F - C/E - G7", sus/add/odd chords count as their
+  plain triad, or numerals). Boxes in order at the top left of the Stage, in degree colours with numerals for the key;
+  not in time: the box you're playing lights up and the next one gets a dashed outline (it follows what you play,
+  `sameFamily`: same root, both major-ish or minor-ish). Prefilled from `youtube.json`'s `chords`; an assignment's
+  YouTube Jam can carry them (`custom`). `jamSheet.test.ts`, `e53`.
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
 ## Open items (last updated end of Phase 1 testing)
