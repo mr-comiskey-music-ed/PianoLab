@@ -28,7 +28,7 @@ interface YouTubeVideo {
   mode?: 'major' | 'minor';
   chords?: string;
 }
-const VIDEOS = (youtubeData as { videos: YouTubeVideo[] }).videos;
+export const VIDEOS = (youtubeData as { videos: YouTubeVideo[] }).videos;
 
 /**
  * Progressions to jam over (Roman numerals, one per bar), each with a major-key and a minor-key version: in A minor the
@@ -54,7 +54,7 @@ const presetName = (p: (typeof PROGRESSIONS)[number], k: KeyDef) => (p.id === 'b
 /** A pause longer than this is shortened to SHORT_GAP in a saved performance (same as the Sandbox). */
 const LONG_GAP = 8000;
 const SHORT_GAP = 2000;
-const JAM_KEYS = KEYS.filter((k) => k.mode === 'major' || ['Am', 'Em', 'Dm'].includes(k.id));
+export const JAM_KEYS = KEYS.filter((k) => k.mode === 'major' || ['Am', 'Em', 'Dm'].includes(k.id));
 
 /** The pitch classes of a key's scale (major, or natural minor). */
 const scalePcs = (k: KeyDef) => (k.mode === 'major' ? MAJOR_SCALE.slice(0, 7) : [0, 2, 3, 5, 7, 8, 10]).map((s) => pc(k.tonic + s));
@@ -107,6 +107,24 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   const [full, setFull] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [clearAsk, setClearAsk] = useState(false);
+
+  // A teacher's assignment can set the Jam Room up (SPEC section 8): backing, key, chords, tempo (the slowest allowed),
+  // and Key lock / Melody mode fixed on or off, or left to the student.
+  const setup = ctx.assignment?.jam;
+  useEffect(() => {
+    if (!setup) return;
+    setSource(setup.source);
+    if (setup.groove) setGrooveId(setup.groove);
+    if (setup.key) setKeyId(setup.key);
+    if (setup.prog) setProgId(setup.prog);
+    if (setup.custom) setCustom(setup.custom);
+    setBpm(setup.bpm ?? GROOVES.find((g) => g.id === setup.groove)?.bpm ?? GROOVES[0].bpm);
+    if (setup.track) setTrackId(setup.track);
+    if (setup.video) setVideoId(setup.video);
+    if (setup.keyLock !== 'choose') setKeyLock(setup.keyLock === 'on');
+    if (setup.melody !== 'choose') setMelody(setup.melody === 'on');
+  }, [setup]);
+  const minBpm = setup?.bpm ?? 50;
 
   const track = TRACKS.find((t) => t.id === trackId);
   const key: KeyDef =
@@ -261,6 +279,33 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
         <div className="h text-[11px] uppercase text-muted">Jam Room</div>
         <div className="text-[12px] text-wal1">Play along · not graded</div>
       </div>
+      {setup ? (
+        // Set up by the teacher: what it is, and only the tempo can change (faster, never slower than the assignment).
+        <div className="card flex flex-col gap-1 px-2 py-1.5" data-testid="jam-assigned">
+          <div className="h text-[11px] uppercase text-muted">Set up by your teacher</div>
+          <div className="h text-[15px] text-wal3">
+            {source === 'groove' ? `${GROOVES.find((g) => g.id === grooveId)?.name ?? 'Groove'} groove` : source === 'track' ? (track?.title ?? 'Track') : 'YouTube video'}
+            {' · '}
+            {key.label}
+          </div>
+          {source === 'groove' && <div className="text-wal1">{chords.map((d) => d.numeral).join(' – ')}</div>}
+          {source === 'groove' && (
+            <div className="flex items-center gap-2">
+              <span className="h w-14 shrink-0 text-wal3">Tempo</span>
+              <button className="btn px-2 py-0.5" disabled={bpm <= minBpm} onClick={() => changeSetting(() => setBpm((b) => Math.max(minBpm, b - 5)))} aria-label="Slower">
+                −
+              </button>
+              <span className="h w-16 text-center text-[15px]" data-testid="jam-bpm">
+                {bpm} BPM
+              </span>
+              <button className="btn px-2 py-0.5" onClick={() => changeSetting(() => setBpm((b) => Math.min(200, b + 5)))} aria-label="Faster">
+                +
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
       <div className="flex gap-1" role="radiogroup" aria-label="Backing">
         {(
           [
@@ -371,16 +416,18 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
           </label>
         </>
       )}
+        </>
+      )}
       {source !== 'youtube' && (
         <button className={`btn text-[16px] ${playing ? 'btn-dark' : 'btn-brass'}`} onClick={() => void play()} disabled={loading || (source === 'track' && !track)} data-testid="jam-play">
           {loading ? 'Loading…' : playing ? '■ Stop' : '▶ Play'}
         </button>
       )}
       <div className="flex gap-1">
-        <button className={`btn flex-1 px-1 py-1 text-[13px] ${melody ? 'btn-brass' : ''}`} aria-pressed={melody} onClick={() => setMelody((v) => !v)} data-testid="jam-melody" title="Mark the notes of the key">
+        <button className={`btn flex-1 px-1 py-1 text-[13px] ${melody ? 'btn-brass' : ''}`} aria-pressed={melody} disabled={!!setup && setup.melody !== 'choose'} onClick={() => setMelody((v) => !v)} data-testid="jam-melody" title="Mark the notes of the key">
           Melody mode
         </button>
-        <button className={`btn flex-1 px-1 py-1 text-[13px] ${keyLock ? 'btn-brass' : ''}`} aria-pressed={keyLock} onClick={() => setKeyLock((v) => !v)} data-testid="jam-keylock" title="Notes outside the key are greyed out and silent">
+        <button className={`btn flex-1 px-1 py-1 text-[13px] ${keyLock ? 'btn-brass' : ''}`} aria-pressed={keyLock} disabled={!!setup && setup.keyLock !== 'choose'} onClick={() => setKeyLock((v) => !v)} data-testid="jam-keylock" title="Notes outside the key are greyed out and silent">
           Key lock
         </button>
       </div>
@@ -565,6 +612,6 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     tint,
     dim,
     silence,
-    overlay: saveOpen ? <SavePerformance notes={finished} backing={segs.current.map((x) => ({ ...x }))} onClose={() => setSaveOpen(false)} /> : undefined,
+    overlay: saveOpen ? <SavePerformance notes={finished} backing={segs.current.map((x) => ({ ...x }))} assignment={ctx.assignment?.title} onClose={() => setSaveOpen(false)} /> : undefined,
   };
 }

@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { AudioEngine } from '../audio/audioEngine';
 import { Lesson, LevelResult } from '../types';
 import { KeyDef } from '../utils/chords';
+import { Assignment } from '../utils/assignment';
 import { KeyMark } from './Piano';
 
 export type Labels = 'off' | 'c' | 'all';
@@ -43,6 +44,8 @@ export interface ModeCtx {
   /** The student chose "Skip for now" at the first timed challenge (this visit only, not saved). */
   latencySkipped: boolean;
   skipLatency: () => void;
+  /** The teacher's assignment, if the app was opened from one (the Jam Room reads its setup). */
+  assignment?: Assignment | null;
   /** A teacher's assignment can set the slowest tempo allowed for timed levels. */
   minTempo?: number;
   results: LevelResult[];
@@ -52,7 +55,7 @@ export interface ModeCtx {
   setLearnDone: (v: boolean) => void;
   learnStep: number;
   setLearnStep: (n: number) => void;
-  goTo: (mode: 'learn' | 'practice' | 'challenge' | 'sandbox' | 'report') => void;
+  goTo: (mode: 'learn' | 'practice' | 'challenge' | 'sandbox' | 'jam' | 'report') => void;
 }
 
 /** What a mode gives back to App: a left panel, a stage, and what to light on the piano. */

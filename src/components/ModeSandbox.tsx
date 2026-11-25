@@ -462,7 +462,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     labels,
     labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels, title: 'View:' },
     lit: playLit.size ? playLit : undefined,
-    overlay: saveOpen ? <SavePerformance notes={finished} onClose={() => setSaveOpen(false)} /> : undefined,
+    overlay: saveOpen ? <SavePerformance notes={finished} assignment={ctx.assignment?.title} onClose={() => setSaveOpen(false)} /> : undefined,
   };
 }
 
@@ -470,7 +470,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
 const restingNow = (notes: PerfNote[]) => perfLength(notes) + 60_000;
 
 /** Save performance: a code for Classroom, a link, or a MIDI file. */
-export const SavePerformance: React.FC<{ notes: PerfNote[]; backing?: BackingSeg[]; onClose: () => void }> = ({ notes, backing = [], onClose }) => {
+export const SavePerformance: React.FC<{ notes: PerfNote[]; backing?: BackingSeg[]; onClose: () => void; /** The teacher's assignment name, carried in the code. */ assignment?: string }> = ({ notes, backing = [], onClose, assignment }) => {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState<'' | 'code' | 'link'>('');
@@ -478,7 +478,7 @@ export const SavePerformance: React.FC<{ notes: PerfNote[]; backing?: BackingSeg
     if (!name.trim()) return setCode('');
     setCopied('');
     // The name lives only inside the code, never in the browser.
-    void encodeSubmission({ name, assignment: DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone: false, results: [], perf: packPerf(notes), ...(backing.length ? { jam: backing } : {}) }).then(setCode);
+    void encodeSubmission({ name, assignment: assignment ?? DEFAULT_ASSIGNMENT, timestamp: Date.now(), learnDone: false, results: [], perf: packPerf(notes), ...(backing.length ? { jam: backing } : {}) }).then(setCode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, notes]);
   /** If copying is blocked, the text shows in a box to copy by hand (no browser pop-ups: they freeze the page). */

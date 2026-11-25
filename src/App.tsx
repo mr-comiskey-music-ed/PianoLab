@@ -8,7 +8,7 @@ import { SYNTH_KEYS_WARM } from './data/defaults';
 import { loadCurrentPatch } from './utils/synthPresets';
 import { SynthParams } from './types';
 import { AssignModal, BatchModal, LatencyModal } from './components/Modals';
-import { Assignment, applyAssignment, decodeAssignment } from './utils/assignment';
+import { Assignment, applyAssignment, decodeAssignment, openTab } from './utils/assignment';
 import { ALL_LEVELS } from './utils/batch';
 import { GradeReport } from './components/GradeReport';
 import { LessonPicker } from './components/LessonPicker';
@@ -53,7 +53,11 @@ export default function App() {
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const assignRef = useRef(assignment);
   assignRef.current = assignment;
-  const lessons = useMemo(() => applyAssignment(LESSONS, assignment), [assignment]);
+  const lessons = useMemo(() => {
+    const shown = applyAssignment(LESSONS, assignment);
+    // A Jam Room or Sandbox assignment has no lessons: keep them all open for Learn and Practice, with no Challenges.
+    return shown.length ? shown : LESSONS.map((l) => ({ ...l, levels: [] }));
+  }, [assignment]);
   const lesson = lessons.find((l) => l.id === lessonId) ?? lessons[0];
   const [learnMap, setLearnMap] = useState<Record<string, LearnProgress>>({});
   const learnDone = learnMap[lesson.id]?.done ?? false;
@@ -175,12 +179,15 @@ export default function App() {
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get('a');
     if (!q) return;
-    void decodeAssignment(q, ALL_LEVELS.map((l) => l.id)).then((a) => {
+    void decodeAssignment(q, ALL_LEVELS.map((l) => l.id), LESSONS.map((l) => l.id)).then((a) => {
       if (!a) return;
       setAssignment(a);
-      const first = applyAssignment(LESSONS, a)[0];
+      const tab = openTab(a);
+      const shown = applyAssignment(LESSONS, a);
+      // Open on the first lesson that has what the link opens on (its levels, or its Learn).
+      const first = (tab === 'challenge' ? shown.find((l) => l.levels.length) : tab === 'learn' ? shown.find((l) => a.learn?.includes(l.id)) : undefined) ?? shown[0];
       if (first) setLessonId(first.id);
-      setMode('challenge');
+      setMode(tab);
       if (a.sound) void pickSound(a.sound);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -275,6 +282,7 @@ export default function App() {
     latency: latency ?? 0,
     stopMetronome: () => metroRef.current.on && onMetroRef.current({ ...metroRef.current, on: false }),
     minTempo: assignment?.tempo,
+    assignment,
     openLatency: () => setModal('latency'),
     phone,
     latencySet: latency !== null,
@@ -453,12 +461,16 @@ export default function App() {
       {assignment && (
         <div className={`flex items-center gap-x-3 gap-y-0.5 border-b border-brass2 bg-[#fbeecb] px-3 py-1 text-[13px] text-wal3 ${compact ? 'overflow-hidden whitespace-nowrap' : 'flex-wrap'}`} data-testid="assignment-banner">
           <span className="h text-[14px]">Assignment: {assignment.title}</span>
-          <span>Lesson{lessons.length > 1 ? 's' : ''} {lessons.map((l) => l.number).join(', ')}</span>
+          {assignment.note && <span className="text-wal2" data-testid="assignment-note">{assignment.note}</span>}
+          {(assignment.levels.length > 0 || !!assignment.learn?.length) && <span>Lesson{lessons.length > 1 ? 's' : ''} {lessons.map((l) => l.number).join(', ')}</span>}
+          {assignment.jam && <span>Jam Room set up by your teacher</span>}
+          {openTab(assignment) === 'sandbox' && <span>Record it in the Sandbox, then Save performance and turn in the code.</span>}
           {assignment.labels === 'c' && <span>Note names: Cs only</span>}
           {assignment.labels === 'off' && <span>Note names: hidden</span>}
           {assignment.tempo && <span>Timed levels: {assignment.tempo} BPM or faster</span>}
           {assignment.sound && <span>Sound set by your teacher</span>}
-          <span className="text-muted">Turn it in from the Grade Report tab.</span>
+          {(assignment.levels.length > 0 || !!assignment.learn?.length) && <span className="text-muted">Turn it in from the Grade Report tab.</span>}
+          {assignment.jam && !assignment.levels.length && !assignment.learn?.length && <span className="text-muted">Save performance turns it in.</span>}
         </div>
       )}
       {mode === 'report' ? (

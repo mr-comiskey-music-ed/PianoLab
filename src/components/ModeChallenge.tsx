@@ -12,6 +12,7 @@ import { useChordWatcher, useNoteListener } from './chordInput';
 import { usePlayLevel } from './PlayLevel';
 import { Col, StageBox } from './StageRow';
 import { MAJOR_SCALE, fingering, scaleStep } from '../utils/scales';
+import { ALL_LESSONS } from '../utils/batch';
 
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 /** Echo difficulty, easiest first: See Notes (keys light up), See First Note (only the first key lights up), By Ear (nothing lights up, only 2 replays). */
@@ -91,7 +92,9 @@ function litChord(start: number, c: Chord, inv: number, idx: number): number[] {
  * The chord detector is OFF here (it would give answers away).
  */
 export function useChallenge(ctx: ModeCtx): ModeParts {
-  const levels = ctx.lesson.levels;
+  // A teacher's assignment can give a lesson's Learn only (no levels): the hooks below still need levels to point at.
+  const none = ctx.lesson.levels.length === 0;
+  const levels = none ? (ALL_LESSONS.find((l) => l.id === ctx.lesson.id) ?? ALL_LESSONS[0]).levels : ctx.lesson.levels;
   const [selected, setSelected] = useState<string>(levels[0].id);
   const [run, setRun] = useState<Run | null>(null);
   const [finished, setFinished] = useState<Finished | null>(null);
@@ -141,7 +144,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
 
   // A new lesson picked: start at its first level.
   useEffect(() => {
-    setSelected(ctx.lesson.levels[0].id);
+    setSelected(levels[0].id);
     setRunNow(null);
     setFinished(null);
     setMsg('');
@@ -787,6 +790,22 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
       </StageBox>
     );
   }
+
+  if (none)
+    return {
+      left: (
+        <div className="text-[14px] text-wal1" data-testid="no-challenges">
+          Your teacher assigned this lesson’s Learn, not its Challenges.
+        </div>
+      ),
+      stage: (
+        <div className="flex h-full items-center justify-center px-6 text-center">
+          <div className="h text-[22px] text-line2/80">No Challenges in this assignment for Lesson {ctx.lesson.number}. Try Learn or Practice.</div>
+        </div>
+      ),
+      navLabel: 'Challenges',
+      labels: 'off',
+    };
 
   return {
     left,

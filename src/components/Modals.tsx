@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AudioEngine } from '../audio/audioEngine';
-import { Lesson, LevelResult } from '../types';
-import { Assignment, applyAssignment, assignmentLink, encodeAssignment } from '../utils/assignment';
+import { EchoHelp, Lesson, LevelResult, ScreenHelp } from '../types';
+import { Assignment, Choice, JamSetup, OpenTab, applyAssignment, assignmentLink, encodeAssignment } from '../utils/assignment';
+import { GROOVES, TRACKS } from '../audio/groove';
+import { keyById } from '../utils/chords';
+import { JAM_KEYS, PROGRESSIONS, VIDEOS, presetNumerals } from './ModeJam';
+import { youTubeId } from './YouTubeBox';
 import { SOUNDS } from '../audio/audioEngine';
 import { Labels } from './modeTypes';
 import { encodeSubmission, DEFAULT_ASSIGNMENT } from '../utils/codec';
@@ -343,37 +347,104 @@ const LABEL_CHOICES: [Labels, string][] = [
   ['c', 'At most Cs'],
   ['off', 'No note names'],
 ];
+const CHOICE_LABEL: [Choice, string][] = [
+  ['choose', 'Student chooses'],
+  ['on', 'On'],
+  ['off', 'Off'],
+];
+const OPEN_LABEL: [OpenTab | '', string][] = [
+  ['', 'Automatic'],
+  ['learn', 'Learn'],
+  ['challenge', 'Challenges'],
+  ['jam', 'Jam Room'],
+  ['sandbox', 'Sandbox'],
+];
+
 /**
- * The teacher picks levels (lesson by lesson), the most help with note names, the slowest tempo for timed levels and a
- * sound, and gets a link to post in Google Classroom. Students who open it see only that work, and their codes say
- * which assignment they're for.
+ * The teacher's assignment builder (SPEC section 8, "everything is assignable"): lessons' Learn and Challenge levels,
+ * the most help allowed (note names, Echo, notes on screen for timed levels), the slowest tempo, a sound, a Jam Room
+ * set up ahead of time, a Sandbox recording, and a note to the class. It makes a link to post in Google Classroom.
+ * Students who open it see only that work, and their codes say which assignment they're for.
  */
 export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> = ({ lessons, onClose }) => {
   const [title, setTitle] = useState('');
+  const [note, setNote] = useState('');
   const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [learn, setLearn] = useState<Set<string>>(new Set());
   const [labels, setLabels] = useState<Labels>('all');
+  const [echo, setEcho] = useState<EchoHelp>('watch');
+  const [screen, setScreen] = useState<ScreenHelp>('blocks');
   const [tempo, setTempo] = useState('');
   const [sound, setSound] = useState('');
+  const [open, setOpen] = useState<OpenTab | ''>('');
+  // The Jam Room, set up ahead of time.
+  const [jamOn, setJamOn] = useState(false);
+  const [jSource, setJSource] = useState<JamSetup['source']>('groove');
+  const [jGroove, setJGroove] = useState('pop');
+  const [jKey, setJKey] = useState('C');
+  const [jProg, setJProg] = useState('pop');
+  const [jCustom, setJCustom] = useState('I IV V I');
+  const [jBpm, setJBpm] = useState('');
+  const [jTrack, setJTrack] = useState(TRACKS[0]?.id ?? '');
+  const [jVideo, setJVideo] = useState('');
+  const [jKeyLock, setJKeyLock] = useState<Choice>('choose');
+  const [jMelody, setJMelody] = useState<Choice>('choose');
   const [link, setLink] = useState('');
   const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
-  const tempoNum = Number(tempo);
-  const tempoOk = tempo === '' || (Number.isFinite(tempoNum) && tempoNum >= 40 && tempoNum <= 200);
-  const ready = title.trim() !== '' && picked.size > 0 && tempoOk;
+  const num = (t: string) => Number(t);
+  const bpmOk = (t: string) => t === '' || (Number.isFinite(num(t)) && num(t) >= 40 && num(t) <= 200);
+  const videoId = youTubeId(jVideo);
+  const jamOk = !jamOn || (bpmOk(jBpm) && (jSource !== 'youtube' || !!videoId) && (jSource !== 'track' || !!jTrack));
+  const somethingPicked = picked.size > 0 || learn.size > 0 || jamOn || open === 'sandbox';
+  const ready = title.trim() !== '' && somethingPicked && bpmOk(tempo) && jamOk;
+  const pickedLevels = lessons.flatMap((l) => l.levels).filter((v) => picked.has(v.id));
+  const hasEcho = pickedLevels.some((v) => v.type === 'echo');
+  const hasTimed = pickedLevels.some((v) => v.type === 'play');
 
   useEffect(() => {
     setCopied(false);
     if (!ready) return setLink('');
     // Keep the lessons' order, whatever order the boxes were ticked in.
     const levels = lessons.flatMap((l) => l.levels.map((v) => v.id)).filter((id) => picked.has(id));
-    void encodeAssignment({ title, levels, labels, ...(tempo ? { tempo: tempoNum } : {}), ...(sound ? { sound } : {}) }).then((t) => setLink(assignmentLink(t)));
+    const learnIds = lessons.map((l) => l.id).filter((id) => learn.has(id));
+    const jam: JamSetup | undefined = jamOn
+      ? {
+          source: jSource,
+          keyLock: jKeyLock,
+          melody: jMelody,
+          ...(jSource === 'groove' ? { groove: jGroove, key: jKey, prog: jProg, ...(jProg === 'custom' ? { custom: jCustom } : {}), ...(jBpm ? { bpm: num(jBpm) } : {}) } : {}),
+          ...(jSource === 'track' ? { track: jTrack } : {}),
+          ...(jSource === 'youtube' && videoId ? { video: videoId, key: jKey } : {}),
+        }
+      : undefined;
+    void encodeAssignment({
+      title,
+      levels,
+      labels,
+      ...(tempo ? { tempo: num(tempo) } : {}),
+      ...(sound ? { sound } : {}),
+      ...(learnIds.length ? { learn: learnIds } : {}),
+      ...(hasEcho && echo !== 'watch' ? { echo } : {}),
+      ...(hasTimed && screen === 'names' ? { screen } : {}),
+      ...(open ? { open } : {}),
+      ...(note.trim() ? { note } : {}),
+      ...(jam ? { jam } : {}),
+    }).then((t) => setLink(assignmentLink(t)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, picked, labels, tempo, sound, ready]);
+  }, [title, note, picked, learn, labels, echo, screen, tempo, sound, open, jamOn, jSource, jGroove, jKey, jProg, jCustom, jBpm, jTrack, videoId, jKeyLock, jMelody, ready]);
 
   const toggle = (ids: string[], on: boolean) =>
     setPicked((p) => {
       const n = new Set(p);
       ids.forEach((id) => (on ? n.add(id) : n.delete(id)));
+      return n;
+    });
+  const toggleLearn = (id: string, on: boolean) =>
+    setLearn((p) => {
+      const n = new Set(p);
+      if (on) n.add(id);
+      else n.delete(id);
       return n;
     });
   const copy = async () => {
@@ -386,27 +457,50 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
     setCopied(true);
   };
   const box = 'rounded-lg border border-line2 bg-white px-2 py-1 text-[14px]';
+  const jamKey = keyById(jKey);
+  const field = (label: string, el: React.ReactNode) => (
+    <label className="flex flex-col">
+      <span className="h text-wal3">{label}</span>
+      {el}
+    </label>
+  );
 
   return (
     <Shell title="Make an assignment link" onClose={onClose} wide>
       <div className="flex flex-col gap-3 text-[14px] text-wal2" data-testid="assign-modal">
-        <p className="text-wal1">Pick the levels. Students who open the link see only those lessons and levels, with your limits. Their codes show the assignment’s name in the batch grader.</p>
-        <label className="flex flex-col">
-          <span className="h text-wal3">Assignment name</span>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder="e.g. Week 3: Pop progressions" className={box} data-testid="assign-title" />
-        </label>
+        <p className="text-wal1">Pick anything: a lesson’s Learn, Challenge levels, a Jam Room or a Sandbox recording. Students who open the link see only that work, with your limits. Their codes show the assignment’s name in the batch grader.</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {field('Assignment name', <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder="e.g. Week 3: Pop progressions" className={box} data-testid="assign-title" />)}
+          {field(
+            'Opens on',
+            <select value={open} onChange={(e) => setOpen(e.target.value as OpenTab | '')} className={box} data-testid="assign-open">
+              {OPEN_LABEL.map(([v, t]) => (
+                <option key={v} value={v}>
+                  {t}
+                </option>
+              ))}
+            </select>,
+          )}
+        </div>
+        {field('Note to the class (optional)', <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} placeholder="e.g. Play along with the groove and save 1 minute of your best." className={box} data-testid="assign-note" />)}
         <div className="grid gap-2 sm:grid-cols-2">
           {lessons.map((les) => {
             const ids = les.levels.map((v) => v.id);
             const all = ids.every((id) => picked.has(id));
             return (
               <div key={les.id} className="rounded-lg border border-line bg-page p-2">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={all} onChange={(e) => toggle(ids, e.target.checked)} data-testid={`assign-lesson-${les.number}`} className="accent-[#b8862c]" />
-                  <span className="h text-wal3">
-                    Lesson {les.number}: {les.title}
-                  </span>
-                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={all} onChange={(e) => toggle(ids, e.target.checked)} data-testid={`assign-lesson-${les.number}`} className="accent-[#b8862c]" />
+                    <span className="h text-wal3">
+                      Lesson {les.number}: {les.title}
+                    </span>
+                  </label>
+                  <label className="flex shrink-0 items-center gap-1 text-[12px]" title="Assign this lesson’s Learn steps (Practice opens with it)">
+                    <input type="checkbox" checked={learn.has(les.id)} onChange={(e) => toggleLearn(les.id, e.target.checked)} data-testid={`assign-learn-${les.number}`} className="accent-[#b8862c]" />
+                    Learn
+                  </label>
+                </div>
                 {les.levels.map((v) => (
                   <label key={v.id} className="ml-5 flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={picked.has(v.id)} onChange={(e) => toggle([v.id], e.target.checked)} data-testid={`assign-level-${v.id}`} className="accent-[#b8862c]" />
@@ -418,23 +512,43 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
           })}
         </div>
         <div className="flex flex-wrap gap-4">
-          <label className="flex flex-col">
-            <span className="h text-wal3">Note names on the keys</span>
+          {field(
+            'Note names on the keys',
             <select value={labels} onChange={(e) => setLabels(e.target.value as Labels)} className={box} data-testid="assign-labels">
               {LABEL_CHOICES.map(([v, t]) => (
                 <option key={v} value={v}>
                   {t}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="flex flex-col">
-            <span className="h text-wal3">Slowest tempo (timed levels)</span>
-            <input value={tempo} onChange={(e) => setTempo(e.target.value.replace(/\D/g, ''))} placeholder="Level’s own" inputMode="numeric" className={`${box} w-36 ${tempoOk ? '' : 'border-bad'}`} data-testid="assign-tempo" />
-            {!tempoOk && <span className="text-[12px] text-bad">40 to 200 BPM</span>}
-          </label>
-          <label className="flex flex-col">
-            <span className="h text-wal3">Sound</span>
+            </select>,
+          )}
+          {hasTimed &&
+            field(
+              'Timed levels show',
+              <select value={screen} onChange={(e) => setScreen(e.target.value as ScreenHelp)} className={box} data-testid="assign-screen">
+                <option value="blocks">Each level’s own setting</option>
+                <option value="names">Chord Names Only</option>
+              </select>,
+            )}
+          {hasTimed &&
+            field(
+              'Slowest tempo (timed levels)',
+              <>
+                <input value={tempo} onChange={(e) => setTempo(e.target.value.replace(/\D/g, ''))} placeholder="Level’s own" inputMode="numeric" className={`${box} w-36 ${bpmOk(tempo) ? '' : 'border-bad'}`} data-testid="assign-tempo" />
+                {!bpmOk(tempo) && <span className="text-[12px] text-bad">40 to 200 BPM</span>}
+              </>,
+            )}
+          {hasEcho &&
+            field(
+              'Echo difficulty',
+              <select value={echo} onChange={(e) => setEcho(e.target.value as EchoHelp)} className={box} data-testid="assign-echo">
+                <option value="watch">Each level’s own setting</option>
+                <option value="hint">At most See First Note</option>
+                <option value="ear">By Ear only</option>
+              </select>,
+            )}
+          {field(
+            'Sound',
             <select value={sound} onChange={(e) => setSound(e.target.value)} className={box} data-testid="assign-sound">
               <option value="">Student’s choice</option>
               {SOUNDS.filter((x) => x.id !== 'custom').map((x) => (
@@ -442,10 +556,146 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
                   {x.category === x.label ? x.label : `${x.category}: ${x.label}`}
                 </option>
               ))}
-            </select>
-          </label>
+            </select>,
+          )}
         </div>
-        <textarea ref={ref} readOnly value={link} rows={3} placeholder={ready ? '' : 'Name the assignment and tick at least one level. The link shows up here.'} className="w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px] break-all" data-testid="assign-link" onFocus={(e) => e.currentTarget.select()} />
+        <div className="rounded-lg border border-line bg-page p-2" data-testid="assign-jam">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={jamOn} onChange={(e) => setJamOn(e.target.checked)} data-testid="assign-jam-on" className="accent-[#b8862c]" />
+            <span className="h text-wal3">Set up the Jam Room</span>
+            <span className="text-[12px] text-muted">Students play along and turn in a saved performance.</span>
+          </label>
+          {jamOn && (
+            <div className="mt-2 flex flex-wrap gap-3">
+              {field(
+                'Backing',
+                <select value={jSource} onChange={(e) => setJSource(e.target.value as JamSetup['source'])} className={box} data-testid="assign-jam-source">
+                  <option value="groove">Groove (made by the app)</option>
+                  {TRACKS.length > 0 && <option value="track">One of your tracks</option>}
+                  <option value="youtube">YouTube video</option>
+                </select>,
+              )}
+              {jSource === 'groove' && (
+                <>
+                  {field(
+                    'Style',
+                    <select value={jGroove} onChange={(e) => setJGroove(e.target.value)} className={box} data-testid="assign-jam-groove">
+                      {GROOVES.map((g) => (
+                        <option key={g.id} value={g.id}>
+                          {g.name}
+                        </option>
+                      ))}
+                    </select>,
+                  )}
+                  {field(
+                    'Key',
+                    <select value={jKey} onChange={(e) => setJKey(e.target.value)} className={box} data-testid="assign-jam-key">
+                      {JAM_KEYS.map((k) => (
+                        <option key={k.id} value={k.id}>
+                          {k.label}
+                        </option>
+                      ))}
+                    </select>,
+                  )}
+                  {field(
+                    'Chords',
+                    <select value={jProg} onChange={(e) => setJProg(e.target.value)} className={box} data-testid="assign-jam-prog">
+                      {PROGRESSIONS.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.label}: {presetNumerals(p, jamKey).join(' – ')}
+                        </option>
+                      ))}
+                      <option value="custom">Your own (a song you’re covering)…</option>
+                    </select>,
+                  )}
+                  {jProg === 'custom' && field('Numerals, one per bar', <input value={jCustom} onChange={(e) => setJCustom(e.target.value)} maxLength={80} placeholder="e.g. I V vi IV" className={box} data-testid="assign-jam-custom" />)}
+                  {field(
+                    'Slowest tempo',
+                    <>
+                      <input value={jBpm} onChange={(e) => setJBpm(e.target.value.replace(/\D/g, ''))} placeholder="Style’s own" inputMode="numeric" className={`${box} w-32 ${bpmOk(jBpm) ? '' : 'border-bad'}`} data-testid="assign-jam-bpm" />
+                      {!bpmOk(jBpm) && <span className="text-[12px] text-bad">40 to 200 BPM</span>}
+                    </>,
+                  )}
+                </>
+              )}
+              {jSource === 'track' &&
+                field(
+                  'Track',
+                  <select value={jTrack} onChange={(e) => setJTrack(e.target.value)} className={box} data-testid="assign-jam-track">
+                    {TRACKS.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.title}
+                      </option>
+                    ))}
+                  </select>,
+                )}
+              {jSource === 'youtube' && (
+                <>
+                  {VIDEOS.length > 0 &&
+                    field(
+                      'From your list',
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          const v = VIDEOS[Number(e.target.value)];
+                          if (!v) return;
+                          setJVideo(v.url);
+                          setJKey(v.mode === 'minor' ? `${v.key}m` : v.key);
+                        }}
+                        className={box}
+                        data-testid="assign-jam-videos"
+                      >
+                        <option value="">Pick a video…</option>
+                        {VIDEOS.map((v, i) => (
+                          <option key={i} value={i}>
+                            {v.title}
+                          </option>
+                        ))}
+                      </select>,
+                    )}
+                  {field(
+                    'YouTube link',
+                    <>
+                      <input value={jVideo} onChange={(e) => setJVideo(e.target.value)} placeholder="Paste a YouTube link" className={`${box} w-64 ${jVideo && !videoId ? 'border-bad' : ''}`} data-testid="assign-jam-video" />
+                      {jVideo && !videoId && <span className="text-[12px] text-bad">That isn’t a YouTube link</span>}
+                    </>,
+                  )}
+                  {field(
+                    'Key (for Melody mode / Key lock)',
+                    <select value={jKey} onChange={(e) => setJKey(e.target.value)} className={box} data-testid="assign-jam-key">
+                      {JAM_KEYS.map((k) => (
+                        <option key={k.id} value={k.id}>
+                          {k.label}
+                        </option>
+                      ))}
+                    </select>,
+                  )}
+                </>
+              )}
+              {field(
+                'Key lock',
+                <select value={jKeyLock} onChange={(e) => setJKeyLock(e.target.value as Choice)} className={box} data-testid="assign-jam-keylock">
+                  {CHOICE_LABEL.map(([v, t]) => (
+                    <option key={v} value={v}>
+                      {t}
+                    </option>
+                  ))}
+                </select>,
+              )}
+              {field(
+                'Melody mode',
+                <select value={jMelody} onChange={(e) => setJMelody(e.target.value as Choice)} className={box} data-testid="assign-jam-melody">
+                  {CHOICE_LABEL.map(([v, t]) => (
+                    <option key={v} value={v}>
+                      {t}
+                    </option>
+                  ))}
+                </select>,
+              )}
+            </div>
+          )}
+        </div>
+        <textarea ref={ref} readOnly value={link} rows={3} placeholder={ready ? '' : 'Name the assignment and pick something to assign (a Learn, a level, the Jam Room, or Opens on: Sandbox). The link shows up here.'} className="w-full rounded-lg border border-line2 bg-white p-2 font-mono text-[12px] break-all" data-testid="assign-link" onFocus={(e) => e.currentTarget.select()} />
         <div className="flex gap-2">
           <button className="btn btn-brass flex-1" onClick={copy} disabled={!link} data-testid="assign-copy">
             {copied ? 'Copied ✓' : 'Copy link'}
