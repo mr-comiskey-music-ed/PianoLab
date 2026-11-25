@@ -17,6 +17,8 @@ export interface LevelLine {
   grade: number;
   passed: boolean;
   labels: string;
+  /** Played with the chord shape helper showing. */
+  shapes?: boolean;
 }
 
 export interface BatchEntry {
@@ -54,6 +56,7 @@ export function summarize(sub: Submission): { levels: LevelLine[]; headline: num
       grade: floored(r.raw),
       passed: info ? passed(r.raw, info) : false,
       labels: r.labels,
+      ...(r.shapes ? { shapes: true } : {}),
     };
   });
   const headline = levels.length ? Math.round(levels.reduce((a, l) => a + l.grade, 0) / levels.length) : null;

@@ -179,6 +179,8 @@ export interface LevelResult {
   labels: 'off' | 'c' | 'all';
   /** Epoch ms. */
   at: number;
+  /** A timed level played with the chord shape helper showing (code: a 1 after the label setting). */
+  shapes?: boolean;
 }
 
 export interface Submission {

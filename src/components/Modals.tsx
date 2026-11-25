@@ -331,7 +331,7 @@ const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle:
           <div key={l.levelId} className="flex justify-between">
             <span>{l.title}</span>
             <span>
-              {l.grade}% shown · raw {l.raw}% · {l.passed ? 'passed' : 'not passed'} · labels: {l.labels}
+              {l.grade}% shown · raw {l.raw}% · {l.passed ? 'passed' : 'not passed'} · labels: {l.labels}{l.shapes ? ' · chord shapes on' : ''}
             </span>
           </div>
         ))}
@@ -374,6 +374,7 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
   const [labels, setLabels] = useState<Labels>('all');
   const [echo, setEcho] = useState<EchoHelp>('watch');
   const [screen, setScreen] = useState<ScreenHelp>('blocks');
+  const [shapes, setShapes] = useState<'' | 'on' | 'off'>('');
   const [tempo, setTempo] = useState('');
   const [sound, setSound] = useState('');
   const [open, setOpen] = useState<OpenTab | ''>('');
@@ -428,12 +429,13 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
       ...(learnIds.length ? { learn: learnIds } : {}),
       ...(hasEcho && echo !== 'watch' ? { echo } : {}),
       ...(hasTimed && screen === 'names' ? { screen } : {}),
+      ...(hasTimed && shapes ? { shapes } : {}),
       ...(open ? { open } : {}),
       ...(note.trim() ? { note } : {}),
       ...(jam ? { jam } : {}),
     }).then((t) => setLink(assignmentLink(t)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, note, picked, learn, labels, echo, screen, tempo, sound, open, jamOn, jSource, jGroove, jKey, jProg, jCustom, jBpm, jTrack, videoId, jSheet, jKeyLock, jMelody, ready]);
+  }, [title, note, picked, learn, labels, echo, screen, shapes, tempo, sound, open, jamOn, jSource, jGroove, jKey, jProg, jCustom, jBpm, jTrack, videoId, jSheet, jKeyLock, jMelody, ready]);
 
   const toggle = (ids: string[], on: boolean) =>
     setPicked((p) => {
@@ -529,6 +531,15 @@ export const AssignModal: React.FC<{ lessons: Lesson[]; onClose: () => void }> =
               <select value={screen} onChange={(e) => setScreen(e.target.value as ScreenHelp)} className={box} data-testid="assign-screen">
                 <option value="blocks">Each level’s own setting</option>
                 <option value="names">Chord Names Only</option>
+              </select>,
+            )}
+          {hasTimed &&
+            field(
+              'Chord shape helper',
+              <select value={shapes} onChange={(e) => setShapes(e.target.value as '' | 'on' | 'off')} className={box} data-testid="assign-shapes">
+                <option value="">Student chooses</option>
+                <option value="on">Always on</option>
+                <option value="off">Hidden</option>
               </select>,
             )}
           {hasTimed &&

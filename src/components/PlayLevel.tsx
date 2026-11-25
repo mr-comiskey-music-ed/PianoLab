@@ -7,6 +7,7 @@ import { GROOVES, Groove } from '../audio/groove';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
+import { MiniKeys } from './MiniKeys';
 import { Col, StageBox } from './StageRow';
 import { useNoteListener } from './chordInput';
 
@@ -29,7 +30,7 @@ type Phase = 'idle' | 'count' | 'run' | 'listen';
 export function usePlayLevel(
   ctx: ModeCtx,
   level: Level,
-  opts: { minTempo?: number; onFinish: (raw: number, summary: TimingSummary, settings: { tempo: number; screen: ScreenHelp }) => void },
+  opts: { minTempo?: number; onFinish: (raw: number, summary: TimingSummary, settings: { tempo: number; screen: ScreenHelp; shapes: boolean }) => void },
 ) {
   const pattern = level.pattern;
   const floorTempo = Math.max(pattern?.tempo ?? 80, opts.minTempo ?? 0);
@@ -41,6 +42,16 @@ export function usePlayLevel(
   const [pop, setPop] = useState<{ text: string; kind: 'perfect' | 'good' | 'off' | 'miss'; id: number } | null>(null);
   const [count, setCount] = useState(0);
   const [litNow, setLitNow] = useState<Set<number> | undefined>(undefined);
+  /**
+   * The chord shape helper (SPEC section 5): two small keyboards with this chord's keys and the next chord's. Chord
+   * patterns only, Chromebooks only (no room on a phone). An assignment can fix it on or hide it; the code records it.
+   */
+  const shapesRule = ctx.assignment?.shapes ?? 'choose';
+  const hasChords = !!pattern && ['block', 'bassChord', 'broken'].includes(pattern.texture);
+  const shapesAllowed = hasChords && !ctx.phone && shapesRule !== 'off';
+  const [shapesPick, setShapesPick] = useState(false);
+  const shapes = shapesAllowed && (shapesRule === 'on' || shapesPick);
+  const [barNow, setBarNow] = useState(-1);
   /** Levels with a groove: play along with drums and bass (the default), or just the clicks. */
   const [withGroove, setWithGroove] = useState(true);
   const grooveStyle = level.groove ? GROOVES.find((g) => g.id === level.groove) : undefined;
@@ -182,7 +193,7 @@ export function usePlayLevel(
           const off = steadyOffset(j.presses, timeline.hits.map((h) => t0 + h.beat * bm), bm / 2);
           if (off !== null) s.offset = off;
         }
-        const settings = { tempo, screen };
+        const settings = { tempo, screen, shapes };
         stop();
         if (s && !listenOnly) opts.onFinish(s.raw, s, settings);
       }, t0 - performance.now() + (timeline.beats + 1) * bm + 300),
@@ -204,6 +215,8 @@ export function usePlayLevel(
     const loop = () => {
       const now = performance.now();
       judge.current?.tick(now);
+      const b = Math.floor((now - startAt) / bm / 4);
+      setBarNow((x) => (x === b ? x : b));
       if (screen === 'blocks') {
         const t = now - startAt;
         const h = timeline.hits.find((x) => t >= x.beat * bm - 60 && t < (x.beat + x.dur * 0.9) * bm);
@@ -244,6 +257,16 @@ export function usePlayLevel(
           {([true, false] as const).map((on) => (
             <button key={String(on)} role="radio" aria-checked={withGroove === on} data-testid={`backing-${on ? 'groove' : 'clicks'}`} className={`btn px-2 py-0.5 text-[13px] ${withGroove === on ? 'btn-brass' : 'btn-dark'}`} onClick={() => setWithGroove(on)}>
               {on ? `${grooveStyle.name} groove` : 'Clicks'}
+            </button>
+          ))}
+        </span>
+      )}
+      {shapesAllowed && shapesRule === 'choose' && (
+        <span className="flex items-center gap-1.5" role="radiogroup" aria-label="Chord shapes">
+          <span className="h text-[12px] uppercase tracking-wider text-brass">Chord shapes</span>
+          {([false, true] as const).map((on) => (
+            <button key={String(on)} role="radio" aria-checked={shapesPick === on} data-testid={`shapes-${on ? 'on' : 'off'}`} className={`btn px-2 py-0.5 text-[13px] ${shapesPick === on ? 'btn-brass' : 'btn-dark'}`} onClick={() => setShapesPick(on)}>
+              {on ? 'Show' : 'Hide'}
             </button>
           ))}
         </span>
@@ -319,6 +342,17 @@ export function usePlayLevel(
         </StageBox>
         </div>
       )}
+      {shapes && running && timeline && (
+        // This bar's chord and the next one (during the count-in: the first chord, and the one after it).
+        <div className="pointer-events-none absolute left-3 top-2 z-10 flex gap-3 rounded-md bg-[#1e1710]/85 px-2 py-1.5" data-testid="chord-shapes">
+          {[0, 1].map((k) => {
+            const b = Math.max(0, barNow) + k;
+            const bar = timeline.bars[b];
+            const keys = Array.from(new Set(timeline.hits.filter((h) => h.bar === b).flatMap((h) => h.notes)));
+            return bar ? <MiniKeys key={k} start={ctx.viewStart} keys={keys} color={bar.color} faint={k === 1} label={`${k ? 'Next' : 'Now'}: ${bar.symbol}`} testid={`shape-${k ? 'next' : 'now'}`} /> : null;
+          })}
+        </div>
+      )}
       {phase === 'count' && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h text-[96px] leading-none text-brass" data-testid="count-in">
@@ -335,7 +369,7 @@ export function usePlayLevel(
         </div>
       )}
       {pop && phase === 'run' && (
-        <div key={pop.id} className={`pop pointer-events-none absolute left-1/2 -translate-x-1/2 ${screen === 'names' ? 'top-3' : 'bottom-8'}`} data-testid="hit-pop">
+        <div key={pop.id} className={`pop pointer-events-none absolute -translate-x-1/2 ${shapes ? 'left-3/4' : 'left-1/2'} ${screen === 'names' ? 'top-3' : 'bottom-8'}`} data-testid="hit-pop">
           <span className={`h rounded-lg px-3 py-1 text-[22px] ${pop.kind === 'perfect' ? 'bg-[#cfe3b4] text-good' : pop.kind === 'good' ? 'bg-[#f6e3b8] text-wal2' : pop.kind === 'off' ? 'bg-[#efd6a8] text-wal2' : 'bg-[#f0c4bf] text-[#7a2420]'}`}>{pop.text}</span>
         </div>
       )}

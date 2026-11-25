@@ -51,4 +51,11 @@ describe('assignment links', () => {
     expect(lv.find((v) => v.id === 'l3-play-pop')?.screen).toBe('names');
     expect(lv.find((v) => v.id === 'l7-time-c')?.screen ?? 'blocks').toBe('blocks');
   });
+  it('carries the chord shape helper rule', async () => {
+    for (const shapes of ['on', 'off'] as const) {
+      const a = await decodeAssignment(await encodeAssignment({ title: 'S', levels: ['l3-play-pop'], shapes }), known, lessonIds);
+      expect(a?.shapes).toBe(shapes);
+    }
+    expect((await decodeAssignment(await encodeAssignment({ title: 'S', levels: ['l3-play-pop'] }), known, lessonIds))?.shapes).toBeUndefined();
+  });
 });

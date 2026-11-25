@@ -1531,7 +1531,7 @@
         },
         {
           "id": "l3-key-numeral",
-          "title": "Numerals in other keys",
+          "title": "Numerals, other keys",
           "blurb": "A chord and a key: which numeral is it? Count up the scale from the key's name.",
           "type": "quiz",
           "octave": "any",

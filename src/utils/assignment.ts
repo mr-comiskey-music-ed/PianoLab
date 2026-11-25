@@ -12,7 +12,8 @@ import { checksum, compress, decompress, extractParam } from './codec';
  * 2 all), b = slowest tempo, s = sound id.
  * Added for "everything is assignable" (SPEC section 8): l = lesson ids whose Learn is assigned, e = least Echo help
  * (1 See First Note, 2 By Ear), w = timed levels show at most Chord Names Only (1), o = the tab it opens on
- * (l Learn, c Challenges, s Sandbox, j Jam Room), m = a note from the teacher, j = a Jam Room setup (see `JamSetup`).
+ * (l Learn, c Challenges, s Sandbox, j Jam Room), m = a note from the teacher, j = a Jam Room setup (see `JamSetup`),
+ * h = the chord shape helper on timed levels (1 always on, 0 hidden; left out = the student chooses).
  */
 
 /** How a Jam Room switch is set: off, on, or the student chooses. */
@@ -60,6 +61,8 @@ export interface Assignment {
   note?: string;
   /** A Jam Room set up by the teacher. */
   jam?: JamSetup;
+  /** The chord shape helper on timed levels: always on, or hidden (unset = the student chooses). */
+  shapes?: 'on' | 'off';
 }
 
 const LABEL_CODES: Record<Labels, number> = { off: 0, c: 1, all: 2 };
@@ -75,6 +78,7 @@ export async function encodeAssignment(a: Assignment): Promise<string> {
   if (a.screen === 'names') packed.w = 1;
   if (a.open) packed.o = TAB_CODE[a.open];
   if (a.note?.trim()) packed.m = a.note.trim().slice(0, 300);
+  if (a.shapes) packed.h = a.shapes === 'on' ? 1 : 0;
   if (a.jam) {
     const j = a.jam;
     const pj: Record<string, unknown> = { s: j.source[0], kl: CHOICES.indexOf(j.keyLock), md: CHOICES.indexOf(j.melody) };
@@ -143,6 +147,7 @@ export async function decodeAssignment(text: string, known: string[], knownLesso
       ...(open ? { open } : {}),
       ...(str(d.m, 300) ? { note: str(d.m, 300) } : {}),
       ...(jam ? { jam } : {}),
+      ...(d.h === 1 ? { shapes: 'on' as const } : d.h === 0 ? { shapes: 'off' as const } : {}),
     };
   } catch {
     return null;

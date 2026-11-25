@@ -319,7 +319,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
   };
 
   /** Save a finished attempt (best on this device, the result for the code) and show the result screen. */
-  const recordResult = (level: Level, raw: number, extra: Partial<Finished> = {}) => {
+  const recordResult = (level: Level, raw: number, extra: Partial<Finished> = {}, shapes = false) => {
     setRunNow(null);
     const prevBest = best[level.id] ?? 0;
     saveBest(level.id, raw);
@@ -328,7 +328,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
       const old = prev.find((x) => x.levelId === level.id);
       if (old && old.raw >= raw) return prev;
       const rest = prev.filter((x) => x.levelId !== level.id);
-      return [...rest, { levelId: level.id, raw, labels: effective(level), at: Date.now() }];
+      return [...rest, { levelId: level.id, raw, labels: effective(level), at: Date.now(), ...(shapes ? { shapes: true } : {}) }];
     });
     setFinished({ level, raw, best: Math.max(prevBest, raw), ...extra });
   };
@@ -490,7 +490,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
   // Progression Play levels run in time (PlayLevel.tsx); the other levels are question by question.
   const play = usePlayLevel(ctx, selLevel, {
     minTempo: ctx.minTempo,
-    onFinish: (raw, s, set) => recordResult(selLevel, raw, { timing: s, tempo: set.tempo }),
+    onFinish: (raw, s, set) => recordResult(selLevel, raw, { timing: s, tempo: set.tempo }, set.shapes),
   });
   const isPlay = selLevel.type === 'play';
   // Leaving Challenges stops a timed level (its clicks or groove would play on, and the run would still be graded).

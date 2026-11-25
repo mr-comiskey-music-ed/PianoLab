@@ -75,8 +75,9 @@ export function extractParam(text: string, name: string): string {
 
 // ---------- Submission codes ----------
 export async function encodeSubmission(sub: Submission): Promise<string> {
-  const k: Record<string, [number, number]> = {};
-  for (const r of sub.results) k[r.levelId] = [Math.round(r.raw), LABEL_CODES[r.labels]];
+  const k: Record<string, number[]> = {};
+  // [raw, note labels] and, if the chord shape helper was showing, a third number 1 (older apps ignore it).
+  for (const r of sub.results) k[r.levelId] = r.shapes ? [Math.round(r.raw), LABEL_CODES[r.labels], 1] : [Math.round(r.raw), LABEL_CODES[r.labels]];
   const packed: Record<string, unknown> = {
     t: Math.floor(sub.timestamp / 1000),
     k,
@@ -113,7 +114,7 @@ async function decodeV1(body: string, sum: string): Promise<Submission | null> {
       if (!Array.isArray(v)) return [];
       const rawScore = Math.max(0, Math.min(100, Number(v[0]) || 0));
       const labels = LABEL_NAMES[Number(v[1])] ?? 'all';
-      return [{ levelId, raw: rawScore, labels, at }];
+      return [{ levelId, raw: rawScore, labels, at, ...(v[2] === 1 ? { shapes: true } : {}) }];
     });
     return {
       ...(typeof d.n === 'string' && d.n.trim() ? { name: d.n.trim().slice(0, 60) } : {}),

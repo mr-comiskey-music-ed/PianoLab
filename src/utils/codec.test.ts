@@ -195,4 +195,10 @@ describe('Jam Room backing in codes and links', () => {
     const withJam = await readPerfParam(await compress(JSON.stringify({ p: packPerf(notes), j: [{ k: 't', at: 0, tr: 'x' }] })));
     expect(withJam?.backing).toEqual([{ k: 't', at: 0, tr: 'x' }]);
   });
+  it('remembers when the chord shape helper was showing (and old codes stay the same)', async () => {
+    const code = await encodeSubmission({ assignment: 'open', timestamp: 0, learnDone: false, results: [{ levelId: 'l3-play-pop', raw: 90, labels: 'c', at: 0, shapes: true }, { levelId: 'l2-play-cfg', raw: 80, labels: 'c', at: 0 }] });
+    const back = await decodeSubmission(code);
+    expect(back?.results.find((r) => r.levelId === 'l3-play-pop')?.shapes).toBe(true);
+    expect(back?.results.find((r) => r.levelId === 'l2-play-cfg')?.shapes).toBeUndefined();
+  });
 });
