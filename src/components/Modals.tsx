@@ -14,6 +14,7 @@ import { floored, passed, bestByLevel } from '../utils/grading';
 import { saveLatency } from '../utils/autosave';
 import { STEADY_MS, tapSpread } from '../utils/timing';
 import { cleanBacking, downloadMidi, formatLength, perfLength, perfLink, unpackPerf } from '../utils/performance';
+import { backingEnd, playBacking } from '../audio/backing';
 
 const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }> = ({ title, onClose, wide, children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4" role="dialog" aria-modal="true" aria-label={title}>
@@ -213,6 +214,7 @@ export const LatencyModal: React.FC<{
 // ---------------- Teacher: batch grading ----------------
 export const BatchModal: React.FC<{ engine: AudioEngine; onClose: () => void }> = ({ engine, onClose }) => {
   const [text, setText] = useState('');
+  const listen = useListener(engine);
   const [res, setRes] = useState<BatchResult | null>(null);
   const [open, setOpen] = useState<number | null>(null);
   const run = async () => {
@@ -234,9 +236,41 @@ export const BatchModal: React.FC<{ engine: AudioEngine; onClose: () => void }> 
             {res.duplicatesRemoved > 0 && <span className="card px-3 py-1">Duplicates removed: {res.duplicatesRemoved}</span>}
           </div>
           {res.unreadable.length > 0 && <p className="mt-2 text-[14px] text-bad">Couldn’t read: {res.unreadable.join(', ')}</p>}
+          {listen.now &&
+            (() => {
+              const cur = res.entries.find((x) => x.id === listen.now!.id);
+              const withPerf = res.entries.filter((x) => x.submission.perf?.length);
+              const next = withPerf[withPerf.findIndex((x) => x.id === listen.now!.id) + 1];
+              return (
+                <div className="sticky top-0 z-10 mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-[#2a2118] px-3 py-2 text-[13px] text-line" data-testid="batch-now">
+                  <span className="h text-[14px] text-panel">▶ {cur?.label || `Student ${cur?.id}`}</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={Math.max(1, Math.round(listen.now.length))}
+                    value={Math.round(listen.pos)}
+                    onChange={(ev) => cur && void listen.play(cur, Number(ev.target.value))}
+                    className="min-w-[120px] flex-1 accent-[#d9a441]"
+                    aria-label="Jump to a moment"
+                    data-testid="batch-seek"
+                  />
+                  <span className="h w-24 text-right">
+                    {formatLength(listen.pos)} / {formatLength(listen.now.length)}
+                  </span>
+                  <button className="btn btn-dark px-2 py-0.5 text-[12px]" onClick={listen.stop}>
+                    ■ Stop
+                  </button>
+                  {next && (
+                    <button className="btn btn-brass px-2 py-0.5 text-[12px]" data-testid="batch-next" onClick={() => void listen.play(next)}>
+                      Next: {next.label || `Student ${next.id}`} ›
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
           <div className="mt-3 flex flex-col gap-1">
             {res.entries.map((e) => (
-              <Row key={e.id} e={e} engine={engine} open={open === e.id} toggle={() => setOpen(open === e.id ? null : e.id)} />
+              <Row key={e.id} e={e} open={open === e.id} toggle={() => setOpen(open === e.id ? null : e.id)} playing={listen.now?.id === e.id} onListen={() => void listen.play(e)} onStop={listen.stop} />
             ))}
           </div>
         </div>
@@ -245,43 +279,85 @@ export const BatchModal: React.FC<{ engine: AudioEngine; onClose: () => void }> 
   );
 };
 
-/** Plays a Sandbox performance from a code. Stop cuts it off. */
-const PerfPlayer: React.FC<{ engine: AudioEngine; perf: number[] }> = ({ engine, perf }) => {
-  const notes = React.useMemo(() => unpackPerf(perf), [perf]);
+/**
+ * The batch view's listener (his request: a "Listen" button per student, and hop in and out of their work): one
+ * performance at a time, with its groove or track behind it (YouTube backings open in the Sandbox, where the video
+ * shows). A bar on top says who is playing, with a slider to jump around and Next.
+ */
+interface Listening {
+  id: number;
+  start: number; // performance.now() when position 0 would have played
+  length: number;
+}
+function useListener(engine: AudioEngine) {
+  const [now, setNow] = useState<Listening | null>(null);
+  const [pos, setPos] = useState(0);
   const timers = useRef<number[]>([]);
-  const [playing, setPlaying] = useState(false);
+  const stopBack = useRef<() => void>(() => {});
+  const held = useRef<Set<number>>(new Set());
+  const raf = useRef(0);
   const stop = () => {
     timers.current.forEach((t) => window.clearTimeout(t));
     timers.current = [];
-    notes.forEach((n) => engine.noteOff(n.m));
-    setPlaying(false);
+    stopBack.current();
+    stopBack.current = () => {};
+    held.current.forEach((m) => engine.noteOff(m));
+    held.current.clear();
+    cancelAnimationFrame(raf.current);
+    setNow(null);
   };
   useEffect(() => stop, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const play = async () => {
-    await engine.unlock();
+  const play = async (e: BatchEntry, from = 0) => {
     stop();
+    await engine.unlock();
+    const notes = unpackPerf(e.submission.perf ?? []);
+    const backing = cleanBacking(e.submission.jam).filter((x) => x.k !== 'y');
+    const length = Math.max(perfLength(notes), backingEnd(backing));
+    const start = performance.now() - from;
     for (const n of notes) {
-      timers.current.push(window.setTimeout(() => engine.noteOn(n.m, n.v / 127), n.t));
-      timers.current.push(window.setTimeout(() => engine.noteOff(n.m), n.t + n.d));
+      if (n.t < from) continue;
+      timers.current.push(window.setTimeout(() => { engine.noteOn(n.m, n.v / 127); held.current.add(n.m); }, n.t - from));
+      timers.current.push(window.setTimeout(() => { engine.noteOff(n.m); held.current.delete(n.m); }, n.t - from + n.d));
     }
-    timers.current.push(window.setTimeout(() => setPlaying(false), perfLength(notes) + 500));
-    setPlaying(true);
+    if (backing.length) stopBack.current = playBacking(backing, () => performance.now() - start, null);
+    timers.current.push(window.setTimeout(stop, length - from + 600));
+    setNow({ id: e.id, start, length });
+    const loop = () => {
+      setPos(Math.min(length, performance.now() - start));
+      raf.current = requestAnimationFrame(loop);
+    };
+    raf.current = requestAnimationFrame(loop);
   };
+  return { now, pos, play, stop };
+}
+
+/** One student's performance: Listen (or Stop), its length, .mid, and the Sandbox for a YouTube backing. */
+const PerfButtons: React.FC<{ e: BatchEntry; playing: boolean; onListen: () => void; onStop: () => void }> = ({ e, playing, onListen, onStop }) => {
+  const notes = React.useMemo(() => unpackPerf(e.submission.perf ?? []), [e]);
+  const backing = cleanBacking(e.submission.jam);
+  const video = backing.some((x) => x.k === 'y');
   return (
-    <span className="flex items-center gap-2 text-[13px] text-wal1" data-testid="batch-perf">
-      Sandbox performance: {notes.length} notes, {formatLength(perfLength(notes))}
-      <span role="button" tabIndex={0} className="btn px-2 py-0.5 text-[12px]" onClick={(ev) => { ev.stopPropagation(); if (playing) stop(); else void play(); }}>
-        {playing ? '■ Stop' : '▶ Play'}
-      </span>
-      <span role="button" tabIndex={0} className="btn px-2 py-0.5 text-[12px]" onClick={(ev) => { ev.stopPropagation(); downloadMidi(notes); }}>
+    <span className="flex flex-wrap items-center gap-2 text-[13px] text-wal1" data-testid="batch-perf">
+      <button className={`btn px-3 py-0.5 text-[13px] ${playing ? 'btn-dark' : 'btn-brass'}`} data-testid="batch-listen" onClick={playing ? onStop : onListen}>
+        {playing ? '■ Stop' : '▶ Listen'}
+      </button>
+      {backing.length > 0 ? 'Jam Room' : 'Sandbox'} performance · {formatLength(perfLength(notes))}
+      {backing.length > 0 && !video && ' · with its backing'}
+      <button className="btn px-2 py-0.5 text-[12px]" onClick={() => downloadMidi(notes)}>
         .mid
-      </span>
+      </button>
+      {video && (
+        // A YouTube backing needs the video showing: open it in the Sandbox.
+        <button className="btn px-2 py-0.5 text-[12px]" data-testid="batch-with-backing" onClick={() => void perfLink(notes, backing).then((l) => window.open(l, '_blank'))}>
+          ▶ With the video
+        </button>
+      )}
     </span>
   );
 };
 
-const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle: () => void }> = ({ e, engine, open, toggle }) => (
-  <div className="rounded-lg border border-line bg-panel">
+const Row: React.FC<{ e: BatchEntry; open: boolean; toggle: () => void; playing: boolean; onListen: () => void; onStop: () => void }> = ({ e, open, toggle, playing, onListen, onStop }) => (
+  <div className={`rounded-lg border bg-panel ${playing ? 'border-brass2 ring-1 ring-brass' : 'border-line'}`}>
     <button className="flex w-full items-center gap-3 px-3 py-2 text-left" onClick={toggle}>
       <span className="flex w-40 flex-col">
         <span className="h truncate text-[14px] text-wal3">{e.label || `Student ${e.id}`}</span>
@@ -310,17 +386,7 @@ const Row: React.FC<{ e: BatchEntry; engine: AudioEngine; open: boolean; toggle:
     </button>
     {e.submission.perf?.length ? (
       <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-1.5">
-        <PerfPlayer engine={engine} perf={e.submission.perf} />
-        {cleanBacking(e.submission.jam).length > 0 && (
-          // A Jam Room performance: hear it with the groove / track / video it was played with (opens the Sandbox).
-          <button
-            className="btn btn-brass px-2 py-0.5 text-[12px]"
-            data-testid="batch-with-backing"
-            onClick={() => void perfLink(unpackPerf(e.submission.perf), cleanBacking(e.submission.jam)).then((l) => window.open(l, '_blank'))}
-          >
-            ▶ With backing
-          </button>
-        )}
+        <PerfButtons e={e} playing={playing} onListen={onListen} onStop={onStop} />
       </div>
     ) : null}
     {open && (
