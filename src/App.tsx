@@ -515,8 +515,9 @@ export default function App() {
 
         {/* Center: stage, readout bar, piano */}
         <main className={`flex min-h-0 min-w-0 flex-col ${phone ? 'p-1' : 'p-2'}`}>
-          {showStrip && !phone && (
+          {showStrip && (!phone || mode === 'sandbox') && (
             <ChordStrip
+              compact={phone}
               keyDef={stripKey}
               onKey={setStripKeyId}
               active={detected}
@@ -525,7 +526,7 @@ export default function App() {
               onRelease={stopStripChord}
             />
           )}
-          <div className={`stage flex-1 overflow-hidden border-transparent shadow-inner wood-v ${phone ? 'min-h-[60px] border-x-[10px] border-t-[6px]' : 'min-h-[150px] border-x-[10px] border-t-[10px]'} ${showStrip && !phone ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
+          <div className={`stage flex-1 overflow-hidden border-transparent shadow-inner wood-v ${phone ? 'min-h-[60px] border-x-[10px] border-t-[6px]' : 'min-h-[150px] border-x-[10px] border-t-[10px]'} ${showStrip && (!phone || mode === 'sandbox') ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
             <div className={`h-full w-full ${phone ? 'phone-stage' : ''}`}>
             <div className="stage h-full w-full rounded-sm" data-testid="stage">
               {parts.stage}

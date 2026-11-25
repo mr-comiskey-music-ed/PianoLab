@@ -344,7 +344,7 @@ phones (no off-screen-notes label there; the Oct buttons still flash). The ☰ b
 "Lesson 3 / Practice ▾", "Sandbox / Options ▾", "Jam Room / Setup ▾": always two lines, fixed 92 px wide (the
 Grade tab's logo takes the same width), so the tabs never shift (his report); a brass hint bubble "Lessons and levels are here" shows
 once per visit under it (6 s or the first tap; nothing saved). Phone tab "Jam Room" -> "Jam". Drawers slide over (backdrop closes). Chord strip
-hidden. Stage contents at 80% (`.phone-stage` zoom) and laid out LEFT TO RIGHT (`StageRow.tsx`: `StageBox` + `Col`, used
+hidden, except a compact one-row strip in the Sandbox (his call; `ChordStrip compact`). Stage contents at 80% (`.phone-stage` zoom) and laid out LEFT TO RIGHT (`StageRow.tsx`: `StageBox` + `Col`, used
 by Challenges (start / question / result: score | passed + best | buttons), Learn (explanation | try | buttons),
 Practice, the timed-level start screen); `ctx.phone` tells modes. Piano 36% of the height; stage side borders 10 px so
 the waterfall lines up with the keys. Upright: "Turn your phone sideways to play" (Grade Report still opens). Touch

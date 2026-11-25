@@ -16,15 +16,17 @@ export const ChordStrip: React.FC<{
   playing: number | null;
   onPlay: (degree: number) => void;
   onRelease: (degree: number) => void;
-}> = ({ keyDef, onKey, active, playing, onPlay, onRelease }) => (
-  <div className="wood flex items-center gap-1.5 rounded-t-lg px-2 py-1.5" data-testid="chord-strip">
+  /** Phones (Sandbox): one short row, name and numeral side by side. */
+  compact?: boolean;
+}> = ({ keyDef, onKey, active, playing, onPlay, onRelease, compact }) => (
+  <div className={`wood flex items-center gap-1.5 rounded-t-lg ${compact ? 'px-1.5 py-1' : 'px-2 py-1.5'}`} data-testid="chord-strip">
     <select
       value={keyDef.id}
       onChange={(e) => onKey(e.target.value)}
       aria-label="Key"
       title="Key"
       data-testid="strip-key"
-      className="h shrink-0 rounded-md border border-wal1 bg-wal3 px-1.5 py-1 text-[13px] text-panel"
+      className={`h shrink-0 rounded-md border border-wal1 bg-wal3 text-panel ${compact ? 'px-1 py-0.5 text-[12px]' : 'px-1.5 py-1 text-[13px]'}`}
     >
       {KEYS.map((k) => (
         <option key={k.id} value={k.id}>
@@ -32,7 +34,7 @@ export const ChordStrip: React.FC<{
         </option>
       ))}
     </select>
-    <StripChips keyDef={keyDef} lit={(d) => playing === d || (!!active && diatonic(keyDef)[d].chord.root === active.chord.root && diatonic(keyDef)[d].chord.quality === active.chord.quality)} onPlay={onPlay} onRelease={onRelease} />
+    <StripChips keyDef={keyDef} lit={(d) => playing === d || (!!active && diatonic(keyDef)[d].chord.root === active.chord.root && diatonic(keyDef)[d].chord.quality === active.chord.quality)} onPlay={onPlay} onRelease={onRelease} compact={compact} />
   </div>
 );
 
@@ -44,7 +46,8 @@ export const StripChips: React.FC<{
   onPlay?: (degree: number) => void;
   onRelease?: (degree: number) => void;
   testid?: string;
-}> = ({ keyDef, lit, onPlay, onRelease, testid }) => (
+  compact?: boolean;
+}> = ({ keyDef, lit, onPlay, onRelease, testid, compact }) => (
   <div className="flex min-w-0 flex-1 gap-1" data-testid={testid}>
     {diatonic(keyDef).map((d) => {
       const on = lit(d.degree);
@@ -61,12 +64,12 @@ export const StripChips: React.FC<{
           data-testid={`strip-${d.degree}`}
           data-on={on ? 'yes' : undefined}
           title={`${chordName(d.chord)} (${d.numeral}). Hold to hear it${onRelease ? ` (or hold ${d.degree + 1})` : ''}.`}
-          className={`h relative flex min-w-0 flex-1 flex-col items-center rounded-md px-1 py-0.5 leading-tight transition-transform ${on ? 'scale-105 ring-2 ring-panel' : 'opacity-90 hover:opacity-100'}`}
+          className={`h relative flex min-w-0 flex-1 items-center rounded-md leading-tight ${compact ? 'flex-row justify-center gap-1 px-0.5 py-1' : 'flex-col px-1 py-0.5'} transition-transform ${on ? 'scale-105 ring-2 ring-panel' : 'opacity-90 hover:opacity-100'}`}
           style={{ background: d.color, color: textOn(d.color) }}
         >
-          <span className="absolute left-1 top-0.5 text-[9px] opacity-60">{d.degree + 1}</span>
-          <span className="truncate text-[15px]">{chordName(d.chord)}</span>
-          <span className="truncate text-[12px] opacity-90">{d.numeral}</span>
+          {!compact && <span className="absolute left-1 top-0.5 text-[9px] opacity-60">{d.degree + 1}</span>}
+          <span className={`truncate ${compact ? 'text-[14px]' : 'text-[15px]'}`}>{chordName(d.chord)}</span>
+          <span className={`truncate opacity-90 ${compact ? 'text-[11px]' : 'text-[12px]'}`}>{d.numeral}</span>
         </button>
       );
     })}
