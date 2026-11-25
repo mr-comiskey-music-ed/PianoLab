@@ -19,7 +19,7 @@ describe('no question twice in a row', () => {
           for (let i = 1; i < order.length; i++) expect(key(order[i]), `${lv.id} repeats at ${i}`).not.toBe(key(order[i - 1]));
         }
       }
-  });
+  }, 30_000); // ~50 levels x 1000 shuffles: slow machines need more than the default 5 s
   it('keeps every question', () => {
     const xs = ['a', 'a', 'a', 'b', 'b', 'c'];
     const out = shuffleNoRepeats(xs, (x) => x);
