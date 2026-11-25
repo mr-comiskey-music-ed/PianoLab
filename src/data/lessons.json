@@ -3259,11 +3259,11 @@
     {
       "id": "lesson-7",
       "number": 7,
-      "title": "Scales and the circle of 5ths",
+      "title": "Major scales",
       "key": "C",
       "numerals": true,
       "blackKeys": true,
-      "practice": "Play the major scales of C, G, F and D, up and down. Use the fingering: tuck your thumb under, never run out of fingers.",
+      "practice": "Play the major scales of C, G, D and F, up and down. Use the fingering: tuck your thumb under, never run out of fingers.",
       "learn": [
         {
           "id": "l7-steps",
@@ -3325,9 +3325,9 @@
         },
         {
           "id": "l7-g",
-          "section": "G and F",
+          "section": "Sharps: G and D",
           "title": "G major: one sharp",
-          "say": "Start a scale on G and keep the same pattern of steps. To make the last step a half step, F has to become F♯. So G major has one sharp: F♯. The fingering is the same as C major.",
+          "say": "Start a scale on G and keep the same pattern of whole and half steps. To make the last step a half step, F has to become F♯. So G major has one sharp: F♯. The fingering is the same as C major.",
           "need": 0,
           "demo": [
             "G3",
@@ -3354,7 +3354,7 @@
         },
         {
           "id": "l7-try-g",
-          "section": "G and F",
+          "section": "Sharps: G and D",
           "title": "Play G major",
           "say": "Remember the F♯.",
           "need": 1,
@@ -3363,67 +3363,10 @@
           "hint": "G A B C D E F♯ G."
         },
         {
-          "id": "l7-f",
-          "section": "G and F",
-          "title": "F major: one flat",
-          "say": "Start on F and keep the same pattern. Now B has to become B♭. So F major has one flat: B♭. Its fingering is different: 1 2 3 4 on F G A B♭, then tuck your thumb under to C.",
-          "need": 0,
-          "demo": [
-            "F3",
-            "G3",
-            "A3",
-            "Bb3",
-            "C4",
-            "D4",
-            "E4",
-            "F4"
-          ],
-          "tags": {
-            "F3": "1",
-            "G3": "2",
-            "A3": "3",
-            "Bb3": "4",
-            "C4": "1",
-            "D4": "2",
-            "E4": "3",
-            "F4": "4"
-          },
-          "show": true,
-          "labels": "all"
-        },
-        {
-          "id": "l7-try-f",
-          "section": "G and F",
-          "title": "Play F major",
-          "say": "Remember the B♭.",
-          "need": 1,
-          "tryText": "Play the F major scale up, from F to F.",
-          "tryScale": "F",
-          "hint": "F G A B♭ C D E F."
-        },
-        {
-          "id": "l7-fifths",
-          "section": "The circle of 5ths",
-          "title": "Up a 5th, one more sharp",
-          "say": "Count up 5 letters from C: C D E F G. G major has 1 sharp. Up a 5th from G is D: 2 sharps. Up a 5th from D is A: 3 sharps. Every step up a 5th adds one sharp. Going down a 5th from C gives F: 1 flat. This loop of keys is called the circle of 5ths.",
-          "need": 0,
-          "demo": [
-            "C3*2",
-            "G3*2",
-            "D4*2",
-            "A4*2",
-            "_",
-            "C4*2",
-            "F3*2"
-          ],
-          "show": true,
-          "labels": "all"
-        },
-        {
           "id": "l7-d",
-          "section": "The circle of 5ths",
+          "section": "Sharps: G and D",
           "title": "D major: two sharps",
-          "say": "D major is up a 5th from G, so it has 2 sharps: F♯ and C♯. Fingering: 1 2 3, thumb under, 1 2 3 4 5.",
+          "say": "Start on D and keep the same pattern. This time two notes have to move up: F becomes F♯ and C becomes C♯. So D major has two sharps. Fingering: 1 2 3, thumb under, 1 2 3 4 5.",
           "need": 0,
           "demo": [
             "D3",
@@ -3450,13 +3393,52 @@
         },
         {
           "id": "l7-try-d",
-          "section": "The circle of 5ths",
+          "section": "Sharps: G and D",
           "title": "Play D major",
           "say": "Two black keys this time.",
           "need": 1,
           "tryText": "Play the D major scale up, from D to D.",
           "tryScale": "D",
           "hint": "D E F♯ G A B C♯ D."
+        },
+        {
+          "id": "l7-f",
+          "section": "Flats: F",
+          "title": "F major: one flat",
+          "say": "Some scales use flats instead of sharps: F, B♭, E♭, A♭ and more. It is the same idea: a note moves to keep the pattern of whole and half steps. In F major the 4th note has to be a half step above A, so B becomes B♭. (It is called B♭, not A♯, because each letter is used once.) The fingering is different: 1 2 3 4 on F G A B♭, then tuck your thumb under to C.",
+          "need": 0,
+          "demo": [
+            "F3",
+            "G3",
+            "A3",
+            "Bb3",
+            "C4",
+            "D4",
+            "E4",
+            "F4"
+          ],
+          "tags": {
+            "F3": "1",
+            "G3": "2",
+            "A3": "3",
+            "Bb3": "4",
+            "C4": "1",
+            "D4": "2",
+            "E4": "3",
+            "F4": "4"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l7-try-f",
+          "section": "Flats: F",
+          "title": "Play F major",
+          "say": "Remember the B♭.",
+          "need": 1,
+          "tryText": "Play the F major scale up, from F to F.",
+          "tryScale": "F",
+          "hint": "F G A B♭ C D E F."
         }
       ],
       "levels": [
@@ -3756,30 +3738,6 @@
           "screen": "blocks"
         },
         {
-          "id": "l7-time-f",
-          "title": "F major in time",
-          "blurb": "Play the F major scale up and down, one note per beat. Watch for B♭.",
-          "type": "play",
-          "octave": "any",
-          "pass": 80,
-          "labels": "c",
-          "prompts": [],
-          "pattern": {
-            "id": "l7-f",
-            "key": "F",
-            "mode": "major",
-            "progression": [
-              "I"
-            ],
-            "texture": "scale",
-            "rhythm": "quarter",
-            "voicing": "root",
-            "tempo": 70,
-            "bars": 8
-          },
-          "screen": "blocks"
-        },
-        {
           "id": "l7-time-d",
           "title": "D major in time",
           "blurb": "Play the D major scale up and down, one note per beat. Watch for F♯ and C♯.",
@@ -3804,9 +3762,33 @@
           "screen": "blocks"
         },
         {
+          "id": "l7-time-f",
+          "title": "F major in time",
+          "blurb": "Play the F major scale up and down, one note per beat. Watch for B♭.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l7-f",
+            "key": "F",
+            "mode": "major",
+            "progression": [
+              "I"
+            ],
+            "texture": "scale",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
           "id": "l7-more-scales",
           "title": "More keys",
-          "blurb": "Keep going round the circle: A, E, B♭ and E♭ major.",
+          "blurb": "More major scales: A and E (sharps), B♭ and E♭ (flats).",
           "type": "scale",
           "octave": "any",
           "pass": 80,

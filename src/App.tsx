@@ -383,25 +383,16 @@ export default function App() {
           // Says where you are (and that this is where to change it): "Lesson 3 / Level 2 ▾".
           <span className="relative shrink-0">
             <button
-              className="btn btn-dark flex flex-col items-start px-2 py-0 leading-tight"
+              className="btn btn-dark flex h-9 w-[92px] flex-col items-start justify-center px-2 py-0 leading-tight"
               onClick={() => {
                 setDrawer('left');
                 setNavHint(false);
               }}
               data-testid="open-left"
             >
-              {mode === 'jam' ? (
-                <span className="h text-[13px]">Jam setup ▾</span>
-              ) : mode === 'sandbox' ? (
-                <span className="h text-[13px]">Options ▾</span>
-              ) : parts.navLabel ? (
-                <>
-                  <span className="h text-[10px] text-brass">Lesson {lesson.number}</span>
-                  <span className="h text-[13px]">{parts.navLabel} ▾</span>
-                </>
-              ) : (
-                <span className="h text-[13px]">Lesson {lesson.number} ▾</span>
-              )}
+              {/* Always two lines and the same width, so the tabs beside it never move. */}
+              <span className="h text-[10px] text-brass">{mode === 'jam' ? 'Jam Room' : mode === 'sandbox' ? 'Sandbox' : `Lesson ${lesson.number}`}</span>
+              <span className="h text-[13px]">{mode === 'jam' ? 'Setup' : mode === 'sandbox' ? 'Options' : (parts.navLabel ?? 'Practice')} ▾</span>
             </button>
             {navHint && (mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
               // A first-visit hint (not saved anywhere: it shows once per visit).
@@ -412,7 +403,8 @@ export default function App() {
             )}
           </span>
         ) : (
-          <div className={`h flex items-center gap-2 tracking-wide ${compact ? 'text-[16px]' : 'text-[22px]'}`}>
+          // (On a phone's Grade tab the logo takes the menu button's place and width, so the tabs stay put.)
+          <div className={`h flex shrink-0 items-center gap-2 tracking-wide ${compact ? 'h-9 w-[92px] text-[16px]' : 'text-[22px]'}`}>
             <img src="/favicon.svg" alt="" className={compact ? 'h-6 w-6' : 'h-7 w-7'} />
             {!compact && 'PianoLab'}
           </div>
