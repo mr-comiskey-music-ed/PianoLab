@@ -107,6 +107,25 @@ textarea, input { user-select: text; -webkit-user-select: text; }
 }
 
 /* YouTube's player sets its own fixed size (640 x 390); make it fill the Jam Room's video frame instead. */
+/* Phones: the video fills the short, wide Stage (top and bottom cropped), at full size (the Stage's zoom undone,
+   since a zoomed iframe draws badly on phones). */
+.yt-cover-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+}
+.phone-stage .yt-cover-wrap {
+  zoom: 1.25;
+}
+.yt-cover {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100cqw, 100cqh * 16 / 9);
+  height: max(100cqh, 100cqw * 9 / 16);
+}
 [data-testid='youtube'] iframe {
   width: 100% !important;
   height: 100% !important;

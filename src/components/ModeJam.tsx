@@ -430,8 +430,9 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
       <div className="flex h-full flex-col items-center justify-center gap-2 p-3">
         {videoId ? (
           // Half see-through, so the notes rising up the Stage show on top of it.
-          <div className="h-full max-h-full opacity-50" data-testid="youtube-wrap">
+          <div className={ctx.phone ? 'absolute inset-0 opacity-50' : 'h-full max-h-full opacity-50'} data-testid="youtube-wrap">
             <YouTubeBox
+              cover={ctx.phone}
               videoId={videoId}
               volume={backVol}
               onPlayState={(on, seconds) => {
@@ -526,6 +527,12 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
       ) : (
         <button className="btn btn-dark px-2 py-1 text-[13px]" disabled={!rollNotes.length} onClick={() => setClearAsk(true)} data-testid="jam-clear" title="Start your performance over">
           Clear
+        </button>
+      )}
+      {ctx.phone && source !== 'youtube' && (
+        // Phones: the backing's Play / Stop is also here, under Save (the setup drawer is closed while playing).
+        <button className={`btn absolute right-0 top-full mt-1.5 px-3 py-1 text-[14px] ${playing ? 'btn-dark' : 'btn-brass'}`} onClick={() => void play()} disabled={loading || (source === 'track' && !track)} data-testid="jam-play-stage">
+          {loading ? 'Loading…' : playing ? '■ Stop' : '▶ Play'}
         </button>
       )}
     </div>

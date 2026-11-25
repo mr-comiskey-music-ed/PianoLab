@@ -55,7 +55,9 @@ export const YouTubeBox: React.FC<{
   volume: number;
   onPlayState?: (playing: boolean, seconds: number) => void;
   control?: MutableRefObject<YTControl | null>;
-}> = ({ videoId, volume, onPlayState, control }) => {
+  /** Phones: fill the whole (short, wide) Stage, cropping the top and bottom of the video, instead of a small box. */
+  cover?: boolean;
+}> = ({ videoId, volume, onPlayState, control, cover }) => {
   const el = useRef<HTMLDivElement>(null);
   const player = useRef<YTPlayer | null>(null);
   const [err, setErr] = useState('');
@@ -102,9 +104,10 @@ export const YouTubeBox: React.FC<{
       /* not ready yet */
     }
   }, [volume]);
-  return (
-    <div className="relative aspect-video h-full max-h-full max-w-full" data-testid="youtube">
+  const box = (
+    <div className={cover ? 'yt-cover' : 'relative aspect-video h-full max-h-full max-w-full'} data-testid="youtube">
       {err ? <div className="flex h-full items-center justify-center px-6 text-center text-[16px] text-line2">{err}</div> : <div ref={el} className="h-full w-full" />}
     </div>
   );
+  return cover ? <div className="yt-cover-wrap">{box}</div> : box;
 };

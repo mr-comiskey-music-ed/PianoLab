@@ -424,14 +424,25 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     <div className="relative h-full w-full">
       {video && (
         // A Jam Room performance played with a YouTube video: the video, half see-through, under the roll.
-        <div className="absolute inset-0 flex items-center justify-center p-3 opacity-50" data-testid="perf-video">
-          <YouTubeBox videoId={video.v} volume={1} control={ytControl} />
+        <div className={`absolute inset-0 flex items-center justify-center opacity-50 ${ctx.phone ? '' : 'p-3'}`} data-testid="perf-video">
+          <YouTubeBox videoId={video.v} volume={1} control={ytControl} cover={ctx.phone} />
         </div>
       )}
       {/* Matches the piano below: the stage's wood border is 10px, the piano's cheeks 12px. */}
       <div className="absolute inset-y-0 left-[2px] right-[2px]">
         <PianoRoll notes={notes} start={ctx.viewStart} now={now} offset={rollOffset} canScroll={!playing} onScrub={onScrub} />
       </div>
+      {ctx.phone && finished.length > 0 && (
+        // Phones: Save and Play back on the Stage too (the Options drawer is closed while playing).
+        <div className="absolute right-3 top-2 z-20 flex flex-col items-end gap-1.5" data-testid="perf-stage-bar">
+          <button className="btn btn-brass px-2.5 py-1 text-[13px]" onClick={() => setSaveOpen(true)} data-testid="perf-save-stage">
+            Save performance
+          </button>
+          <button className="btn btn-dark px-3 py-1 text-[14px]" onClick={toggle} data-testid="perf-play-stage">
+            {playing ? '❚❚ Pause' : paused ? '▶ Resume' : '▶ Play back'}
+          </button>
+        </div>
+      )}
       {atStart && !playing && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
           <div className="h text-[22px] text-line2/80">Ready. Press Play back or the space bar.</div>
