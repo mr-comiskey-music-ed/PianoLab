@@ -135,6 +135,8 @@ export interface LearnStep {
   /** Or: a progression, played one chord after another ("C", "G", "Am", "F"), in the key `tryKey` (for the numerals shown). */
   tryProgression?: string[];
   tryKey?: string;
+  /** With tryProgression: show chord names (Cmaj7, Fmaj7...) instead of numerals; the chords need not be in one key. */
+  tryNames?: boolean;
   /** Show-and-tell: chord strips on the Stage (key ids, e.g. ["C"] or ["C", "G"]) in place of the chord names. */
   strip?: string[];
   /** With two strips: which strip each demo entry belongs to (key id per entry), so only that strip lights up. */

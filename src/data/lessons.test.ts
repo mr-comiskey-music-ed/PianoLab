@@ -23,7 +23,7 @@ describe('lesson content', () => {
         for (const a of s.tryAnswer ?? []) expect(pcOf(a), `${s.id} answer ${a}`).not.toBeNull();
         for (const c of [...(s.tryChord ?? []), ...(s.tryProgression ?? [])]) expect(parseChord(c), `${s.id} chord ${c}`).not.toBeNull();
         // Every progression chord belongs to its key, and every strip/demoKeys key exists.
-        if (s.tryProgression) for (const c of s.tryProgression) expect([...diatonic(keyById(s.tryKey ?? 'C')), ...diatonicSevenths(keyById(s.tryKey ?? 'C'))].some((d) => chordName(d.chord) === chordName(parseChord(c)!)), `${s.id}: ${c} in ${s.tryKey}`).toBe(true);
+        if (s.tryProgression && !s.tryNames) for (const c of s.tryProgression) expect([...diatonic(keyById(s.tryKey ?? 'C')), ...diatonicSevenths(keyById(s.tryKey ?? 'C'))].some((d) => chordName(d.chord) === chordName(parseChord(c)!)), `${s.id}: ${c} in ${s.tryKey}`).toBe(true);
         for (const k of [...(s.strip ?? []), ...(s.demoKeys ?? [])]) expect(KEYS.some((x) => x.id === k), `${s.id} key ${k}`).toBe(true);
         if (s.demoKeys) expect(s.demoKeys.length, `${s.id} demoKeys`).toBe(s.demo?.length);
         if (s.tryScale) expect(KEYS.some((k) => k.mode === 'major' && k.id === s.tryScale), `${s.id} scale`).toBe(true);

@@ -3705,42 +3705,60 @@
         {
           "id": "l8-kinds",
           "section": "Three kinds",
-          "title": "Dominant, major and minor 7ths",
-          "say": "The three most common 7th chords:\nG7 (dominant 7th) is a major triad with a lower 7th. It wants to move home.\nCmaj7 (major 7th) is a major triad with a higher 7th. It sounds dreamy.\nDm7 (minor 7th) is a minor triad with a lower 7th. It sounds smooth.",
+          "title": "Major, dominant and minor 7ths",
+          "say": "Three kinds of 7th chord, all on G:\nGmaj7 (major 7th) is a major triad with a higher 7th: F♯. It sounds dreamy.\nG7 (dominant 7th) is a major triad with a lower 7th: F. It wants to move home.\nGm7 (minor 7th) is a minor triad with a lower 7th: F. It sounds smooth.",
           "need": 0,
           "demo": [
+            "G3+B3+D4+F#4*2",
+            "_",
             "G3+B3+D4+F4*2",
             "_",
-            "C4+E4+G4+B4*2",
-            "_",
-            "D4+F4+A4+C5*2"
+            "G3+Bb3+D4+F4*2"
           ],
           "show": true,
           "labels": "all"
         },
         {
-          "id": "l8-try-cmaj7",
+          "id": "l8-try-maj7s",
           "section": "Three kinds",
-          "title": "Play Cmaj7",
-          "say": "C major, plus B on top.",
+          "title": "Play major 7ths",
+          "say": "Major triad, plus the higher 7th on top.\nCmaj7 = C E G B. Fmaj7 = F A C E. Gmaj7 = G B D F♯.",
           "need": 1,
-          "tryText": "Play Cmaj7 (C, E, G, B).",
-          "tryChord": [
-            "Cmaj7"
+          "tryText": "Play Cmaj7, Fmaj7 and Gmaj7, one after another.",
+          "tryProgression": [
+            "Cmaj7",
+            "Fmaj7",
+            "Gmaj7"
           ],
-          "hint": "Build a C triad (C E G), then add B on top."
+          "tryNames": true
         },
         {
-          "id": "l8-try-dm7",
+          "id": "l8-try-m7s",
           "section": "Three kinds",
-          "title": "Play Dm7",
-          "say": "D minor, plus C on top.",
+          "title": "Play minor 7ths",
+          "say": "Minor triad, plus the lower 7th on top.\nDm7 = D F A C. Em7 = E G B D. Am7 = A C E G.",
           "need": 1,
-          "tryText": "Play Dm7 (D, F, A, C).",
-          "tryChord": [
-            "Dm7"
+          "tryText": "Play Dm7, Em7 and Am7, one after another.",
+          "tryProgression": [
+            "Dm7",
+            "Em7",
+            "Am7"
           ],
-          "hint": "Build a D minor triad (D F A), then add C on top."
+          "tryNames": true
+        },
+        {
+          "id": "l8-try-dom7s",
+          "section": "Three kinds",
+          "title": "Play dominant 7ths",
+          "say": "Major triad, plus the lower 7th on top.\nG7 = G B D F. C7 = C E G B♭. D7 = D F♯ A C.",
+          "need": 1,
+          "tryText": "Play G7, C7 and D7, one after another.",
+          "tryProgression": [
+            "G7",
+            "C7",
+            "D7"
+          ],
+          "tryNames": true
         },
         {
           "id": "l8-key",
@@ -3792,9 +3810,150 @@
       ],
       "levels": [
         {
+          "id": "l8-maj7",
+          "title": "Major 7th chords",
+          "blurb": "Play the major 7th chord: all four notes, any order.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play Cmaj7.",
+              "chord": "Cmaj7"
+            },
+            {
+              "text": "Play Fmaj7.",
+              "chord": "Fmaj7"
+            },
+            {
+              "text": "Play Gmaj7.",
+              "chord": "Gmaj7"
+            },
+            {
+              "text": "Play Cmaj7.",
+              "chord": "Cmaj7"
+            },
+            {
+              "text": "Play Fmaj7.",
+              "chord": "Fmaj7"
+            },
+            {
+              "text": "Play Gmaj7.",
+              "chord": "Gmaj7"
+            },
+            {
+              "text": "Play Cmaj7.",
+              "chord": "Cmaj7"
+            },
+            {
+              "text": "Play Fmaj7.",
+              "chord": "Fmaj7"
+            },
+            {
+              "text": "Play Gmaj7.",
+              "chord": "Gmaj7"
+            }
+          ]
+        },
+        {
+          "id": "l8-m7",
+          "title": "Minor 7th chords",
+          "blurb": "Play the minor 7th chord: all four notes, any order.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play Dm7.",
+              "chord": "Dm7"
+            },
+            {
+              "text": "Play Em7.",
+              "chord": "Em7"
+            },
+            {
+              "text": "Play Am7.",
+              "chord": "Am7"
+            },
+            {
+              "text": "Play Dm7.",
+              "chord": "Dm7"
+            },
+            {
+              "text": "Play Em7.",
+              "chord": "Em7"
+            },
+            {
+              "text": "Play Am7.",
+              "chord": "Am7"
+            },
+            {
+              "text": "Play Dm7.",
+              "chord": "Dm7"
+            },
+            {
+              "text": "Play Em7.",
+              "chord": "Em7"
+            },
+            {
+              "text": "Play Am7.",
+              "chord": "Am7"
+            }
+          ]
+        },
+        {
+          "id": "l8-dom7",
+          "title": "Dominant 7th chords",
+          "blurb": "Play the dominant 7th chord: all four notes, any order.",
+          "type": "buildIt",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play G7.",
+              "chord": "G7"
+            },
+            {
+              "text": "Play C7.",
+              "chord": "C7"
+            },
+            {
+              "text": "Play D7.",
+              "chord": "D7"
+            },
+            {
+              "text": "Play G7.",
+              "chord": "G7"
+            },
+            {
+              "text": "Play C7.",
+              "chord": "C7"
+            },
+            {
+              "text": "Play D7.",
+              "chord": "D7"
+            },
+            {
+              "text": "Play G7.",
+              "chord": "G7"
+            },
+            {
+              "text": "Play C7.",
+              "chord": "C7"
+            },
+            {
+              "text": "Play D7.",
+              "chord": "D7"
+            }
+          ]
+        },
+        {
           "id": "l8-build",
-          "title": "Build 7th chords",
-          "blurb": "Play the 7th chord: all four notes, any order.",
+          "title": "Play all 7th chords",
+          "blurb": "Major, minor and dominant 7ths mixed: all four notes, any order.",
           "type": "buildIt",
           "octave": "any",
           "pass": 80,
@@ -3930,49 +4089,6 @@
           "playChord": true
         },
         {
-          "id": "l8-numeral",
-          "title": "Play the 7th numeral",
-          "blurb": "Play the 7th chord for each numeral in C major.",
-          "type": "buildIt",
-          "octave": "any",
-          "pass": 80,
-          "labels": "c",
-          "prompts": [
-            {
-              "text": "Play the V7 chord in C.",
-              "chord": "G7"
-            },
-            {
-              "text": "Play the Imaj7 chord in C.",
-              "chord": "Cmaj7"
-            },
-            {
-              "text": "Play the ii7 chord in C.",
-              "chord": "Dm7"
-            },
-            {
-              "text": "Play the IVmaj7 chord in C.",
-              "chord": "Fmaj7"
-            },
-            {
-              "text": "Play the vi7 chord in C.",
-              "chord": "Am7"
-            },
-            {
-              "text": "Play the iii7 chord in C.",
-              "chord": "Em7"
-            },
-            {
-              "text": "Play the V7 chord in C.",
-              "chord": "G7"
-            },
-            {
-              "text": "Play the ii7 chord in C.",
-              "chord": "Dm7"
-            }
-          ]
-        },
-        {
           "id": "l8-time-251",
           "title": "ii7 – V7 – Imaj7 in C",
           "blurb": "Dm7, G7, Cmaj7 with the smoothest moves, in time.",
@@ -4016,6 +4132,33 @@
               "ii7",
               "V7",
               "Imaj7",
+              "Imaj7"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l8-time-rnb",
+          "title": "R&B 7ths in C",
+          "blurb": "Fmaj7, Em7, Dm7, Cmaj7: a smooth R&B slide down, in time.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l8-rnb-c",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "IVmaj7",
+              "iii7",
+              "ii7",
               "Imaj7"
             ],
             "texture": "block",

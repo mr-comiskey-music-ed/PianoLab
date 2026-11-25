@@ -344,19 +344,19 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         const want = parseChord(s.tryProgression[at] ?? '');
         if (!want) return;
         const key = keyById(s.tryKey ?? 'C');
-        const num = [...diatonic(key), ...diatonicSevenths(key)].find((x) => x.chord.root === want.root && x.chord.quality === want.quality)?.numeral ?? '';
+        const num = s.tryNames ? chordName(want) : ([...diatonic(key), ...diatonicSevenths(key)].find((x) => x.chord.root === want.root && x.chord.quality === want.quality)?.numeral ?? '');
         if (matchesChord(held, want)) {
           const next = at + 1;
           progRef.current = next;
           setProgIdx(next);
           if (next >= s.tryProgression.length) {
             setCount(s.need);
-            setMsg({ kind: 'good', text: 'Yes! You played the whole progression. Nice work.' });
+            setMsg({ kind: 'good', text: s.tryNames ? 'Yes! All three. Nice work.' : 'Yes! The whole progression. Nice work.' });
           } else setMsg({ kind: 'good', text: `Yes, ${num}. Now the next one.` });
           return;
         }
         const got = detectChord(held, key);
-        setMsg({ kind: 'hint', text: `${got ? `That is ${got.longName}${got.numeral ? ` (${got.numeral})` : ''}. ` : ''}The next chord is ${num} in ${key.label}. Let go and try again.` });
+        setMsg({ kind: 'hint', text: `${got ? `That is ${got.longName}${got.numeral && !s.tryNames ? ` (${got.numeral})` : ''}. ` : ''}The next chord is ${num}${s.tryNames ? '' : ` in ${key.label}`}. Let go and try again.` });
         return;
       }
       if (!s.tryChord) return;
@@ -516,10 +516,10 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     </StageBox>
   ) : (
     <StageBox phone={ctx.phone} className="gap-2.5 overflow-auto px-6 py-3">
-      <Col phone={ctx.phone} className="max-h-full max-w-[42%] overflow-auto">
+      <Col phone={ctx.phone} className="max-h-full max-w-[34%] overflow-auto">
       {explain}
       </Col>
-      <Col phone={ctx.phone} className="max-w-[36%]">
+      <Col phone={ctx.phone} className="max-w-[46%]">
       <div className={`w-full max-w-[720px] pt-2.5 ${ctx.phone ? '' : 'border-t border-wal1'}`}>
         <div className="h text-[12px] uppercase tracking-wider text-brass">Now you try</div>
         <div className="h text-[28px] leading-tight text-panel" data-testid="learn-prompt">
@@ -532,11 +532,11 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           {step.tryProgression.map((c, k) => {
             const key = keyById(step.tryKey ?? 'C');
             const ch = parseChord(c);
-            const d = ch ? [...diatonic(key), ...diatonicSevenths(key)].find((x) => x.chord.root === ch.root && x.chord.quality === ch.quality) : undefined;
+            const d = ch && !step.tryNames ? [...diatonic(key), ...diatonicSevenths(key)].find((x) => x.chord.root === ch.root && x.chord.quality === ch.quality) : undefined;
             const done = k < progIdx || stepDone;
             return (
               <span key={k} className={`h rounded-md px-3 py-1 text-[22px] ${done ? '' : 'opacity-40'} ${k === progIdx && !stepDone ? 'ring-2 ring-panel' : ''}`} style={{ background: d?.color ?? '#66584a', color: textOn(d?.color ?? '#66584a') }}>
-                {d?.numeral ?? c}
+                {d?.numeral ?? (ch ? chordName(ch) : c)}
               </span>
             );
           })}
