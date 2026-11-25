@@ -65,6 +65,8 @@ export interface Prompt {
   inv?: number;
   /** halfStep: how many half steps from the lit key (+1 up, -1 down). */
   step?: number;
+  /** A tip shown when a button answer is wrong (quiz). */
+  tip?: string;
   /** This question's own answer buttons (overrides the level's `choices`). */
   choices?: string[];
   /** echo: the notes the app plays, to be played back in order (any octave), e.g. ["C4","D4","E4"]. */

@@ -49,7 +49,7 @@ describe('lesson content', () => {
           if (v.type === 'nameIt' || v.type === 'halfStep') expect(pcOf(p.show ?? ''), where).not.toBeNull();
           if (v.type === 'halfStep') expect(Math.abs(p.step ?? 0), where).toBeGreaterThan(0);
           if (v.type === 'scale') expect(KEYS.some((k) => k.mode === 'major' && k.id === p.scale), `${where} key ${p.scale}`).toBe(true);
-          if (v.type === 'quiz') expect(p.choices, where).toContain(p.answer?.[0]);
+          if (v.type === 'quiz') expect(p.choices ?? v.choices, where).toContain(p.answer?.[0]);
           if (v.type === 'echo') {
             expect((p.notes ?? []).length, where).toBeGreaterThan(1);
             for (const n of p.notes ?? []) expect(parseNote(n), `${where} ${n}`).not.toBeNull();

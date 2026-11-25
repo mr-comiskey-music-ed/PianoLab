@@ -699,7 +699,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
                 data-testid={`choice-${l}`}
                 disabled={!ready || !!reveal}
                 className="btn btn-brass min-w-[52px] text-[20px] disabled:opacity-50"
-                onClick={() => answer((prompt.answer ?? [prompt.show ?? '']).includes(l))}
+                onClick={() => answer((prompt.answer ?? [prompt.show ?? '']).includes(l), [], prompt.tip ? `Not quite. ${prompt.tip}` : undefined)}
               >
                 {pretty(l)}
               </button>

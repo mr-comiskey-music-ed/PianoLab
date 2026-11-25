@@ -153,7 +153,7 @@ lesson picker (all lessons open; later the teacher's assignment link can decide)
   stacked triad (root, skip, 3rd, skip, 5th; `tryTriad`), each on a different root; hints say "Find a D and build the
   triad up from there". Levels in order: Name C, F and G (`l2-name-cfg`) · Build C, F and G · Name all white-key triads ·
   Build all white-key triads. "Chords in A minor" level removed (same as Build all). Lesson 3 is "Roman numerals": Play
-  the numeral · Name the numeral · Numerals in A minor (`l3-function` removed). Removed ids never reached students.
+  the numeral · Name the numeral · Numerals in A minor (`l3-function` removed). His addition (other keys, C/G/F/D only, buttons, no piano: `quiz` type; a wrong answer shows the key's chords via the prompt's `tip`): Chords in other keys (`l3-key-chord`, "What is ii in G major?", 4 chord choices) · Numerals in other keys (`l3-key-numeral`, "What is Am in G major?", I–vi buttons), after Name the numeral. Removed ids never reached students.
 - Black keys (Lesson 4+, and Sandbox): names on black keys when names are showing ("C♯" over "D♭"); black keys count as
   answers. Flats are read as sharps internally (`pcOf`).
 - Per-lesson Learn: autosave keeps `learn: {lessonId: {done, step}}` + `lessonId` (old Phase 1 saves still load). Codes:
@@ -298,7 +298,7 @@ YouTube ungraded):
 major in time · G scale · G in time · D scale · D in time · F scale · F in time · More keys. Each "scale" level asks the
 same scale 3 times with a reminder ("Remember: F♯."); a level whose questions are all the same keeps its order (no
 shuffle). Timed scale levels have no chord/key label on the waterfall (`Timeline.scale`; it covered the notes). Level types used: `scale` (fingering shown as a hint) and pattern texture `scale`
-  (up and down, one note per beat; Falling Note Blocks only); the `quiz` type (buttons, nothing lit) is unused for now.
+  (up and down, one note per beat; Falling Note Blocks only); the `quiz` type (buttons, nothing lit) is used by Lesson 3's other-keys levels.
 - Lesson 8 "7th chords" (his redo; 7ths taught from the octave, his option A): Learn: one more 3rd, try G7 · Find the
   7th from the octave (`l8-octave`: major 7th = half step below the octave, minor 7th = whole step below; tags Root /
   Octave / Maj 7 / Min 7) · try major 7ths, minor 7ths (`tryInterval` 11 / 10, 3 roots each; the octave gets "good start!")

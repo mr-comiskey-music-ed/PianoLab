@@ -1363,6 +1363,276 @@
           ]
         },
         {
+          "id": "l3-key-chord",
+          "title": "Chords in other keys",
+          "blurb": "A numeral and a key: which chord is it? Count up the scale from the key's name.",
+          "type": "quiz",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "What is ii in G major?",
+              "answer": [
+                "Am"
+              ],
+              "choices": [
+                "A",
+                "Am",
+                "Bm",
+                "Dm"
+              ],
+              "tip": "In G major: I = G, ii = Am, iii = Bm, IV = C, V = D, vi = Em."
+            },
+            {
+              "text": "What is IV in F major?",
+              "answer": [
+                "B♭"
+              ],
+              "choices": [
+                "B♭",
+                "B♭m",
+                "C",
+                "F"
+              ],
+              "tip": "In F major: I = F, ii = Gm, iii = Am, IV = B♭, V = C, vi = Dm."
+            },
+            {
+              "text": "What is V in D major?",
+              "answer": [
+                "A"
+              ],
+              "choices": [
+                "A",
+                "Am",
+                "Bm",
+                "G"
+              ],
+              "tip": "In D major: I = D, ii = Em, iii = F♯m, IV = G, V = A, vi = Bm."
+            },
+            {
+              "text": "What is vi in C major?",
+              "answer": [
+                "Am"
+              ],
+              "choices": [
+                "A",
+                "Am",
+                "C",
+                "Em"
+              ],
+              "tip": "In C major: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am."
+            },
+            {
+              "text": "What is V in G major?",
+              "answer": [
+                "D"
+              ],
+              "choices": [
+                "D",
+                "Dm",
+                "Em",
+                "G"
+              ],
+              "tip": "In G major: I = G, ii = Am, iii = Bm, IV = C, V = D, vi = Em."
+            },
+            {
+              "text": "What is ii in F major?",
+              "answer": [
+                "Gm"
+              ],
+              "choices": [
+                "Am",
+                "Dm",
+                "G",
+                "Gm"
+              ],
+              "tip": "In F major: I = F, ii = Gm, iii = Am, IV = B♭, V = C, vi = Dm."
+            },
+            {
+              "text": "What is vi in D major?",
+              "answer": [
+                "Bm"
+              ],
+              "choices": [
+                "Am",
+                "B",
+                "Bm",
+                "D"
+              ],
+              "tip": "In D major: I = D, ii = Em, iii = F♯m, IV = G, V = A, vi = Bm."
+            },
+            {
+              "text": "What is iii in G major?",
+              "answer": [
+                "Bm"
+              ],
+              "choices": [
+                "B",
+                "Bm",
+                "C",
+                "Em"
+              ],
+              "tip": "In G major: I = G, ii = Am, iii = Bm, IV = C, V = D, vi = Em."
+            },
+            {
+              "text": "What is IV in C major?",
+              "answer": [
+                "F"
+              ],
+              "choices": [
+                "C",
+                "F",
+                "Fm",
+                "G"
+              ],
+              "tip": "In C major: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am."
+            },
+            {
+              "text": "What is ii in D major?",
+              "answer": [
+                "Em"
+              ],
+              "choices": [
+                "Dm",
+                "E",
+                "Em",
+                "F♯m"
+              ],
+              "tip": "In D major: I = D, ii = Em, iii = F♯m, IV = G, V = A, vi = Bm."
+            },
+            {
+              "text": "What is vi in F major?",
+              "answer": [
+                "Dm"
+              ],
+              "choices": [
+                "Am",
+                "D",
+                "Dm",
+                "F"
+              ],
+              "tip": "In F major: I = F, ii = Gm, iii = Am, IV = B♭, V = C, vi = Dm."
+            },
+            {
+              "text": "What is IV in G major?",
+              "answer": [
+                "C"
+              ],
+              "choices": [
+                "C",
+                "Cm",
+                "D",
+                "F"
+              ],
+              "tip": "In G major: I = G, ii = Am, iii = Bm, IV = C, V = D, vi = Em."
+            }
+          ]
+        },
+        {
+          "id": "l3-key-numeral",
+          "title": "Numerals in other keys",
+          "blurb": "A chord and a key: which numeral is it? Count up the scale from the key's name.",
+          "type": "quiz",
+          "octave": "any",
+          "pass": 80,
+          "labels": "off",
+          "prompts": [
+            {
+              "text": "What is Em in G major?",
+              "answer": [
+                "vi"
+              ],
+              "tip": "In G major: I = G, ii = Am, iii = Bm, IV = C, V = D, vi = Em."
+            },
+            {
+              "text": "What is B♭ in F major?",
+              "answer": [
+                "IV"
+              ],
+              "tip": "In F major: I = F, ii = Gm, iii = Am, IV = B♭, V = C, vi = Dm."
+            },
+            {
+              "text": "What is Em in D major?",
+              "answer": [
+                "ii"
+              ],
+              "tip": "In D major: I = D, ii = Em, iii = F♯m, IV = G, V = A, vi = Bm."
+            },
+            {
+              "text": "What is Em in C major?",
+              "answer": [
+                "iii"
+              ],
+              "tip": "In C major: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am."
+            },
+            {
+              "text": "What is C in G major?",
+              "answer": [
+                "IV"
+              ],
+              "tip": "In G major: I = G, ii = Am, iii = Bm, IV = C, V = D, vi = Em."
+            },
+            {
+              "text": "What is C in F major?",
+              "answer": [
+                "V"
+              ],
+              "tip": "In F major: I = F, ii = Gm, iii = Am, IV = B♭, V = C, vi = Dm."
+            },
+            {
+              "text": "What is Bm in D major?",
+              "answer": [
+                "vi"
+              ],
+              "tip": "In D major: I = D, ii = Em, iii = F♯m, IV = G, V = A, vi = Bm."
+            },
+            {
+              "text": "What is Am in G major?",
+              "answer": [
+                "ii"
+              ],
+              "tip": "In G major: I = G, ii = Am, iii = Bm, IV = C, V = D, vi = Em."
+            },
+            {
+              "text": "What is G in C major?",
+              "answer": [
+                "V"
+              ],
+              "tip": "In C major: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am."
+            },
+            {
+              "text": "What is Dm in F major?",
+              "answer": [
+                "vi"
+              ],
+              "tip": "In F major: I = F, ii = Gm, iii = Am, IV = B♭, V = C, vi = Dm."
+            },
+            {
+              "text": "What is F♯m in D major?",
+              "answer": [
+                "iii"
+              ],
+              "tip": "In D major: I = D, ii = Em, iii = F♯m, IV = G, V = A, vi = Bm."
+            },
+            {
+              "text": "What is D in G major?",
+              "answer": [
+                "V"
+              ],
+              "tip": "In G major: I = G, ii = Am, iii = Bm, IV = C, V = D, vi = Em."
+            }
+          ],
+          "choices": [
+            "I",
+            "ii",
+            "iii",
+            "IV",
+            "V",
+            "vi"
+          ]
+        },
+        {
           "id": "l3-play-minor",
           "title": "Numerals in A minor",
           "blurb": "Play the chord for each numeral in A minor.",
