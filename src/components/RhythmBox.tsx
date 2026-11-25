@@ -1,0 +1,180 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Pattern } from '../data/pattern';
+import { Timeline, beatMs, buildTimeline } from '../utils/patternEngine';
+import { HitResult, TimingJudge } from '../utils/timing';
+import { letterOf, pretty } from '../utils/music';
+import { ModeCtx } from './modeTypes';
+import { useNoteListener } from './chordInput';
+import { textOn } from './ChordStrip';
+
+/**
+ * Learn's rhythm steps (the Chord rhythms lesson): a counting grid ("1 + 2 + 3 + 4 +") with each hit drawn where it
+ * falls and as long as it lasts. ▶ Listen plays it with the clicks while a line moves along the grid. On try steps,
+ * ▶ Play along counts in and listens: the keys of each hit light up, and it passes when most hits are right and close
+ * to the beat (Good, or Early/Late: Learn is for getting the feel; Challenges grade it properly).
+ */
+const COUNT_IN = 4;
+const LEAD_MS = 350;
+/** Share of hits that must be right (notes, and Early/Late or better) to pass a Learn try. */
+export const RHYTHM_PASS = 0.75;
+const COUNTS = ['1', '+', '2', '+', '3', '+', '4', '+'];
+
+export const RhythmBox: React.FC<{
+  ctx: ModeCtx;
+  pattern: Pattern;
+  /** A try step: show ▶ Play along and call onPass when it's good enough. */
+  tryIt?: boolean;
+  onPass?: () => void;
+  /** Keys to light on the piano (the hit sounding / due now). */
+  onLit: (keys: Set<number> | null) => void;
+}> = ({ ctx, pattern, tryIt, onPass, onLit }) => {
+  const tl: Timeline = useMemo(() => buildTimeline(pattern), [pattern]);
+  const bm = beatMs(tl.tempo);
+  const [phase, setPhase] = useState<'idle' | 'listen' | 'play'>('idle');
+  const [pos, setPos] = useState(-1); // beats since the first downbeat (negative in the count-in)
+  const [result, setResult] = useState<{ right: number; total: number } | null>(null);
+  const timers = useRef<number[]>([]);
+  const stopClicks = useRef<() => void>(() => {});
+  const judge = useRef<TimingJudge | null>(null);
+  const raf = useRef(0);
+
+  const stop = () => {
+    stopClicks.current();
+    timers.current.forEach((t) => window.clearTimeout(t));
+    timers.current = [];
+    cancelAnimationFrame(raf.current);
+    judge.current = null;
+    ctx.engine.allOff();
+    setPhase('idle');
+    setPos(-1);
+    onLit(null);
+  };
+  useEffect(() => () => stop(), []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    stop();
+    setResult(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pattern.id]);
+
+  const run = (listen: boolean) => {
+    stop();
+    setResult(null);
+    ctx.stopMetronome();
+    void ctx.engine.unlock();
+    const clicks = ctx.engine.scheduleBeatClicks(LEAD_MS, COUNT_IN + tl.beats, tl.tempo);
+    stopClicks.current = clicks.cancel;
+    const t0 = clicks.firstHeardAt + COUNT_IN * bm;
+    setPhase(listen ? 'listen' : 'play');
+    const out = ctx.engine.outputDelayMs();
+    for (const h of tl.hits) {
+      const at = t0 - performance.now() + h.beat * bm;
+      timers.current.push(
+        window.setTimeout(() => {
+          if (listen) h.notes.forEach((n) => ctx.engine.noteOn(n, 0.7));
+          onLit(new Set(h.notes));
+        }, at - (listen ? out : 60)),
+      );
+      if (listen) timers.current.push(window.setTimeout(() => h.notes.forEach((n) => ctx.engine.noteOff(n)), at + h.dur * 0.9 * bm - out));
+    }
+    if (!listen) {
+      const results: (HitResult | undefined)[] = tl.hits.map(() => undefined);
+      const expected = tl.hits.map((h) => ({
+        t: t0 + h.beat * bm,
+        pcs: h.pcs,
+        ...((pattern.texture === 'broken' || pattern.texture === 'bassChord') && h.kind === 'note' ? { alt: h.chordPcs } : {}),
+        slideMs: Math.max(300, h.dur * bm * 0.5),
+      }));
+      judge.current = new TimingJudge(expected, ctx.latency, (i, r) => (results[i] = r), { getHeld: ctx.getHeld });
+      // For browser tests: when each hit is due and its keys (no student data).
+      (window as unknown as { __play?: unknown }).__play = tl.hits.map((h, i) => ({ t: expected[i].t, notes: h.notes, dur: h.dur * bm }));
+      timers.current.push(
+        window.setTimeout(() => {
+          judge.current?.tick(Infinity);
+          const right = results.filter((r) => r && r.notesRight && r.status !== 'miss').length;
+          const total = tl.hits.length;
+          setResult({ right, total });
+          stop();
+          if (right / total >= RHYTHM_PASS) onPass?.();
+        }, t0 - performance.now() + (tl.beats + 0.6) * bm),
+      );
+    } else timers.current.push(window.setTimeout(stop, t0 - performance.now() + (tl.beats + 0.3) * bm));
+    const loop = () => {
+      const now = performance.now();
+      judge.current?.tick(now);
+      setPos((now - t0) / bm);
+      raf.current = requestAnimationFrame(loop);
+    };
+    raf.current = requestAnimationFrame(loop);
+  };
+
+  useNoteListener(ctx.subscribe, (midi) => {
+    if (judge.current) judge.current.press(performance.now(), midi);
+  });
+
+  // The grid: every bar of the pattern, 8 counts each.
+  const bars = tl.beats / 4;
+  const counting = phase !== 'idle' && pos < 0 && pos >= -COUNT_IN ? Math.floor(pos + COUNT_IN) + 1 : 0;
+  const slotNow = phase !== 'idle' && pos >= 0 ? Math.floor(pos * 2) : -1;
+  return (
+    <div className="flex w-full max-w-[760px] flex-col items-center gap-1.5" data-testid="rhythm-box">
+      <div className="relative w-full rounded-lg bg-[#2a2118] px-2 pb-1.5 pt-1" data-testid="rhythm-grid">
+        <div className="flex">
+          {Array.from({ length: bars }, (_, b) => (
+            <div key={b} className="flex flex-1 border-l-2 border-wal1 first:border-l-0">
+              {COUNTS.map((c, k) => (
+                <span key={k} className={`h flex-1 text-center text-[15px] ${b * 8 + k === slotNow ? 'text-brass' : c === '+' ? 'text-line2/50' : 'text-line2'}`}>
+                  {c}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="relative mt-0.5 h-8">
+          {tl.hits.map((h, k) => {
+            const color = tl.bars[h.bar]?.color ?? '#d9a441';
+            const label = h.kind === 'chord' ? tl.bars[h.bar]?.symbol : pretty(letterOf(h.notes[0]));
+            return (
+              <div
+                key={k}
+                className="absolute top-0 flex h-full items-center overflow-hidden rounded-md pl-1.5 text-[13px] font-semibold"
+                style={{ left: `${(h.beat / tl.beats) * 100}%`, width: `calc(${(h.dur / tl.beats) * 100}% - 3px)`, background: color, color: textOn(color), opacity: h.kind === 'chord' ? 1 : 0.8 }}
+              >
+                {label}
+              </div>
+            );
+          })}
+          {phase !== 'idle' && pos >= 0 && <div className="absolute -top-6 bottom-0 w-0.5 bg-panel" style={{ left: `${Math.min(1, pos / tl.beats) * 100}%` }} />}
+        </div>
+        {counting > 0 && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#2a2118]/70">
+            <span className="h text-[40px] text-brass" data-testid="rhythm-count">
+              {counting}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="btn btn-dark text-[15px]" disabled={phase !== 'idle'} onClick={() => run(true)} data-testid="rhythm-listen">
+          ▶ Listen
+        </button>
+        {tryIt && (
+          <button className="btn btn-brass text-[15px]" disabled={phase !== 'idle'} onClick={() => run(false)} data-testid="rhythm-play">
+            ▶ Play along
+          </button>
+        )}
+        {phase !== 'idle' && (
+          <button className="btn btn-dark text-[14px]" onClick={stop}>
+            Stop
+          </button>
+        )}
+        <span className="h text-[12px] uppercase tracking-wider text-brass">{tl.tempo} BPM</span>
+      </div>
+      {result && !(tryIt && result.right / result.total >= RHYTHM_PASS) && (
+        <div className={`rounded-lg px-3 py-1 text-[15px] ${result.right / result.total >= RHYTHM_PASS ? 'bg-[#cfe3b4] text-good' : 'bg-[#f6e3b8] text-wal1'}`} data-testid="rhythm-result">
+          {result.right} of {result.total} on time with the right notes.{' '}
+          {result.right / result.total >= RHYTHM_PASS ? 'Nice!' : 'Listen once more, then try again. Count out loud.'}
+        </div>
+      )}
+    </div>
+  );
+};

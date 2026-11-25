@@ -386,6 +386,18 @@ key it reaches and lets go of the one it left; keys another finger holds aren't 
   not in time: the box you're playing lights up and the next one gets a dashed outline (it follows what you play,
   `sameFamily`: same root, both major-ish or minor-ish). Prefilled from `youtube.json`'s `chords`; an assignment's
   YouTube Jam can carry them (`custom`). `jamSheet.test.ts`, `e53`.
+- **Chord rhythms lesson** (his request; shown as Lesson 7 between Inversions and Major scales; id `lesson-rhythm`, so the
+  old `lesson-7`/`lesson-8` ids keep working and are now shown as Lessons 8 and 9 (`number` is display only)). Simple
+  root-position chords, the rhythm is the point. Learn (`RhythmBox.tsx`): a counting grid "1 + 2 + 3 + 4 +" with each hit
+  drawn where it falls and as long as it lasts; ▶ Listen (clicks + chords, a line moves along); try steps add ▶ Play
+  along (4-click count-in, the due keys light, passes at 75% right notes Early/Late or better, `RHYTHM_PASS`). Steps:
+  whole, half, quarter (+ try), 8ths (+ try), off the beat (+ try), the tresillo (3+3+2, the 3 side of the son clave; +
+  try), oom-pah (broken: root on 1 and 3, chord on 2 and 4; + try), arpeggios (R 3 5 8 in 8ths; + try). Challenges (9):
+  Half notes · Quarter notes · 8th notes (72) · 8th notes, faster (104) · Off the beat (G, no groove) · Tresillo (90) ·
+  Tresillo, faster (112, funk) · Oom-pah (100) · Arpeggios (72, ballad). New rhythms in the pattern engine:
+  `sync:tresillo` (= `sync:pop`), `sync:offbeats`, `sync:push`. Timed levels can have a `groove` (Jam Room style id): an
+  app-made drums + bass backing on each bar's root with its own count-in bar, "Backing: groove / Clicks" on the start
+  screen (`PlayLevel`). Arpeggio levels are Falling Note Blocks only, like scales. `e54` tests it.
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
 ## Open items (last updated end of Phase 1 testing)

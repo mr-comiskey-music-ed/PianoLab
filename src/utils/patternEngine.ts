@@ -57,9 +57,14 @@ export function rhythmBeats(r: Rhythm): number[] {
     case 'eighths':
       return [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5];
     default:
-      // Syncopated presets: "sync:pop" = 1, the "and" of 2, 4 (a common pop push).
-      if (r === 'sync:pop') return [0, 1.5, 3];
+      // Syncopated presets: "sync:pop" = 1, the "and" of 2, 4 (a common pop push). That is the tresillo: 3 + 3 + 2
+      // eighths, the "3 side" of the son clave ("sync:tresillo" says so).
+      if (r === 'sync:pop' || r === 'sync:tresillo') return [0, 1.5, 3];
       if (r === 'sync:charleston') return [0, 1.5];
+      // Off-beats only: every "and" (reggae / ska).
+      if (r === 'sync:offbeats') return [0.5, 1.5, 2.5, 3.5];
+      // The tresillo with an extra hit on 4 + : 1, + of 2, 4, + of 4 (a pushed pop / funk comp).
+      if (r === 'sync:push') return [0, 1.5, 3, 3.5];
       return [0, 1, 2, 3];
   }
 }

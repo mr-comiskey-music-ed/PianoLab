@@ -6,6 +6,7 @@ import { StripChips, textOn } from './ChordStrip';
 import { ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
 import { Col, StageBox } from './StageRow';
+import { RhythmBox } from './RhythmBox';
 import { MAJOR_SCALE, scaleStep } from '../utils/scales';
 
 /** Position of a white key counting only white keys (C0 = 0, D0 = 1 ...). Black keys: null. */
@@ -503,13 +504,18 @@ export function useLearn(ctx: ModeCtx): ModeParts {
             );
           })}
         </div>
+      ) : step.rhythm ? (
+        // A rhythm, on a counting grid, played in time with the clicks (Chord rhythms lesson).
+        <RhythmBox ctx={ctx} pattern={step.rhythm} onLit={setDemoLit} />
       ) : (
         <DemoRow demo={step.demo ?? []} current={demoIdx} tags={step.tags} />
       )}
       <div className="flex gap-2">
-        <button className="btn btn-dark text-[16px]" onClick={() => void showMe()} disabled={demoing}>
-          {demoing ? 'Playing…' : '▶ Play example'}
-        </button>
+        {!step.rhythm && (
+          <button className="btn btn-dark text-[16px]" onClick={() => void showMe()} disabled={demoing}>
+            {demoing ? 'Playing…' : '▶ Play example'}
+          </button>
+        )}
         {nextBtn}
       </div>
       </Col>
@@ -522,7 +528,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       <Col phone={ctx.phone} className="max-w-[46%]">
       <div className={`w-full max-w-[720px] pt-2.5 ${ctx.phone ? '' : 'border-t border-wal1'}`}>
         <div className="h text-[12px] uppercase tracking-wider text-brass">Now you try</div>
-        <div className="h text-[28px] leading-tight text-panel" data-testid="learn-prompt">
+        <div className={`h leading-tight text-panel ${ctx.phone || step.rhythm ? 'text-[22px]' : 'text-[28px]'}`} data-testid="learn-prompt">
           {step.tryText}
         </div>
       </div>
@@ -542,6 +548,18 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           })}
         </div>
       )}
+      {step.rhythm && (
+        <RhythmBox
+          ctx={ctx}
+          pattern={step.rhythm}
+          tryIt
+          onLit={setDemoLit}
+          onPass={() => {
+            setCount(step.need);
+            setMsg({ kind: 'good', text: 'Yes! That’s the rhythm. Nice work.' });
+          }}
+        />
+      )}
       {step.tryScale && (
         // The scale: one dot per note, filled as they're played.
         <div className="flex gap-1.5" data-testid="scale-dots" aria-label={`${stepDone ? 8 : scaleCount} of 8 notes`}>
@@ -550,7 +568,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           ))}
         </div>
       )}
-      <div className={`flex gap-1.5 ${step.tryProgression || step.tryScale ? 'hidden' : ''}`} aria-label={`${count} of ${step.need} done`}>
+      <div className={`flex gap-1.5 ${step.tryProgression || step.tryScale || step.rhythm ? 'hidden' : ''}`} aria-label={`${count} of ${step.need} done`}>
         {Array.from({ length: step.need }, (_, k) => (
           <span key={k} className={`h-3 w-3 rounded-full border border-brass2 ${k < count ? 'bg-brass' : 'bg-transparent'}`} />
         ))}

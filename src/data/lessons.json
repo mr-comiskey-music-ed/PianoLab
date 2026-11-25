@@ -3527,8 +3527,579 @@
       ]
     },
     {
-      "id": "lesson-7",
+      "id": "lesson-rhythm",
       "number": 7,
+      "title": "Chord rhythms",
+      "key": "C",
+      "numerals": true,
+      "practice": "Turn on the metronome and play one chord in different rhythms: whole notes, half notes, quarters, 8ths. Then try the tresillo: 1, the + of 2, and 4.",
+      "learn": [
+        {
+          "id": "lr-learn-whole",
+          "section": "Note lengths",
+          "title": "Whole notes",
+          "say": "A whole note lasts the whole bar: 4 beats.\nPlay on 1 and hold it through 2, 3 and 4.\nPress ▶ Listen and count along.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-whole",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-learn-half",
+          "section": "Note lengths",
+          "title": "Half notes",
+          "say": "A half note lasts 2 beats, so two fit in a bar.\nPlay on 1 and on 3.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-half",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "half",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-learn-quarter",
+          "section": "Note lengths",
+          "title": "Quarter notes",
+          "say": "A quarter note lasts 1 beat: play on every count, 1 2 3 4.\nThis is the beat you tap your foot to.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-quarter",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-try-quarter",
+          "section": "Note lengths",
+          "title": "Play quarter notes",
+          "say": "C for a bar, then F for a bar, on every beat.\nPress ▶ Play along: 4 clicks count you in.",
+          "need": 1,
+          "tryText": "Play C, then F, in quarter notes.",
+          "rhythm": {
+            "id": "lr-t-quarter",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2
+          }
+        },
+        {
+          "id": "lr-learn-eighths",
+          "section": "8th notes",
+          "title": "8th notes",
+          "say": "8th notes split every beat in two.\nCount 1 + 2 + 3 + 4 + (\"one and two and…\").\nPlay on every number AND every +.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-eighths",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-try-eighths",
+          "section": "8th notes",
+          "title": "Play 8th notes",
+          "say": "Small, quick moves: keep your hand on the chord and bounce.\nCount out loud: 1 + 2 + 3 + 4 +.",
+          "need": 1,
+          "tryText": "Play C, then F, in 8th notes.",
+          "rhythm": {
+            "id": "lr-t-eighths",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2
+          }
+        },
+        {
+          "id": "lr-learn-offbeats",
+          "section": "Syncopation",
+          "title": "Off the beat",
+          "say": "Syncopation means playing between the beats.\nHere the chord comes only on the +s.\nKeep the numbers going in your head (or tap your foot on them) and play in the gaps. It is the sound of reggae and ska.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-off",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "sync:offbeats",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-try-offbeats",
+          "section": "Syncopation",
+          "title": "Play off the beat",
+          "say": "Tap your foot on 1 2 3 4. Play only when your foot comes up.",
+          "need": 1,
+          "tryText": "Play C, then F, on the +s only.",
+          "rhythm": {
+            "id": "lr-t-off",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "sync:offbeats",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2
+          }
+        },
+        {
+          "id": "lr-learn-tresillo",
+          "section": "The tresillo",
+          "title": "The tresillo",
+          "say": "The tresillo (\"little three\") groups 8 eighths as 3 + 3 + 2.\nPlay on 1, on the + of 2, and on 4.\nIt is the 3 side of the son clave from Cuba, and it drives countless pop, Latin, reggaeton and R&B songs.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-tres",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V"
+            ],
+            "texture": "block",
+            "rhythm": "sync:tresillo",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-try-tresillo",
+          "section": "The tresillo",
+          "title": "Play the tresillo",
+          "say": "Count 1 + 2 + 3 + 4 + and play on 1, the + of 2, and 4.\nOr think of it as long, long, short.",
+          "need": 1,
+          "tryText": "Play C, then G, in the tresillo rhythm.",
+          "rhythm": {
+            "id": "lr-t-tres",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V"
+            ],
+            "texture": "block",
+            "rhythm": "sync:tresillo",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2
+          }
+        },
+        {
+          "id": "lr-learn-oompah",
+          "section": "Broken chords",
+          "title": "Oom-pah",
+          "say": "Break the chord up: the root alone on 1 and 3, the whole chord on 2 and 4.\nOom-pah, oom-pah: the bass and the chord take turns.\nYou can play the root with your left hand.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-oom",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V"
+            ],
+            "texture": "broken",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-try-oompah",
+          "section": "Broken chords",
+          "title": "Play oom-pah",
+          "say": "Root, chord, root, chord.",
+          "need": 1,
+          "tryText": "Play C, then G: root on 1 and 3, chord on 2 and 4.",
+          "rhythm": {
+            "id": "lr-t-oom",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V"
+            ],
+            "texture": "broken",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 2
+          }
+        },
+        {
+          "id": "lr-learn-arpeggio",
+          "section": "Broken chords",
+          "title": "Arpeggios",
+          "say": "An arpeggio plays the chord one note at a time, going up: root, 3rd, 5th, then the root an octave up.\nIn 8th notes that is two runs up per bar.\nIt is the flowing sound of piano ballads.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-arp",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi"
+            ],
+            "texture": "arpeggio",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-try-arpeggio",
+          "section": "Broken chords",
+          "title": "Play an arpeggio",
+          "say": "Fingers 1 2 3 5 on C E G C, then on A C E A.\nOne note per 8th, smooth and even.",
+          "need": 1,
+          "tryText": "Play C, then Am, as arpeggios in 8th notes.",
+          "rhythm": {
+            "id": "lr-t-arp",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi"
+            ],
+            "texture": "arpeggio",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2
+          }
+        }
+      ],
+      "levels": [
+        {
+          "id": "lr-half",
+          "title": "Half notes",
+          "blurb": "Half notes on 1 and 3, with a pop groove.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-half",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "block",
+            "rhythm": "half",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lr-quarter",
+          "title": "Quarter notes",
+          "blurb": "A chord on every beat: I – V – vi – IV.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-quarter",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V",
+              "vi",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lr-eighths",
+          "title": "8th notes",
+          "blurb": "Two chords per beat: count 1 + 2 + 3 + 4 +.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-eighths",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi",
+              "IV",
+              "V"
+            ],
+            "texture": "block",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "rock"
+        },
+        {
+          "id": "lr-eighths-fast",
+          "title": "8th notes, faster",
+          "blurb": "The same 8th notes, at a rock tempo.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-eighths-fast",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi",
+              "IV",
+              "V"
+            ],
+            "texture": "block",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 104,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "rock"
+        },
+        {
+          "id": "lr-offbeats",
+          "title": "Off the beat",
+          "blurb": "Only on the +s, like reggae: G – C – D – C.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-offbeats",
+            "key": "G",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "sync:offbeats",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "lr-tresillo",
+          "title": "Tresillo",
+          "blurb": "1, the + of 2, and 4: the 3 side of the clave.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-tresillo",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V",
+              "vi",
+              "IV"
+            ],
+            "texture": "block",
+            "rhythm": "sync:tresillo",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lr-tresillo-fast",
+          "title": "Tresillo, faster",
+          "blurb": "The tresillo at a funk tempo: Am – F – C – G.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-tresillo-fast",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "vi",
+              "IV",
+              "I",
+              "V"
+            ],
+            "texture": "block",
+            "rhythm": "sync:tresillo",
+            "voicing": "root",
+            "tempo": 112,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "funk"
+        },
+        {
+          "id": "lr-oompah",
+          "title": "Oom-pah",
+          "blurb": "Root on 1 and 3, the chord on 2 and 4.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-oompah",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "broken",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 100,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lr-arpeggio",
+          "title": "Arpeggios",
+          "blurb": "Up each chord in 8th notes: C – Am – F – G.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-arpeggio",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi",
+              "IV",
+              "V"
+            ],
+            "texture": "arpeggio",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "ballad"
+        }
+      ]
+    },
+    {
+      "id": "lesson-7",
+      "number": 8,
       "title": "Major scales",
       "key": "C",
       "numerals": true,
@@ -3931,7 +4502,7 @@
     },
     {
       "id": "lesson-8",
-      "number": 8,
+      "number": 9,
       "title": "7th chords",
       "key": "C",
       "numerals": true,

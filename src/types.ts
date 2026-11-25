@@ -95,6 +95,8 @@ export interface Level {
   /** speed (Speed Round): seconds on the clock, and how many right answers make 100%. */
   seconds?: number;
   target?: number;
+  /** play: an app-made groove (Jam Room style id, e.g. "pop") plays along instead of plain clicks (students can switch). */
+  groove?: string;
   /** nameChord: also play the chord out loud (with "Hear it again"). */
   playChord?: boolean;
   /** smooth: the first chord's keys, e.g. ["C4","E4","G4"]. */
@@ -137,6 +139,8 @@ export interface LearnStep {
   /** Or: a progression, played one chord after another ("C", "G", "Am", "F"), in the key `tryKey` (for the numerals shown). */
   tryProgression?: string[];
   tryKey?: string;
+  /** A rhythm on a counting grid (Chord rhythms lesson): ▶ Listen on show steps; on try steps, ▶ Play along in time. */
+  rhythm?: Pattern;
   /** With tryProgression: show chord names (Cmaj7, Fmaj7...) instead of numerals; the chords need not be in one key. */
   tryNames?: boolean;
   /** Show-and-tell: chord strips on the Stage (key ids, e.g. ["C"] or ["C", "G"]) in place of the chord names. */

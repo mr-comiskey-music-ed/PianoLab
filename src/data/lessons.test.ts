@@ -19,7 +19,7 @@ describe('lesson content', () => {
         for (const d of s.demo ?? []) for (const n of d.replace(/\*\d+(\.\d+)?$/, '').split('+').filter((x) => x !== '_')) expect(parseNote(n), `${s.id} demo ${n}`).not.toBeNull();
         for (const n of Object.keys(s.tags ?? {})) expect(parseNote(n), `${s.id} tag ${n}`).not.toBeNull();
         if (s.tryInterval !== undefined) expect(s.tryInterval, `${s.id} interval`).toBeGreaterThan(0);
-        if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0) + (s.tryTriad ? 1 : 0) + (s.tryProgression?.length ?? 0) + (s.tryInterval ? 1 : 0) + (s.tryScale ? 1 : 0), `${s.id} has an answer`).toBeGreaterThan(0);
+        if (!s.show) expect((s.tryAnswer?.length ?? 0) + (s.tryChord?.length ?? 0) + (s.tryTriad ? 1 : 0) + (s.tryProgression?.length ?? 0) + (s.tryInterval ? 1 : 0) + (s.tryScale ? 1 : 0) + (s.rhythm ? 1 : 0), `${s.id} has an answer`).toBeGreaterThan(0);
         for (const a of s.tryAnswer ?? []) expect(pcOf(a), `${s.id} answer ${a}`).not.toBeNull();
         for (const c of [...(s.tryChord ?? []), ...(s.tryProgression ?? [])]) expect(parseChord(c), `${s.id} chord ${c}`).not.toBeNull();
         // Every progression chord belongs to its key, and every strip/demoKeys key exists.

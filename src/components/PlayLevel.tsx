@@ -3,6 +3,7 @@ import { Level, ScreenHelp } from '../types';
 import { Timeline, beatMs, buildTimeline, chordSummary } from '../utils/patternEngine';
 import { HitResult, NotesCheck, TimingJudge, TimingSummary, pitchClassCheck, steadyOffset, summarize } from '../utils/timing';
 import { chordPcs, moveDistance, moveSizes, parseChord } from '../utils/chords';
+import { GROOVES, Groove } from '../audio/groove';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
@@ -40,6 +41,9 @@ export function usePlayLevel(
   const [pop, setPop] = useState<{ text: string; kind: 'perfect' | 'good' | 'off' | 'miss'; id: number } | null>(null);
   const [count, setCount] = useState(0);
   const [litNow, setLitNow] = useState<Set<number> | undefined>(undefined);
+  /** Levels with a groove: play along with drums and bass (the default), or just the clicks. */
+  const [withGroove, setWithGroove] = useState(true);
+  const grooveStyle = level.groove ? GROOVES.find((g) => g.id === level.groove) : undefined;
   const judge = useRef<TimingJudge | null>(null);
   const stopClicks = useRef<() => void>(() => {});
   const timers = useRef<number[]>([]);
@@ -76,10 +80,22 @@ export function usePlayLevel(
     const bm = beatMs(tempo);
     // Everything follows the clicks as they are HEARD (audio clock + the device's output delay), so the blocks land on
     // the line with the click and a key played with the click is on time.
-    const clicks = ctx.engine.scheduleBeatClicks(LEAD_MS, COUNT_IN + timeline.beats, tempo);
-    stopClicks.current = clicks.cancel;
-    const heard = clicks.firstHeardAt - performance.now();
-    const t0 = clicks.firstHeardAt + COUNT_IN * bm;
+    let firstHeardAt: number;
+    if (grooveStyle && withGroove) {
+      // A groove (drums + bass on each bar's root) with its own bar of clicks to count in. It loops; Stop ends it.
+      const g = Groove.get();
+      g.setLevel(1);
+      const roots = timeline.bars.map((b) => parseChord(b.symbol)?.root ?? timeline.key.tonic);
+      const beat1 = g.startGroove(grooveStyle, tempo, roots, LEAD_MS / 1000, -COUNT_IN);
+      stopClicks.current = () => g.stop();
+      firstHeardAt = beat1 - COUNT_IN * bm;
+    } else {
+      const clicks = ctx.engine.scheduleBeatClicks(LEAD_MS, COUNT_IN + timeline.beats, tempo);
+      stopClicks.current = clicks.cancel;
+      firstHeardAt = clicks.firstHeardAt;
+    }
+    const heard = firstHeardAt - performance.now();
+    const t0 = firstHeardAt + COUNT_IN * bm;
     setStartAt(t0);
     setResults(timeline.hits.map(() => undefined));
     setPop(null);
@@ -203,8 +219,8 @@ export function usePlayLevel(
   }, [phase, timeline, startAt, tempo, screen]);
 
   const running = phase !== 'idle';
-  // Scales (Lesson 7) fall as note blocks only: "Chord Names Only" has nothing to show for a scale.
-  const shownScreens: ScreenHelp[] = pattern?.texture === 'scale' ? ['blocks'] : SCREEN_ORDER;
+  // Scales (Lesson 7) and arpeggios fall as note blocks only: "Chord Names Only" has nothing to show for a scale.
+  const shownScreens: ScreenHelp[] = pattern?.texture === 'scale' || pattern?.texture === 'arpeggio' ? ['blocks'] : SCREEN_ORDER;
   const allowedScreens = shownScreens.filter((s) => SCREEN_ORDER.indexOf(s) >= SCREEN_ORDER.indexOf(level.screen ?? 'blocks'));
 
   const settingsUI = (
@@ -221,6 +237,16 @@ export function usePlayLevel(
           +
         </button>
       </span>
+      {grooveStyle && (
+        <span className="flex items-center gap-1.5" role="radiogroup" aria-label="Backing">
+          <span className="h text-[12px] uppercase tracking-wider text-brass">Backing</span>
+          {([true, false] as const).map((on) => (
+            <button key={String(on)} role="radio" aria-checked={withGroove === on} data-testid={`backing-${on ? 'groove' : 'clicks'}`} className={`btn px-2 py-0.5 text-[13px] ${withGroove === on ? 'btn-brass' : 'btn-dark'}`} onClick={() => setWithGroove(on)}>
+              {on ? `${grooveStyle.name} groove` : 'Clicks'}
+            </button>
+          ))}
+        </span>
+      )}
       <span className="flex items-center gap-1.5" role="radiogroup" aria-label="What shows on the waterfall">
         <span className="h text-[12px] uppercase tracking-wider text-brass">Show</span>
         {shownScreens.map((s) => (
