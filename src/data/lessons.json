@@ -3550,9 +3550,10 @@
             ],
             "texture": "block",
             "rhythm": "whole",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 80,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           },
           "show": true
         },
@@ -3572,9 +3573,10 @@
             ],
             "texture": "block",
             "rhythm": "half",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 80,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           },
           "show": true
         },
@@ -3594,9 +3596,10 @@
             ],
             "texture": "block",
             "rhythm": "quarter",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 80,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           },
           "show": true
         },
@@ -3617,9 +3620,10 @@
             ],
             "texture": "block",
             "rhythm": "quarter",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 80,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           }
         },
         {
@@ -3638,9 +3642,10 @@
             ],
             "texture": "block",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           },
           "show": true
         },
@@ -3661,9 +3666,10 @@
             ],
             "texture": "block",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           }
         },
         {
@@ -3682,10 +3688,12 @@
             ],
             "texture": "block",
             "rhythm": "sync:offbeats",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           },
+          "groove": "reggae",
           "show": true
         },
         {
@@ -3705,10 +3713,12 @@
             ],
             "texture": "block",
             "rhythm": "sync:offbeats",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
-            "bars": 2
-          }
+            "bars": 2,
+            "startInv": 2
+          },
+          "groove": "reggae"
         },
         {
           "id": "lr-learn-tresillo",
@@ -3726,9 +3736,10 @@
             ],
             "texture": "block",
             "rhythm": "sync:tresillo",
-            "voicing": "root",
-            "tempo": 80,
-            "bars": 2
+            "voicing": "close",
+            "tempo": 100,
+            "bars": 2,
+            "startInv": 2
           },
           "show": true
         },
@@ -3749,9 +3760,10 @@
             ],
             "texture": "block",
             "rhythm": "sync:tresillo",
-            "voicing": "root",
-            "tempo": 80,
-            "bars": 2
+            "voicing": "close",
+            "tempo": 100,
+            "bars": 2,
+            "startInv": 2
           }
         },
         {
@@ -3770,9 +3782,10 @@
             ],
             "texture": "broken",
             "rhythm": "quarter",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 90,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           },
           "show": true
         },
@@ -3793,9 +3806,10 @@
             ],
             "texture": "broken",
             "rhythm": "quarter",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 90,
-            "bars": 2
+            "bars": 2,
+            "startInv": 2
           }
         },
         {
@@ -3858,7 +3872,7 @@
             ],
             "texture": "arp3",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
             "bars": 2
           },
@@ -3881,7 +3895,7 @@
             ],
             "texture": "arp3",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
             "bars": 2
           }
@@ -3902,7 +3916,7 @@
             ],
             "texture": "arpeggio",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
             "bars": 2
           },
@@ -3925,7 +3939,7 @@
             ],
             "texture": "arpeggio",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
             "bars": 2
           }
@@ -3953,9 +3967,10 @@
             ],
             "texture": "block",
             "rhythm": "half",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 80,
-            "bars": 8
+            "bars": 8,
+            "startInv": 2
           },
           "screen": "blocks",
           "groove": "pop"
@@ -3981,9 +3996,10 @@
             ],
             "texture": "block",
             "rhythm": "quarter",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 90,
-            "bars": 8
+            "bars": 8,
+            "startInv": 2
           },
           "screen": "blocks",
           "groove": "pop"
@@ -4009,9 +4025,10 @@
             ],
             "texture": "block",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
-            "bars": 8
+            "bars": 8,
+            "startInv": 2
           },
           "screen": "blocks",
           "groove": "rock"
@@ -4037,9 +4054,10 @@
             ],
             "texture": "block",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 104,
-            "bars": 8
+            "bars": 8,
+            "startInv": 2
           },
           "screen": "blocks",
           "groove": "rock"
@@ -4065,11 +4083,13 @@
             ],
             "texture": "block",
             "rhythm": "sync:offbeats",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 80,
-            "bars": 8
+            "bars": 8,
+            "startInv": 2
           },
-          "screen": "blocks"
+          "screen": "blocks",
+          "groove": "reggae"
         },
         {
           "id": "lr-tresillo",
@@ -4092,9 +4112,10 @@
             ],
             "texture": "block",
             "rhythm": "sync:tresillo",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 90,
-            "bars": 8
+            "bars": 8,
+            "startInv": 2
           },
           "screen": "blocks",
           "groove": "pop"
@@ -4120,9 +4141,10 @@
             ],
             "texture": "block",
             "rhythm": "sync:tresillo",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 112,
-            "bars": 8
+            "bars": 8,
+            "startInv": 2
           },
           "screen": "blocks",
           "groove": "funk"
@@ -4148,9 +4170,10 @@
             ],
             "texture": "broken",
             "rhythm": "quarter",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 100,
-            "bars": 8
+            "bars": 8,
+            "startInv": 2
           },
           "screen": "blocks",
           "groove": "pop"
@@ -4204,7 +4227,7 @@
             ],
             "texture": "arp3",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
             "bars": 8
           },
@@ -4232,7 +4255,7 @@
             ],
             "texture": "arpeggio",
             "rhythm": "eighths",
-            "voicing": "root",
+            "voicing": "close",
             "tempo": 72,
             "bars": 8
           },
@@ -4247,6 +4270,7 @@
       "title": "Bass lines",
       "key": "C",
       "numerals": true,
+      "sound": "bass-analog",
       "practice": "Play just the root of each chord, low, with your left hand. Then try the styles: rock 8ths, root and 5th, octaves, off-beats, a trap 808, walking to the next chord.",
       "learn": [
         {
@@ -4289,6 +4313,8 @@
             "lineOf": "chord",
             "lineBars": 1
           },
+          "groove": "pop",
+          "grooveBass": false,
           "show": true
         },
         {
@@ -4331,7 +4357,9 @@
             ],
             "lineOf": "chord",
             "lineBars": 1
-          }
+          },
+          "groove": "pop",
+          "grooveBass": false
         },
         {
           "id": "lb-learn-rock",
@@ -4389,6 +4417,8 @@
             "lineOf": "chord",
             "lineBars": 1
           },
+          "groove": "rock",
+          "grooveBass": false,
           "show": true
         },
         {
@@ -4447,13 +4477,15 @@
             ],
             "lineOf": "chord",
             "lineBars": 1
-          }
+          },
+          "groove": "rock",
+          "grooveBass": false
         },
         {
           "id": "lb-learn-fifth",
           "section": "Root and 5th",
           "title": "Root and 5th",
-          "say": "Country, folk and early rock and roll: the root on 1, the 5th on 3.\nThe 5th is the top note of the triad: C to G, F to C.",
+          "say": "Country, folk and early rock and roll: the root on 1, held, then the 5th on beat 4 leading into the next bar.\nThe 5th is the top note of the triad: C to G, F to C.",
           "need": 0,
           "rhythm": {
             "id": "lb-l-fifth",
@@ -4472,26 +4504,28 @@
               {
                 "b": 0,
                 "n": "R",
-                "d": 2
+                "d": 3
               },
               {
-                "b": 2,
+                "b": 3,
                 "n": "5",
-                "d": 2
+                "d": 1
               }
             ],
             "lineOf": "chord",
             "lineBars": 1
           },
+          "groove": "pop",
+          "grooveBass": false,
           "show": true
         },
         {
           "id": "lb-try-fifth",
           "section": "Root and 5th",
           "title": "Play root and 5th",
-          "say": "Root, then 5th. Root, then 5th.",
+          "say": "Root on 1 (hold it), the 5th on 4.",
           "need": 1,
-          "tryText": "Play root on 1, 5th on 3: C then G, F then C.",
+          "tryText": "Play the root on 1 and the 5th on 4: C then G, F then C.",
           "rhythm": {
             "id": "lb-t-fifth",
             "key": "C",
@@ -4509,17 +4543,19 @@
               {
                 "b": 0,
                 "n": "R",
-                "d": 2
+                "d": 3
               },
               {
-                "b": 2,
+                "b": 3,
                 "n": "5",
-                "d": 2
+                "d": 1
               }
             ],
             "lineOf": "chord",
             "lineBars": 1
-          }
+          },
+          "groove": "pop",
+          "grooveBass": false
         },
         {
           "id": "lb-learn-octave",
@@ -4577,63 +4613,19 @@
             "lineOf": "chord",
             "lineBars": 1
           },
+          "groove": "funk",
+          "grooveBass": false,
           "show": true
         },
         {
-          "id": "lb-learn-edm",
+          "id": "lb-try-octave",
           "section": "Dance music",
-          "title": "EDM: off the beat",
-          "say": "In house and EDM the kick drum hits every beat.\nThe bass gets out of its way and plays on the +s, in the gaps.",
-          "need": 0,
-          "rhythm": {
-            "id": "lb-l-edm",
-            "key": "C",
-            "mode": "major",
-            "progression": [
-              "I",
-              "IV"
-            ],
-            "texture": "line",
-            "rhythm": "quarter",
-            "voicing": "root",
-            "tempo": 90,
-            "bars": 2,
-            "line": [
-              {
-                "b": 0.5,
-                "n": "R",
-                "d": 0.5
-              },
-              {
-                "b": 1.5,
-                "n": "R",
-                "d": 0.5
-              },
-              {
-                "b": 2.5,
-                "n": "R",
-                "d": 0.5
-              },
-              {
-                "b": 3.5,
-                "n": "R",
-                "d": 0.5
-              }
-            ],
-            "lineOf": "chord",
-            "lineBars": 1
-          },
-          "show": true
-        },
-        {
-          "id": "lb-try-edm",
-          "section": "Dance music",
-          "title": "Play off-beat bass",
-          "say": "Tap your foot on the beat (that is the kick) and play when it comes up.",
+          "title": "Play octaves",
+          "say": "Thumb on the low root, pinky on the high one, rock between them.",
           "need": 1,
-          "tryText": "Play the roots on the +s: C, then F.",
+          "tryText": "Bounce between the root and its octave in 8th notes.",
           "rhythm": {
-            "id": "lb-t-edm",
+            "id": "lb-t-oct",
             "key": "C",
             "mode": "major",
             "progression": [
@@ -4647,29 +4639,163 @@
             "bars": 2,
             "line": [
               {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
                 "b": 0.5,
-                "n": "R",
-                "d": 0.5
+                "n": "O"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
               },
               {
                 "b": 1.5,
-                "n": "R",
-                "d": 0.5
+                "n": "O"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
               },
               {
                 "b": 2.5,
-                "n": "R",
-                "d": 0.5
+                "n": "O"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
               },
               {
                 "b": 3.5,
-                "n": "R",
-                "d": 0.5
+                "n": "O"
               }
             ],
             "lineOf": "chord",
             "lineBars": 1
-          }
+          },
+          "groove": "funk",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-learn-octave5",
+          "section": "Dance music",
+          "title": "Octaves with a 5th",
+          "say": "Same bounce, but the last 8th of the bar is the 5th.\nIt adds a little lift that leads into the next chord.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-oct5",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
+                "b": 0.5,
+                "n": "O"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
+              },
+              {
+                "b": 1.5,
+                "n": "O"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
+              },
+              {
+                "b": 2.5,
+                "n": "O"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
+              },
+              {
+                "b": 3.5,
+                "n": "5"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "groove": "house",
+          "grooveBass": false,
+          "show": true
+        },
+        {
+          "id": "lb-try-octave5",
+          "section": "Dance music",
+          "title": "Play octaves with a 5th",
+          "say": "Root, octave, root, octave, root, octave, root, 5th.",
+          "need": 1,
+          "tryText": "Play the octave bounce with the 5th on the last 8th.",
+          "rhythm": {
+            "id": "lb-t-oct5",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
+                "b": 0.5,
+                "n": "O"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
+              },
+              {
+                "b": 1.5,
+                "n": "O"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
+              },
+              {
+                "b": 2.5,
+                "n": "O"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
+              },
+              {
+                "b": 3.5,
+                "n": "5"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "groove": "house",
+          "grooveBass": false
         },
         {
           "id": "lb-learn-trap",
@@ -4710,6 +4836,9 @@
             "lineOf": "chord",
             "lineBars": 1
           },
+          "groove": "trap",
+          "grooveBass": false,
+          "sound": "808",
           "show": true
         },
         {
@@ -4751,7 +4880,10 @@
             ],
             "lineOf": "chord",
             "lineBars": 1
-          }
+          },
+          "groove": "trap",
+          "grooveBass": false,
+          "sound": "808"
         },
         {
           "id": "lb-learn-walk",
@@ -4793,6 +4925,8 @@
             "lineOf": "chord",
             "lineBars": 1
           },
+          "groove": "pop",
+          "grooveBass": false,
           "show": true
         },
         {
@@ -4835,7 +4969,9 @@
             ],
             "lineOf": "chord",
             "lineBars": 1
-          }
+          },
+          "groove": "pop",
+          "grooveBass": false
         },
         {
           "id": "lb-learn-reggaeton",
@@ -4876,6 +5012,8 @@
             "lineOf": "chord",
             "lineBars": 1
           },
+          "groove": "reggaeton",
+          "grooveBass": false,
           "show": true
         }
       ],
@@ -4997,7 +5135,7 @@
         {
           "id": "lb-fifth",
           "title": "Root and 5th",
-          "blurb": "Root on 1, 5th on 3.",
+          "blurb": "Root on 1, the 5th on 4.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5022,12 +5160,12 @@
               {
                 "b": 0,
                 "n": "R",
-                "d": 2
+                "d": 3
               },
               {
-                "b": 2,
+                "b": 3,
                 "n": "5",
-                "d": 2
+                "d": 1
               }
             ],
             "lineOf": "chord",
@@ -5104,8 +5242,8 @@
         },
         {
           "id": "lb-edm",
-          "title": "EDM off-beats",
-          "blurb": "The kick takes the beat, you take the +s.",
+          "title": "Octaves with a 5th",
+          "blurb": "The octave bounce, with the 5th on the last 8th.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5124,28 +5262,40 @@
             "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
-            "tempo": 120,
+            "tempo": 116,
             "bars": 8,
             "line": [
               {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
                 "b": 0.5,
-                "n": "R",
-                "d": 0.5
+                "n": "O"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
               },
               {
                 "b": 1.5,
-                "n": "R",
-                "d": 0.5
+                "n": "O"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
               },
               {
                 "b": 2.5,
-                "n": "R",
-                "d": 0.5
+                "n": "O"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
               },
               {
                 "b": 3.5,
-                "n": "R",
-                "d": 0.5
+                "n": "5"
               }
             ],
             "lineOf": "chord",
@@ -5201,7 +5351,8 @@
           },
           "screen": "blocks",
           "groove": "trap",
-          "grooveBass": false
+          "grooveBass": false,
+          "sound": "808"
         },
         {
           "id": "lb-walk",

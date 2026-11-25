@@ -815,6 +815,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
   return {
     left,
     stage,
+    sound: selLevel.sound ?? ctx.lesson.sound,
     navLabel: `Level ${Math.max(0, levels.findIndex((l) => l.id === selLevel.id)) + 1}`,
     lit,
     marks,

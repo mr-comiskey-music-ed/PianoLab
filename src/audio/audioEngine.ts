@@ -1,7 +1,7 @@
 import * as Tone from 'tone';
 import { SubtractiveEngine } from './synthEngine';
 import { SynthParams } from '../types';
-import { SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM, SYNTH_PAD } from '../data/defaults';
+import { SYNTH_BASS, SYNTH_KEYS_BRIGHT, SYNTH_KEYS_WARM, SYNTH_PAD } from '../data/defaults';
 import { noteName } from '../utils/music';
 
 /**
@@ -12,13 +12,13 @@ import { noteName } from '../utils/music';
  * The metronome goes straight to master so the Mix panel never changes its level.
  */
 
-export type SoundKind = 'accurate' | 'soft' | 'rhodes' | 'synthWarm' | 'synthBright' | 'synthPad' | 'synthCustom';
+export type SoundKind = 'accurate' | 'soft' | 'rhodes' | 'synthWarm' | 'synthBright' | 'synthPad' | 'synthCustom' | 'synthBass' | 'sample808';
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface SoundDef {
   id: string;
   kind: SoundKind;
-  category: 'Grand Piano' | 'Electric Piano' | 'Soft Piano' | 'Synth Keys';
+  category: 'Grand Piano' | 'Electric Piano' | 'Soft Piano' | 'Synth Keys' | 'Bass';
   label: string;
   note?: string;
 }
@@ -32,6 +32,9 @@ export const SOUNDS: SoundDef[] = [
   { id: 'synth-bright', kind: 'synthBright', category: 'Synth Keys', label: 'Bright', note: 'SynthLab engine' },
   { id: 'synth-pad', kind: 'synthPad', category: 'Synth Keys', label: 'Pad', note: 'SynthLab engine' },
   { id: 'custom', kind: 'synthCustom', category: 'Synth Keys', label: 'Custom Synth', note: 'Build your own sound with the Modern Synth panel' },
+  // Bass sounds (the Bass lines lesson picks them by itself): sounding an octave (Analog Bass) or two (808) below the keys.
+  { id: 'bass-analog', kind: 'synthBass', category: 'Bass', label: 'Analog Bass', note: 'SynthLab engine' },
+  { id: '808', kind: 'sample808', category: 'Bass', label: '808', note: "808 sample (Mr. Comiskey's)" },
 ];
 
 export type MetroSound = 'wood' | 'windup' | 'click';
@@ -221,6 +224,10 @@ export class AudioEngine {
         return this.buildSynth(SYNTH_PAD);
       case 'synthCustom':
         return this.buildSynth(this.customParams);
+      case 'synthBass':
+        return this.buildSynth(SYNTH_BASS);
+      case 'sample808':
+        return this.build808();
     }
   }
 
@@ -263,6 +270,26 @@ export class AudioEngine {
         used.clear();
       },
       dispose: () => samplers.forEach((x) => x.dispose()),
+    };
+  }
+
+  /** The 808: one long sample (a C1), played two octaves below the key pressed (C3 on the keys = C1), so it booms. */
+  private async build808(): Promise<Voice> {
+    const s = await new Promise<Tone.Sampler>((resolve, reject) => {
+      const sampler: Tone.Sampler = new Tone.Sampler({
+        urls: { C1: '808-c1.wav' },
+        baseUrl: `${import.meta.env.BASE_URL}samples/808/`,
+        release: 0.25,
+        onload: () => resolve(sampler),
+        onerror: (e) => reject(e instanceof Error ? e : new Error('808 did not load')),
+      }).connect(this.bus);
+    });
+    s.volume.value = -4;
+    return {
+      on: (midi, vel) => s.triggerAttack(noteName(midi - 24), Tone.immediate(), Math.max(0.4, vel)),
+      off: (midi) => s.triggerRelease(noteName(midi - 24), Tone.immediate()),
+      allOff: () => s.releaseAll(),
+      dispose: () => s.dispose(),
     };
   }
 
@@ -366,6 +393,7 @@ export class AudioEngine {
     else if (kind === 'synthBright') this.synthEngine.applyParams(SYNTH_KEYS_BRIGHT);
     else if (kind === 'synthPad') this.synthEngine.applyParams(SYNTH_PAD);
     else if (kind === 'synthCustom') this.synthEngine.applyParams(this.customParams);
+    else if (kind === 'synthBass') this.synthEngine.applyParams(SYNTH_BASS);
   }
 
   noteOn(midi: number, velocity = 0.8) {

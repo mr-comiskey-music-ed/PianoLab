@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AudioEngine, DEFAULT_SOUND, LoadState } from './audio/audioEngine';
+import { AudioEngine, DEFAULT_SOUND, LoadState, SOUNDS } from './audio/audioEngine';
 import { useInputs } from './input/useInputs';
 import { Piano } from './components/Piano';
 import { Metro, RightPanel } from './components/RightPanel';
@@ -309,6 +309,23 @@ export default function App() {
   const jam = useJam(ctx, mode === 'jam');
   const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : mode === 'sandbox' ? sandbox : mode === 'jam' ? jam : challenge;
   silenceRef.current = parts.silence;
+
+  // A lesson, step or level can want its own sound (Bass lines: Analog Bass, the 808). Switch to it when it comes up, and
+  // back to the student's own sound when it's gone (if a bass sound is still on). An assignment's fixed sound always wins.
+  const wantSound = mode === 'learn' || mode === 'challenge' || mode === 'practice' ? parts.sound : undefined;
+  const ownSound = useRef<string | null>(null);
+  useEffect(() => {
+    if (assignRef.current?.sound) return;
+    if (wantSound) {
+      if (ownSound.current === null) ownSound.current = soundId;
+      if (soundId !== wantSound) void pickSound(wantSound);
+    } else if (ownSound.current !== null) {
+      const back = ownSound.current;
+      ownSound.current = null;
+      if (SOUNDS.some((x) => x.id === soundId && x.category === 'Bass')) void pickSound(back);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantSound]);
 
   // Chord detector: on everywhere except Challenges (it would give answers away). Chord strip: Practice and Sandbox,
   // Lessons 2 on (in Learn it would give the answers away too).

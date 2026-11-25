@@ -97,6 +97,8 @@ export interface Level {
   target?: number;
   /** play: an app-made groove (Jam Room style id, e.g. "pop") plays along instead of plain clicks (students can switch). */
   groove?: string;
+  /** This level's own sound (overrides the lesson's). */
+  sound?: string;
   /** play with a groove: false = the groove leaves out its bass (bass-line levels: the student is the bass player). */
   grooveBass?: boolean;
   /** nameChord: also play the chord out loud (with "Hear it again"). */
@@ -143,6 +145,11 @@ export interface LearnStep {
   tryKey?: string;
   /** A rhythm on a counting grid (Chord rhythms lesson): ▶ Listen on show steps; on try steps, ▶ Play along in time. */
   rhythm?: Pattern;
+  /** With `rhythm`: an app-made groove plays along (Jam Room style id), instead of plain clicks; `grooveBass: false`
+   *  leaves its bass out. `sound`: this step's own sound (the 808 in the Hip hop steps). */
+  groove?: string;
+  grooveBass?: boolean;
+  sound?: string;
   /** With tryProgression: show chord names (Cmaj7, Fmaj7...) instead of numerals; the chords need not be in one key. */
   tryNames?: boolean;
   /** Show-and-tell: chord strips on the Stage (key ids, e.g. ["C"] or ["C", "G"]) in place of the chord names. */
@@ -166,6 +173,8 @@ export interface Lesson {
   blackKeys?: boolean;
   /** Practice: what to try, in a sentence or two. */
   practice?: string;
+  /** A sound the lesson plays with (Bass lines: Analog Bass); App switches to it in Learn and Challenges, and back after. */
+  sound?: string;
   learn: LearnStep[];
   levels: Level[];
 }

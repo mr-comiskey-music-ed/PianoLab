@@ -17,6 +17,8 @@ export const SCREEN_ORDER: ScreenHelp[] = ['blocks', 'names'];
 const SCREEN_LABEL: Record<ScreenHelp, string> = { blocks: 'Falling Note Blocks', names: 'Chord Names Only' };
 const COUNT_IN = 4;
 const LEAD_MS = 350;
+/** The groove's level in timed levels and Learn: Pop 25% louder (his call), the rest as made. */
+export const grooveLevel = (id: string) => (id === 'pop' ? Math.sqrt(1.25) : 1);
 /** The fastest a student may push a level's tempo. */
 const MAX_TEMPO_UP = 60;
 
@@ -48,7 +50,9 @@ export function usePlayLevel(
    */
   const shapesRule = ctx.assignment?.shapes ?? 'choose';
   const hasChords = !!pattern && ['block', 'bassChord', 'broken', 'brokenSplit'].includes(pattern.texture);
-  const shapesAllowed = hasChords && !ctx.phone && shapesRule !== 'off';
+  // Only with Chord Names Only (the falling blocks already show the shape), and not in Chord rhythms, where inversions
+  // are part of the point (his call: the shapes steer students away from them).
+  const shapesAllowed = hasChords && !ctx.phone && shapesRule !== 'off' && screen === 'names' && ctx.lesson.id !== 'lesson-rhythm';
   const [shapesPick, setShapesPick] = useState(false);
   const shapes = shapesAllowed && (shapesRule === 'on' || shapesPick);
   const [barNow, setBarNow] = useState(-1);
@@ -95,7 +99,7 @@ export function usePlayLevel(
     if (grooveStyle && withGroove) {
       // A groove (drums + bass on each bar's root) with its own bar of clicks to count in. It loops; Stop ends it.
       const g = Groove.get();
-      g.setLevel(1);
+      g.setLevel(grooveLevel(grooveStyle.id));
       const roots = timeline.bars.map((b) => parseChord(b.symbol)?.root ?? timeline.key.tonic);
       const style = level.grooveBass === false ? { ...grooveStyle, bass: [] } : grooveStyle;
       const beat1 = g.startGroove(style, tempo, roots, LEAD_MS / 1000, -COUNT_IN);

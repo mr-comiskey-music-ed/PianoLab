@@ -36,6 +36,8 @@ export const GROOVES: GrooveStyle[] = [
   { id: 'trap', name: 'Trap', bpm: 140, kick: [0, 7, 10], snare: [8], hat: [0, 1, 2, 4, 6, 7, 8, 10, 12, 13, 14, 15], bass: [[0, 'R', 7], [7, 'R', 3], [10, 'O', 6]] },
   { id: 'boombap', name: 'Boom-bap', bpm: 90, kick: [0, 7, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [7, 'R'], [10, '5', 3]], swing: 0.25 },
   { id: 'bossa', name: 'Bossa nova', bpm: 120, kick: [0, 3, 4, 7, 8, 11, 12, 15], snare: [0, 3, 6, 10, 13], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [3, '5'], [4, '5', 3], [8, 'R', 3], [11, '5'], [12, '5', 3]] },
+  // Reggae one drop (his request for the off-beat chords): no kick on 1, kick and rim together on 3, a laid-back bass.
+  { id: 'reggae', name: 'Reggae', bpm: 76, kick: [8], snare: [8], hat: [2, 6, 10, 14], bass: [[0, 'R', 3], [3, '5', 1], [6, 'O', 2], [10, 'R', 2], [14, '5', 2]] },
   { id: 'house', name: 'House / EDM', bpm: 124, kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14], bass: [[2, 'R'], [6, 'R'], [10, 'R'], [14, 'R']] },
   { id: 'click', name: 'Just the beat (clicks)', bpm: 80, kick: [], snare: [], hat: [], bass: [] },
 ];
@@ -86,6 +88,9 @@ export class Groove {
     filterEnvelope: { attack: 0.005, decay: 0.15, sustain: 0.3, release: 0.2, baseFrequency: 120, octaves: 2.5 },
   });
   private player: Tone.Player | null = null;
+  /** The Trap groove's bass: his 808 sample (a C1), loaded the first time Trap plays. */
+  private eight08: Tone.Sampler | null = null;
+  private eight08Loading = false;
   private playerUrl = '';
   private timer = 0;
   private running = false;
@@ -108,6 +113,14 @@ export class Groove {
     (window as unknown as { __groove?: Groove }).__groove = this;
   }
 
+  private load808() {
+    if (this.eight08 || this.eight08Loading) return;
+    this.eight08Loading = true;
+    const s = new Tone.Sampler({ urls: { C1: '808-c1.wav' }, baseUrl: `${import.meta.env.BASE_URL}samples/808/`, release: 0.2, onload: () => (this.eight08 = s) });
+    s.volume.value = -3;
+    s.connect(this.out);
+  }
+
   /** Backing fader, 0-1.5 (squared, like the metronome's volume). */
   setLevel(v: number) {
     this.out.gain.value = 0.8 * v * v;
@@ -125,6 +138,7 @@ export class Groove {
   startGroove(style: GrooveStyle, bpm: number, roots: number[], lead = 0.3, fromBeat = -4): number {
     this.stop();
     const engine = AudioEngine.get();
+    if (style.id === 'trap') this.load808();
     this.spb = 60 / bpm;
     const now = Tone.getContext().currentTime;
     // A bar of clicks to count in (beats -4 to -1), then the groove from beat 1 (beat 0). Play back of a saved
@@ -154,7 +168,8 @@ export class Groove {
             if (b) {
               const root = roots[bar % roots.length];
               const midi = 36 + root + (b[1] === '5' ? 7 : b[1] === 'O' ? 12 : 0);
-              this.bass.triggerAttackRelease(Tone.Frequency(midi, 'midi').toFrequency(), sixteenth * (b[2] ?? 1.6), t, 0.8);
+              if (style.id === 'trap' && this.eight08?.loaded) this.eight08.triggerAttackRelease(Tone.Frequency(midi - 12, 'midi').toNote(), sixteenth * (b[2] ?? 1.6), t, 0.9);
+              else this.bass.triggerAttackRelease(Tone.Frequency(midi, 'midi').toFrequency(), sixteenth * (b[2] ?? 1.6), t, 0.8);
             }
           } catch {
             /* a note scheduled just as the groove stops: skip it */

@@ -509,7 +509,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         </div>
       ) : step.rhythm ? (
         // A rhythm, on a counting grid, played in time with the clicks (Chord rhythms lesson).
-        <RhythmBox ctx={ctx} pattern={step.rhythm} onLit={setDemoLit} />
+        <RhythmBox ctx={ctx} pattern={step.rhythm} onLit={setDemoLit} groove={step.groove} grooveBass={step.grooveBass} />
       ) : (
         <DemoRow demo={step.demo ?? []} current={demoIdx} tags={step.tags} />
       )}
@@ -555,6 +555,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         <RhythmBox
           ctx={ctx}
           pattern={step.rhythm}
+          groove={step.groove}
+          grooveBass={step.grooveBass}
           tryIt
           onLit={setDemoLit}
           onPass={() => {
@@ -600,6 +602,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   return {
     left,
     stage,
+    sound: step.sound ?? ctx.lesson.sound,
     navLabel: `Step ${i + 1}`,
     // Nothing is lit or labelled while the student is working it out. Only the note the app is playing shows.
     // Show-and-tell steps put the names on every key (step.labels).

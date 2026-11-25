@@ -86,6 +86,19 @@ export function resolveNumeral(k: KeyDef, numeral: string) {
 /** The lowest note for chords: the root's octave-3 position (C3-B3), which keeps a 25-key view (C3-C5) comfortable. */
 const BASE = 48;
 
+/** A chord in root position at the octave whose root is nearest `near`, with `span` half steps above the root on the keys. */
+function nearestRootPosition(chord: Chord, near: number, span: number): number[] {
+  const roots = [0, 1, 2].map((k) => BASE + chord.root + 12 * k).filter((r) => r + span <= BASE + 24);
+  const r = roots.reduce((a, b) => (Math.abs(b - near) < Math.abs(a - near) ? b : a), roots[0] ?? BASE + chord.root);
+  return voicing(chord, 0, r);
+}
+/** The first chord in a given inversion, placed in the middle of the keys (C in 2nd inversion = G3 C4 E4). */
+function startVoicing(chord: Chord, inv: number): number[] {
+  const fits = Array.from({ length: 19 }, (_, k) => voicing(chord, inv, BASE + k)).filter((v) => v[0] >= BASE && v[v.length - 1] <= BASE + 24);
+  const mid = (v: number[]) => Math.abs(v.reduce((a, n) => a + n, 0) / v.length - 60);
+  return fits.length ? fits.reduce((a, b) => (mid(b) < mid(a) ? b : a)) : voicing(chord, 0, BASE + chord.root);
+}
+
 /** Build the timeline for a pattern (tempo can be overridden, e.g. a student playing faster). */
 export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
   const tonic = pcOf(p.key) ?? 0;
@@ -103,9 +116,14 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
     const d = resolveNumeral(key, p.progression[bar % p.progression.length]);
     if (!d) continue;
     const chord: Chord = d.chord;
-    // Voicing: root position near C3, or (inversions / smoothest) the smoothest move from the last chord, kept in view.
+    // Voicing: root position near C3, or (inversions / smoothest / close) the smoothest move from the last chord, kept in
+    // view. Close arpeggios: root position at the octave nearest the last chord (starting mid-keyboard), so C to Am is a
+    // 3rd down, not a jump up from C3 (his report).
     let notes: number[];
-    if (p.voicing === 'root' || !prev) notes = voicing(chord, 0, BASE + chord.root);
+    const arp = p.texture === 'arpeggio' || p.texture === 'arp3';
+    if (arp && p.voicing === 'close') notes = nearestRootPosition(chord, prev ? prev[0] : 60, p.texture === 'arpeggio' ? 12 : 7);
+    else if (p.voicing === 'root') notes = voicing(chord, 0, BASE + chord.root);
+    else if (!prev) notes = p.startInv !== undefined && p.voicing !== 'inversions' ? startVoicing(chord, p.startInv) : voicing(chord, 0, BASE + chord.root);
     else notes = smoothestVoicing(prev, chord, [BASE, BASE + 24], anchor).notes;
     anchor ??= notes.reduce((a, n) => a + n, 0) / notes.length;
     prev = notes;

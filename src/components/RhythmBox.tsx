@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Waterfall } from './Waterfall';
+import { GROOVES, Groove } from '../audio/groove';
+import { grooveLevel } from './PlayLevel';
+import { parseChord } from '../utils/chords';
 import { Pattern } from '../data/pattern';
 import { Timeline, beatMs, buildTimeline, hitAlt } from '../utils/patternEngine';
 import { HitResult, TimingJudge } from '../utils/timing';
@@ -32,7 +35,10 @@ export const RhythmBox: React.FC<{
   onPass?: () => void;
   /** Keys to light on the piano (the hit sounding / due now). */
   onLit: (keys: Set<number> | null) => void;
-}> = ({ ctx, pattern, tryIt, onPass, onLit }) => {
+  /** A groove to play along with (style id) instead of clicks; `grooveBass: false` leaves its bass out. */
+  groove?: string;
+  grooveBass?: boolean;
+}> = ({ ctx, pattern, tryIt, onPass, onLit, groove, grooveBass }) => {
   const tl: Timeline = useMemo(() => buildTimeline(pattern), [pattern]);
   const bm = beatMs(tl.tempo);
   const [phase, setPhase] = useState<'idle' | 'listen' | 'play'>('idle');
@@ -69,9 +75,22 @@ export const RhythmBox: React.FC<{
     setResult(null);
     ctx.stopMetronome();
     void ctx.engine.unlock();
-    const clicks = ctx.engine.scheduleBeatClicks(LEAD_MS, COUNT_IN + tl.beats, tl.tempo);
-    stopClicks.current = clicks.cancel;
-    const t0 = clicks.firstHeardAt + COUNT_IN * bm;
+    let firstHeardAt: number;
+    const style = groove ? GROOVES.find((g) => g.id === groove) : undefined;
+    if (style) {
+      // The groove counts in with its own bar of clicks, then loops under the example until it ends.
+      const g = Groove.get();
+      g.setLevel(grooveLevel(style.id));
+      const roots = tl.bars.map((b) => parseChord(b.symbol)?.root ?? tl.key.tonic);
+      const beat1 = g.startGroove(grooveBass === false ? { ...style, bass: [] } : style, tl.tempo, roots, LEAD_MS / 1000, -COUNT_IN);
+      stopClicks.current = () => g.stop();
+      firstHeardAt = beat1 - COUNT_IN * bm;
+    } else {
+      const clicks = ctx.engine.scheduleBeatClicks(LEAD_MS, COUNT_IN + tl.beats, tl.tempo);
+      stopClicks.current = clicks.cancel;
+      firstHeardAt = clicks.firstHeardAt;
+    }
+    const t0 = firstHeardAt + COUNT_IN * bm;
     setStartAt(t0);
     setHitResults([]);
     setPhase(listen ? 'listen' : 'play');

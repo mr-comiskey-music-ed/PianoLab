@@ -443,6 +443,20 @@ About page; no composition rubric):
   octave is now last, "Up to the octave"). Learn sections: Broken chords (oom-pah, split hands) and Arpeggios (round the triad, up to the octave), split at his request. New levels `lr-split`, `lr-arp3` (Lesson 7 has 11). **Learn remembers**: the
   furthest step reached (`max` in autosave's learn progress) and a finished Learn count as done, so play-alongs aren't
   redone when going back.
+- **His round 3 (rhythm + bass):** Chord rhythms patterns use `voicing: 'close'` (smoothest moves, NOT graded for
+  smoothness; only `smoothest` is) with `startInv: 2` (C as G3 C4 E4, so IV and V are a short move): his "inversions
+  avoid huge leaps". Arpeggios with `close`: root position at the octave nearest the last chord, starting mid-keyboard
+  (C4 E4 G4, then A3 C4 E4: a 3rd down; `nearestRootPosition`). Tresillo Learn steps 100 BPM. Pop groove 25% louder in
+  timed levels and Learn (`grooveLevel`). Chord shapes only with Chord Names Only, never in Chord rhythms (they steer away
+  from inversions). New **Reggae** one-drop groove (off-beat steps and level). Learn rhythm steps can carry `groove` +
+  `grooveBass` (RhythmBox plays the groove instead of clicks). **Sounds per lesson/step/level** (`sound`; ModeParts.sound;
+  App switches to it and back to the student's own sound after; an assignment's sound wins): Bass lines = **Analog Bass**
+  (`SYNTH_BASS`, both oscillators an octave down), the Hip hop steps and Trap level = **808** (his sample,
+  `public/samples/808/808-c1.wav`, mono, a C1; played two octaves below the key). Both are in the sound list under "Bass".
+  The Trap groove's bass uses the 808 too once it has loaded. Bass Learn: every step has its style's groove (minus bass);
+  Root and 5th = root on 1 held, 5th on beat 4; the EDM off-beat steps are gone (he'd never heard it): Octaves (show +
+  try) then Octaves with a 5th (the 5th on the last 8th; show + try, House groove); level `lb-edm` is now "Octaves with a
+  5th" (id kept). `e64`.
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

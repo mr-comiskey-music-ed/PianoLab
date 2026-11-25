@@ -183,7 +183,7 @@ interface Props {
 }
 
 const stateText: Record<LoadState, string> = { idle: '', loading: 'loading…', ready: '', error: 'could not load' };
-const CATEGORIES = ['Grand Piano', 'Electric Piano', 'Soft Piano', 'Synth Keys'] as const;
+const CATEGORIES = ['Grand Piano', 'Electric Piano', 'Soft Piano', 'Synth Keys', 'Bass'] as const;
 const MIX_DEFAULT = { eq: 0, comp: 0, len: 1.8, color: 0.7, wet: 0.12 };
 
 export const RightPanel: React.FC<Props> = ({ engine, soundId, states, onSelect, soundLocked, metro, onMetro, onOpenCustom }) => {

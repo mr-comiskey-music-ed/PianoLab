@@ -43,3 +43,16 @@ export const SYNTH_PAD: SynthParams = {
   lfoRate: 3.2, lfoWaveform: 'sine', lfoDepth: 0.16, lfoDestination: 'pwm',
   voiceMode: 'poly', glide: 0,
 };
+
+/** Analog Bass (his request for the Bass lines lesson): two detuned oscillators an octave down, a low filter that opens a
+ *  little on each note, quick and punchy. */
+export const SYNTH_BASS: SynthParams = {
+  ...DEFAULT_SYNTH_PARAMS,
+  vco1Waveform: 'sawtooth', vco1Octave: -1, vco1Level: 0.8,
+  vco2Waveform: 'square', vco2Octave: -1, vco2Fine: 5, vco2Level: 0.5, vco2PulseWidth: 0.5,
+  oscBalance: -0.1,
+  filterCutoff: 420, filterResonance: 1.4, filterEnvAmount: 45, filterKeyTracking: 0.3, filterRolloff: -24,
+  ampAttack: 0.004, ampDecay: 0.3, ampSustain: 0.75, ampRelease: 0.12,
+  modAttack: 0.003, modDecay: 0.22, modSustain: 0.15, modRelease: 0.12,
+  voiceMode: 'poly', glide: 0,
+};

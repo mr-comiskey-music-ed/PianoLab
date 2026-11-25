@@ -20,7 +20,9 @@ export interface LineNote {
   d?: number;
 }
 export type Rhythm = 'whole' | 'half' | 'quarter' | 'eighths' | `sync:${string}`;
-export type Voicing = 'root' | 'inversions' | 'smoothest';
+/** `close`: each chord moves as little as it can (inversions), like `smoothest`, but smoothness isn't graded; arpeggios
+ *  stay in root position, each at the octave nearest the last one. */
+export type Voicing = 'root' | 'inversions' | 'smoothest' | 'close';
 
 export interface Pattern {
   id: string;
@@ -35,6 +37,8 @@ export interface Pattern {
   /** Beats per minute. */
   tempo: number;
   bars: number;
+  /** The first chord's inversion with `close` / `smoothest` voicing (2 = C as G C E, so I can reach IV and V easily). */
+  startInv?: number;
   /** texture `line`: the notes, what they're relative to, and how many bars before it repeats (default 1). */
   line?: LineNote[];
   lineOf?: 'chord' | 'key';
@@ -42,7 +46,7 @@ export interface Pattern {
 }
 
 const TEXTURES: Texture[] = ['bass', 'block', 'bassChord', 'broken', 'brokenSplit', 'arpeggio', 'arp3', 'scale', 'line'];
-const VOICINGS: Voicing[] = ['root', 'inversions', 'smoothest'];
+const VOICINGS: Voicing[] = ['root', 'inversions', 'smoothest', 'close'];
 
 /** Returns a list of problems; an empty list means the pattern is well formed. */
 export function validatePattern(p: Partial<Pattern>): string[] {

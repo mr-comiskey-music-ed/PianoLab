@@ -82,6 +82,8 @@ export interface ModeParts {
   restart?: { label: string; onClick: () => void; disabled?: boolean };
   /** A pop-up the mode wants shown (e.g. Save performance). */
   overlay?: ReactNode;
+  /** A sound this screen wants (a Bass lines step or level); App switches to it, and back when it's gone. */
+  sound?: string;
   /** Phones: where you are, for the lesson-menu button ("Step 2", "Level 3"). */
   navLabel?: string;
   /** Jam Room Melody mode: keys to mark with a brass dot (the key's notes). */
