@@ -440,7 +440,7 @@ About page; no composition rubric):
   + 5th without the root (`hitAlt`, also used by Challenges). Broken chords, arpeggios, bass lines and riffs show the
   full-Stage waterfall while Listen / Play along runs (portal into the Stage, `FALLS`). New textures: `brokenSplit` (root
   low in the left hand, the chord up in C4-C5) and `arp3` (C E G C E G C E | A C E A C E A C, his first arpeggio; root-3-5-
-  octave is now last, "Up to the octave"). New levels `lr-split`, `lr-arp3` (Lesson 7 has 11). **Learn remembers**: the
+  octave is now last, "Up to the octave"). Learn sections: Broken chords (oom-pah, split hands) and Arpeggios (round the triad, up to the octave), split at his request. New levels `lr-split`, `lr-arp3` (Lesson 7 has 11). **Learn remembers**: the
   furthest step reached (`max` in autosave's learn progress) and a finished Learn count as done, so play-alongs aren't
   redone when going back.
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").

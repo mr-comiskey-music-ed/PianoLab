@@ -3844,8 +3844,8 @@
         },
         {
           "id": "lr-learn-arp3",
-          "section": "Broken chords",
-          "title": "Arpeggios",
+          "section": "Arpeggios",
+          "title": "Round the triad",
           "say": "An arpeggio plays the chord one note at a time.\nGo round and round the triad in 8th notes: C E G C E G C E, then A C E A C E A C.\nThree notes in a pattern of eight: it rolls over the bar.",
           "need": 0,
           "rhythm": {
@@ -3866,7 +3866,7 @@
         },
         {
           "id": "lr-try-arp3",
-          "section": "Broken chords",
+          "section": "Arpeggios",
           "title": "Play the triad round and round",
           "say": "Fingers 1 3 5 on C E G, then on A C E. Keep going round.",
           "need": 1,
@@ -3888,7 +3888,7 @@
         },
         {
           "id": "lr-learn-arpeggio",
-          "section": "Broken chords",
+          "section": "Arpeggios",
           "title": "Up to the octave",
           "say": "Now go up the chord to the root an octave higher: root, 3rd, 5th, octave.\nIn 8th notes that is two runs up per bar.\nIt is the flowing sound of piano ballads.",
           "need": 0,
@@ -3910,7 +3910,7 @@
         },
         {
           "id": "lr-try-arpeggio",
-          "section": "Broken chords",
+          "section": "Arpeggios",
           "title": "Play an arpeggio",
           "say": "Fingers 1 2 3 5 on C E G C, then on A C E A.\nOne note per 8th, smooth and even.",
           "need": 1,
