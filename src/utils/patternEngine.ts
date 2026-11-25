@@ -41,6 +41,8 @@ export interface Timeline {
   /** Total length in beats. */
   beats: number;
   tempo: number;
+  /** A scale (Lesson 7): no chord labels on the waterfall (they sat in the way of the notes; his call). */
+  scale?: boolean;
 }
 
 /** Where hits fall inside one 4/4 bar, in beats. */
@@ -124,7 +126,7 @@ function scaleTimeline(p: Pattern, key: KeyDef, tempo: number): Timeline {
     });
   }
   for (let b = 0; b < loops * 4; b++) bars.push({ bar: b, beat: b * 4, symbol: key.label, numeral: '', color });
-  return { key, hits, bars, beats: loops * 16, tempo };
+  return { key, hits, bars, beats: loops * 16, tempo, scale: true };
 }
 
 /** What one hit plays, for each texture (SPEC section 6). `i` is the hit's place in its bar. */

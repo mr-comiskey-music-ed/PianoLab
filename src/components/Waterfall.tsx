@@ -73,8 +73,8 @@ export const Waterfall: React.FC<{
         g.fillStyle = `rgba(247,241,230,${a})`;
         g.fillRect(0, Math.round(y - h / 2), W, h);
       }
-      // Bars: each bar's chord (and numeral) at the left (blocks mode).
-      if (L.screen === 'blocks') {
+      // Bars: each bar's chord (and numeral) at the left (blocks mode; not for scales, where it covered the notes).
+      if (L.screen === 'blocks' && !L.timeline.scale) {
         for (const b of L.timeline.bars) {
           const y = yOf(b.beat * bm);
           if (y < -30 || y > lineY + 2) continue;

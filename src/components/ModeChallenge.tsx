@@ -233,7 +233,9 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
     // Never the same question twice in a row (and not a repeat of the one that ended the last try).
     const prompts = shuffleNoRepeats(level.prompts, sameQuestion, lastAsked.current[level.id]);
     // Smooth Mover keeps its order: each chord follows the last one.
-    const ordered = level.type === 'smooth' ? level.prompts : prompts;
+    // A level that asks the same thing every time (Lesson 7: play the G major scale three times) keeps it as written.
+    const allSame = level.prompts.every((p) => sameQuestion(p) === sameQuestion(level.prompts[0]));
+    const ordered = level.type === 'smooth' || allSame ? level.prompts : prompts;
     let prev = level.type === 'smooth' ? (level.start ?? ['C4', 'E4', 'G4']).map((n) => parseNote(n)!).filter((n) => n !== null) : undefined;
     // The starting chord sits on the keys on screen (moved by whole octaves if the view has moved).
     if (prev) {

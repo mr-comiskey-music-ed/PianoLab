@@ -293,10 +293,12 @@ YouTube ungraded):
   fingerings, sharps/flats, fifthUp/Down). Learn (his reorder: the circle-of-5ths step removed as clunky): Major scales
   (steps, fingers, play C) · Sharps: G and D (show + try each) · Flats: F (why some scales use flats: to keep the
   whole/half pattern, each letter once; show + try). Finger numbers as key tags on show steps only (`lessons.test`
-  enforces it); `tryScale` = note by note, a wrong note starts over, 8 dots. Timed levels in the order C, G, D, F. Levels: Play the scale
-  (`scale` type, fingering shown as a hint) · Sharps and flats (`quiz` type: buttons, nothing lit) · The circle of 5ths
-  (quiz) · C/G/F/D major in time (pattern texture `scale`: up and down, one note per beat; Falling Note Blocks only) ·
-  More keys (A, B♭, E, E♭).
+  enforces it); `tryScale` = note by note, a wrong note starts over, 8 dots. Challenges (his redo; the old Play the scale
+/ Sharps and flats / Circle of 5ths levels removed before any student used the site): C major scale (`l7-scale-c`) · C
+major in time · G scale · G in time · D scale · D in time · F scale · F in time · More keys. Each "scale" level asks the
+same scale 3 times with a reminder ("Remember: F♯."); a level whose questions are all the same keeps its order (no
+shuffle). Timed scale levels have no chord/key label on the waterfall (`Timeline.scale`; it covered the notes). Level types used: `scale` (fingering shown as a hint) and pattern texture `scale`
+  (up and down, one note per beat; Falling Note Blocks only); the `quiz` type (buttons, nothing lit) is unused for now.
 - Lesson 8 "7th chords": Learn (one more 3rd, G7; dominant/major/minor 7ths; the 7ths of C; ii7–V7–Imaj7 try).
   Levels: Build 7th chords · Which kind of 7th? (listen) · Play the 7th numeral · ii7–V7–Imaj7 in C and in F (smooth,
   in time; the smooth check counts 4 notes).

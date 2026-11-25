@@ -3443,249 +3443,25 @@
       ],
       "levels": [
         {
-          "id": "l7-play-scales",
-          "title": "Play the scale",
-          "blurb": "Play each major scale up one octave, in order. A wrong note starts it over.",
+          "id": "l7-scale-c",
+          "title": "C major scale",
+          "blurb": "Play the C major scale up, from C to C. All white keys. A wrong note starts it over.",
           "type": "scale",
           "octave": "any",
           "pass": 80,
           "labels": "c",
           "prompts": [
             {
-              "text": "Play the C major scale up, from C to C.",
+              "text": "Play the C major scale up. All white keys.",
               "scale": "C"
             },
             {
-              "text": "Play the G major scale up, from G to G.",
-              "scale": "G"
+              "text": "Play the C major scale up. All white keys.",
+              "scale": "C"
             },
             {
-              "text": "Play the F major scale up, from F to F.",
-              "scale": "F"
-            },
-            {
-              "text": "Play the D major scale up, from D to D.",
-              "scale": "D"
-            },
-            {
-              "text": "Play the G major scale up, from G to G.",
-              "scale": "G"
-            },
-            {
-              "text": "Play the F major scale up, from F to F.",
-              "scale": "F"
-            }
-          ]
-        },
-        {
-          "id": "l7-sharps-flats",
-          "title": "Sharps and flats",
-          "blurb": "Which notes are sharp or flat in each key?",
-          "type": "quiz",
-          "octave": "any",
-          "pass": 80,
-          "labels": "off",
-          "prompts": [
-            {
-              "text": "Which note is sharp in G major?",
-              "answer": [
-                "F♯"
-              ],
-              "choices": [
-                "C♯",
-                "F♯",
-                "G♯",
-                "B♭"
-              ]
-            },
-            {
-              "text": "Which note is flat in F major?",
-              "answer": [
-                "B♭"
-              ],
-              "choices": [
-                "B♭",
-                "E♭",
-                "A♭",
-                "F♯"
-              ]
-            },
-            {
-              "text": "Which notes are sharp in D major?",
-              "answer": [
-                "F♯ and C♯"
-              ],
-              "choices": [
-                "F♯ only",
-                "F♯ and C♯",
-                "C♯ and G♯",
-                "F♯, C♯ and G♯"
-              ]
-            },
-            {
-              "text": "How many sharps are in C major?",
-              "answer": [
-                "0"
-              ],
-              "choices": [
-                "0",
-                "1",
-                "2",
-                "3"
-              ]
-            },
-            {
-              "text": "How many sharps are in A major?",
-              "answer": [
-                "3"
-              ],
-              "choices": [
-                "1",
-                "2",
-                "3",
-                "4"
-              ]
-            },
-            {
-              "text": "How many flats are in B♭ major?",
-              "answer": [
-                "2"
-              ],
-              "choices": [
-                "1",
-                "2",
-                "3",
-                "4"
-              ]
-            },
-            {
-              "text": "Which major key has one sharp?",
-              "answer": [
-                "G"
-              ],
-              "choices": [
-                "C",
-                "D",
-                "F",
-                "G"
-              ]
-            },
-            {
-              "text": "Which major key has one flat?",
-              "answer": [
-                "F"
-              ],
-              "choices": [
-                "B♭",
-                "C",
-                "F",
-                "G"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "l7-circle",
-          "title": "The circle of 5ths",
-          "blurb": "Go round the circle: up a 5th adds a sharp, down a 5th adds a flat.",
-          "type": "quiz",
-          "octave": "any",
-          "pass": 80,
-          "labels": "off",
-          "prompts": [
-            {
-              "text": "Up a 5th from C is…",
-              "answer": [
-                "G"
-              ],
-              "choices": [
-                "D",
-                "F",
-                "G",
-                "A"
-              ]
-            },
-            {
-              "text": "Up a 5th from G is…",
-              "answer": [
-                "D"
-              ],
-              "choices": [
-                "C",
-                "D",
-                "E",
-                "A"
-              ]
-            },
-            {
-              "text": "Up a 5th from D is…",
-              "answer": [
-                "A"
-              ],
-              "choices": [
-                "A",
-                "B",
-                "E",
-                "G"
-              ]
-            },
-            {
-              "text": "Up a 5th from A is…",
-              "answer": [
-                "E"
-              ],
-              "choices": [
-                "B",
-                "D",
-                "E",
-                "F♯"
-              ]
-            },
-            {
-              "text": "Down a 5th from C is…",
-              "answer": [
-                "F"
-              ],
-              "choices": [
-                "F",
-                "G",
-                "A",
-                "B♭"
-              ]
-            },
-            {
-              "text": "Down a 5th from F is…",
-              "answer": [
-                "B♭"
-              ],
-              "choices": [
-                "C",
-                "E♭",
-                "B♭",
-                "D"
-              ]
-            },
-            {
-              "text": "G major has 1 sharp. How many does D major have?",
-              "answer": [
-                "2"
-              ],
-              "choices": [
-                "1",
-                "2",
-                "3",
-                "4"
-              ]
-            },
-            {
-              "text": "Going up a 5th each time adds one…",
-              "answer": [
-                "Sharp"
-              ],
-              "choices": [
-                "Sharp",
-                "Flat"
-              ]
+              "text": "Play the C major scale up. All white keys.",
+              "scale": "C"
             }
           ]
         },
@@ -3714,6 +3490,29 @@
           "screen": "blocks"
         },
         {
+          "id": "l7-scale-g",
+          "title": "G major scale",
+          "blurb": "Play the G major scale up, from G to G. Remember: F♯. A wrong note starts it over.",
+          "type": "scale",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the G major scale up. Remember: F♯.",
+              "scale": "G"
+            },
+            {
+              "text": "Play the G major scale up. Remember: F♯.",
+              "scale": "G"
+            },
+            {
+              "text": "Play the G major scale up. Remember: F♯.",
+              "scale": "G"
+            }
+          ]
+        },
+        {
           "id": "l7-time-g",
           "title": "G major in time",
           "blurb": "Play the G major scale up and down, one note per beat. Watch for F♯.",
@@ -3738,6 +3537,29 @@
           "screen": "blocks"
         },
         {
+          "id": "l7-scale-d",
+          "title": "D major scale",
+          "blurb": "Play the D major scale up, from D to D. Remember: F♯ and C♯. A wrong note starts it over.",
+          "type": "scale",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the D major scale up. Remember: F♯ and C♯.",
+              "scale": "D"
+            },
+            {
+              "text": "Play the D major scale up. Remember: F♯ and C♯.",
+              "scale": "D"
+            },
+            {
+              "text": "Play the D major scale up. Remember: F♯ and C♯.",
+              "scale": "D"
+            }
+          ]
+        },
+        {
           "id": "l7-time-d",
           "title": "D major in time",
           "blurb": "Play the D major scale up and down, one note per beat. Watch for F♯ and C♯.",
@@ -3760,6 +3582,29 @@
             "bars": 8
           },
           "screen": "blocks"
+        },
+        {
+          "id": "l7-scale-f",
+          "title": "F major scale",
+          "blurb": "Play the F major scale up, from F to F. Remember: B♭. A wrong note starts it over.",
+          "type": "scale",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play the F major scale up. Remember: B♭.",
+              "scale": "F"
+            },
+            {
+              "text": "Play the F major scale up. Remember: B♭.",
+              "scale": "F"
+            },
+            {
+              "text": "Play the F major scale up. Remember: B♭.",
+              "scale": "F"
+            }
+          ]
         },
         {
           "id": "l7-time-f",

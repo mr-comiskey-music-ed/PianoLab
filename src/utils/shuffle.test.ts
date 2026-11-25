@@ -10,7 +10,8 @@ describe('no question twice in a row', () => {
   it('never repeats a question back to back, in any level (1000 shuffles each)', () => {
     for (const les of lessons.lessons as unknown as Lesson[])
       for (const lv of les.levels) {
-        if (lv.type === 'smooth' || lv.type === 'play') continue; // Smooth Mover keeps its order; play levels have no questions
+        if (lv.type === 'smooth' || lv.type === 'play') continue;
+        if (lv.prompts.every((p) => key(p) === key(lv.prompts[0]))) continue; // the same question on purpose (Lesson 7 scales) // Smooth Mover keeps its order; play levels have no questions
         for (let k = 0; k < 1000; k++) {
           const order = shuffleNoRepeats(lv.prompts, key, key(lv.prompts[0]));
           expect(order.length).toBe(lv.prompts.length);
