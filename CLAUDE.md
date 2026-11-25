@@ -406,6 +406,33 @@ key it reaches and lets go of the one it left; keys another finger holds aren't 
   phones; (3) **no regex lookbehind `(?<=` anywhere**: iPhone Safari before 16.4 can't parse it and the whole app would fail
   to load (removed from `sentences`, `pretty`, `readChordSheet`). Older browser tests re-run with `nowelcome.cjs` preloaded
   (marks the welcome as seen): all pass except test-side drift (lesson numbers moved; e31's old "Not smooth = Miss" rule).
+**His round after the whole-app review** (his answers: no in-app multitrack or song builder, Soundtrap/Logic do that; no
+About page; no composition rubric):
+- **Grooves**: Reggaeton (dembow, tresillo bass), Trap (half-time snare, fast hats, long 808 notes: bass steps can carry a
+  length), Boom-bap (swung), Bossa nova, House / EDM (four on the floor, off-beat bass). **Custom pattern** (Jam Room Style
+  list, last): a 4 x 16 grid (Hi-hat, Snare, Kick, Bass = the chord's root), starts as the Pop beat; on the Stage on a
+  Chromebook, in the Setup drawer on phones; edits are heard right away (one shared style object); a saved performance
+  stores the pattern (`cp` on the groove segment, `cleanSteps`), play back and the batch view rebuild it (`customStyle`).
+- **Line patterns** (`texture: 'line'`, `LineNote` in pattern.ts, `lineTimeline` in patternEngine.ts): notes written one by
+  one, relative to each bar's chord (bass: R 3 5 b7 O L5, A = a half step into the next root) or to the key (riffs: half
+  steps up from the home note), repeating every `lineBars` bars. `lessons.test` checks every pattern's notes fit C3-C5 and
+  every line note resolves. Levels can drop the groove's bass (`grooveBass: false`) so the student IS the bass player.
+- **Bass lines** (Lesson 8, id `lesson-bass`): roots on the beat (pop/ballad) · rock 8ths · root and 5th (country/folk) ·
+  octaves (disco) · off-beats (house/EDM: the kick takes the beat) · trap 808 (long, few, off the beat, octave bounce) ·
+  walking into the next chord (Motown/R&B/jazz) · reggaeton tresillo. 9 levels, each with its style's groove minus bass,
+  then Bass and chords (bassChord). **Riffs and melodies** (Lesson 9, id `lesson-riffs`; his one/two/three-note riff
+  approach): one-note riff (rhythm makes it), two notes, three notes, the minor pentatonic, the blue note, call and response,
+  land on a chord tone, make your own (Jam Room Key lock: Pentatonic). 9 levels incl. a funky one-note riff, blues riff,
+  C major pentatonic riff and an Echo "Copy the riff". Major scales and 7th chords are now shown as Lessons 10 and 11.
+- Jam Room Melody mode / Key lock can use the key's scale, its Pentatonic, or Blues (`scalePcs(key, which)`).
+- **Chord shape helper** (SPEC "chord chart toggle"; Chromebook only, chord patterns only): Chord shapes Show/Hide on the
+  timed start screen; during the run two mini keyboards (`MiniKeys.tsx`) top left: Now and Next, in the chord's colour.
+  Assignment key `h` (1 always on, 0 hidden, left out = student chooses). Results played with it carry a third number 1 in
+  the code (`shapes`); the batch view's level list says "chord shapes on". The hit pop moves right while it shows.
+- **Batch view Listen** (his request): one performance at a time with its groove/track (YouTube ones: "With the video"
+  opens the Sandbox), a now-playing bar (student, jump slider, time, Stop, Next student). Closing the window stops it.
+  `e61`.
+- **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
 ## Open items (last updated end of Phase 1 testing)
