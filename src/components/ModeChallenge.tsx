@@ -52,6 +52,13 @@ interface Finished {
 }
 
 /** The keys in view, low to high. */
+/** Lesson 8 reminder on a wrong 7th chord: how it is built, with the 7th found from the octave. */
+const SEVENTH_RECIPE: Partial<Record<string, string>> = {
+  maj7: 'major triad + major 7th (a half step below the octave)',
+  dom7: 'major triad + minor 7th (a whole step below the octave)',
+  min7: 'minor triad + minor 7th (a whole step below the octave)',
+};
+
 const viewKeys = (start: number) => Array.from({ length: KEY_COUNT }, (_, k) => start + k);
 
 /**
@@ -403,6 +410,8 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
             ? 'That is the lit key itself. Count up from it.'
             : n === 1
               ? 'Not quite. A half step is the very next piano key, black or white.'
+              : n >= 10
+                ? `${midi === from + 12 ? 'That is the octave.' : 'Not quite.'} Find the octave, then step down ${n === 11 ? 'a half step (one piano key)' : 'a whole step (two piano keys)'}.`
               : `Not quite: that is ${Math.abs(midi - from)} half step${Math.abs(midi - from) === 1 ? '' : 's'} away. Count ${n}, black keys included.`;
         answer(midi === target, [midi], why);
       }
@@ -427,7 +436,7 @@ export function useChallenge(ctx: ModeCtx): ModeParts {
           : gotName
             ? `That is ${gotName}, not ${want(c)}. Let go and try again.`
             : 'Those keys don’t make that chord. Let go and try again.';
-        answer(ok, held, why);
+        answer(ok, held, `${why}${SEVENTH_RECIPE[c.quality] ? ` ${chordName(c)} = ${SEVENTH_RECIPE[c.quality]}.` : ''}`);
         return;
       }
       // Smooth Mover: the right chord AND the fewest half steps from the lit chord.

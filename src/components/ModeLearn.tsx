@@ -302,7 +302,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         }
         const gap = held[1] - held[0];
         if (gap !== s.tryInterval) {
-          setMsg({ kind: 'hint', text: `Those are ${gap} half step${gap === 1 ? '' : 's'} apart. ${s.hint ?? ''} Let go and try again.` });
+          setMsg({ kind: 'hint', text: `${gap === 12 ? 'That is the octave: good start!' : `Those are ${gap} half step${gap === 1 ? '' : 's'} apart.`} ${s.hint ?? ''} Let go and try again.` });
           return;
         }
         if (usedKeys.current.has(pc(held[0]))) {

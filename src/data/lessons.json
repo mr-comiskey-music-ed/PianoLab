@@ -3703,10 +3703,52 @@
           "hint": "Build a G triad (G B D), then add F on top."
         },
         {
+          "id": "l8-octave",
+          "section": "Major and minor 7ths",
+          "title": "Find the 7th from the octave",
+          "say": "You know the octave: G up to the next G.\nA major 7th is a half step below the octave: G up to F♯.\nA minor 7th is a whole step below the octave: G up to F.\nFind the octave first, then step down.",
+          "need": 0,
+          "demo": [
+            "G3+G4*2",
+            "_",
+            "G3+F#4*2",
+            "_",
+            "G3+F4*2"
+          ],
+          "tags": {
+            "G3": "Root",
+            "G4": "Octave",
+            "F#4": "Maj 7",
+            "F4": "Min 7"
+          },
+          "show": true,
+          "labels": "all"
+        },
+        {
+          "id": "l8-try-maj7th",
+          "section": "Major and minor 7ths",
+          "title": "Play major 7ths",
+          "say": "Pick a root. Find the octave above it, then step down a half step (one piano key). Play the root and that note together.",
+          "need": 3,
+          "tryText": "Play a major 7th on three different roots.",
+          "tryInterval": 11,
+          "hint": "Find the octave, then go down one piano key."
+        },
+        {
+          "id": "l8-try-min7th",
+          "section": "Major and minor 7ths",
+          "title": "Play minor 7ths",
+          "say": "Pick a root. Find the octave above it, then step down a whole step (two piano keys). Play the root and that note together.",
+          "need": 3,
+          "tryText": "Play a minor 7th on three different roots.",
+          "tryInterval": 10,
+          "hint": "Find the octave, then go down two piano keys."
+        },
+        {
           "id": "l8-kinds",
           "section": "Three kinds",
           "title": "Major, dominant and minor 7ths",
-          "say": "Three kinds of 7th chord, all on G:\nGmaj7 (major 7th) is a major triad with a higher 7th: F♯. It sounds dreamy.\nG7 (dominant 7th) is a major triad with a lower 7th: F. It wants to move home.\nGm7 (minor 7th) is a minor triad with a lower 7th: F. It sounds smooth.",
+          "say": "Three kinds of 7th chord, all on G:\nGmaj7 (major 7th chord) = major triad + major 7th (F♯). It sounds dreamy.\nG7 (dominant 7th chord) = major triad + minor 7th (F). It wants to move home.\nGm7 (minor 7th chord) = minor triad + minor 7th (F). It sounds smooth.",
           "need": 0,
           "demo": [
             "G3+B3+D4+F#4*2",
@@ -3715,14 +3757,18 @@
             "_",
             "G3+Bb3+D4+F4*2"
           ],
+          "tags": {
+            "F#4": "Maj 7",
+            "F4": "Min 7"
+          },
           "show": true,
           "labels": "all"
         },
         {
           "id": "l8-try-maj7s",
           "section": "Three kinds",
-          "title": "Play major 7ths",
-          "say": "Major triad, plus the higher 7th on top.\nCmaj7 = C E G B. Fmaj7 = F A C E. Gmaj7 = G B D F♯.",
+          "title": "Play major 7th chords",
+          "say": "Major triad + major 7th (a half step below the octave).\nCmaj7 = C E G B. Fmaj7 = F A C E. Gmaj7 = G B D F♯.",
           "need": 1,
           "tryText": "Play Cmaj7, Fmaj7 and Gmaj7, one after another.",
           "tryProgression": [
@@ -3735,8 +3781,8 @@
         {
           "id": "l8-try-m7s",
           "section": "Three kinds",
-          "title": "Play minor 7ths",
-          "say": "Minor triad, plus the lower 7th on top.\nDm7 = D F A C. Em7 = E G B D. Am7 = A C E G.",
+          "title": "Play minor 7th chords",
+          "say": "Minor triad + minor 7th (a whole step below the octave).\nDm7 = D F A C. Em7 = E G B D. Am7 = A C E G.",
           "need": 1,
           "tryText": "Play Dm7, Em7 and Am7, one after another.",
           "tryProgression": [
@@ -3749,8 +3795,8 @@
         {
           "id": "l8-try-dom7s",
           "section": "Three kinds",
-          "title": "Play dominant 7ths",
-          "say": "Major triad, plus the lower 7th on top.\nG7 = G B D F. C7 = C E G B♭. D7 = D F♯ A C.",
+          "title": "Play dominant 7th chords",
+          "say": "Major triad + minor 7th (a whole step below the octave).\nG7 = G B D F. C7 = C E G B♭. D7 = D F♯ A C.",
           "need": 1,
           "tryText": "Play G7, C7 and D7, one after another.",
           "tryProgression": [
@@ -3810,9 +3856,70 @@
       ],
       "levels": [
         {
+          "id": "l8-sevenths",
+          "title": "Major and minor 7ths",
+          "blurb": "A piano key lights up. Play the 7th above it: find the octave, then step down.",
+          "type": "halfStep",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Play a major 7th UP from the lit key. Octave, then down a half step.",
+              "show": "C",
+              "step": 11
+            },
+            {
+              "text": "Play a minor 7th UP from the lit key. Octave, then down a whole step.",
+              "show": "D",
+              "step": 10
+            },
+            {
+              "text": "Play a major 7th UP from the lit key. Octave, then down a half step.",
+              "show": "F",
+              "step": 11
+            },
+            {
+              "text": "Play a minor 7th UP from the lit key. Octave, then down a whole step.",
+              "show": "G",
+              "step": 10
+            },
+            {
+              "text": "Play a minor 7th UP from the lit key. Octave, then down a whole step.",
+              "show": "A",
+              "step": 10
+            },
+            {
+              "text": "Play a major 7th UP from the lit key. Octave, then down a half step.",
+              "show": "G",
+              "step": 11
+            },
+            {
+              "text": "Play a minor 7th UP from the lit key. Octave, then down a whole step.",
+              "show": "E",
+              "step": 10
+            },
+            {
+              "text": "Play a minor 7th UP from the lit key. Octave, then down a whole step.",
+              "show": "C",
+              "step": 10
+            },
+            {
+              "text": "Play a major 7th UP from the lit key. Octave, then down a half step.",
+              "show": "D",
+              "step": 11
+            },
+            {
+              "text": "Play a minor 7th UP from the lit key. Octave, then down a whole step.",
+              "show": "F",
+              "step": 10
+            }
+          ]
+        },
+        {
           "id": "l8-maj7",
           "title": "Major 7th chords",
-          "blurb": "Play the major 7th chord: all four notes, any order.",
+          "blurb": "Major triad + major 7th (a half step below the octave). All four notes, any order.",
           "type": "buildIt",
           "octave": "any",
           "pass": 80,
@@ -3859,7 +3966,7 @@
         {
           "id": "l8-m7",
           "title": "Minor 7th chords",
-          "blurb": "Play the minor 7th chord: all four notes, any order.",
+          "blurb": "Minor triad + minor 7th (a whole step below the octave). All four notes, any order.",
           "type": "buildIt",
           "octave": "any",
           "pass": 80,
@@ -3906,7 +4013,7 @@
         {
           "id": "l8-dom7",
           "title": "Dominant 7th chords",
-          "blurb": "Play the dominant 7th chord: all four notes, any order.",
+          "blurb": "Major triad + minor 7th (a whole step below the octave). All four notes, any order.",
           "type": "buildIt",
           "octave": "any",
           "pass": 80,

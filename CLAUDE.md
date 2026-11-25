@@ -299,12 +299,17 @@ major in time · G scale · G in time · D scale · D in time · F scale · F in
 same scale 3 times with a reminder ("Remember: F♯."); a level whose questions are all the same keeps its order (no
 shuffle). Timed scale levels have no chord/key label on the waterfall (`Timeline.scale`; it covered the notes). Level types used: `scale` (fingering shown as a hint) and pattern texture `scale`
   (up and down, one note per beat; Falling Note Blocks only); the `quiz` type (buttons, nothing lit) is unused for now.
-- Lesson 8 "7th chords" (his redo): Learn: one more 3rd, try G7 · Three kinds, all on G (Gmaj7 / G7 / Gm7: the 7th steps
-  down F♯ -> F, then the 3rd B -> B♭) · try three maj7s (Cmaj7 Fmaj7 Gmaj7), three m7s (Dm7 Em7 Am7), three dom7s (G7 C7 D7)
-  (`tryProgression` + `tryNames`: chips show chord names, no key) · the 7ths of C · ii7–V7–Imaj7 try. Levels: Major 7th
-  chords (`l8-maj7`) · Minor 7th chords · Dominant 7th chords (3 chords x 3 each) · Play all 7th chords (`l8-build`) · Which
-  kind of 7th? (listen) · ii7–V7–Imaj7 in C and in F · R&B 7ths in C (`l8-time-rnb`: IVmaj7–iii7–ii7–Imaj7, smooth, in
-  time). `l8-numeral` removed (no students yet). Still "higher/lower 7th" wording; interval options offered to him.
+- Lesson 8 "7th chords" (his redo; 7ths taught from the octave, his option A): Learn: one more 3rd, try G7 · Find the
+  7th from the octave (`l8-octave`: major 7th = half step below the octave, minor 7th = whole step below; tags Root /
+  Octave / Maj 7 / Min 7) · try major 7ths, minor 7ths (`tryInterval` 11 / 10, 3 roots each; the octave gets "good start!")
+  · Three kinds, all on G (Gmaj7 = major triad + major 7th, G7 = major triad + minor 7th, Gm7 = minor triad + minor 7th) ·
+  try three maj7s (Cmaj7 Fmaj7 Gmaj7), three m7s (Dm7 Em7 Am7), three dom7s (G7 C7 D7) (`tryProgression` + `tryNames`:
+  chips show chord names, no key); each repeats its recipe · the 7ths of C · ii7–V7–Imaj7 try. Levels (9, fits): Major and
+  minor 7ths (`l8-sevenths`, halfStep 11/10; a wrong answer says "find the octave, then step down") · Major 7th chords
+  (`l8-maj7`) · Minor 7th chords · Dominant 7th chords (3 chords x 3 each) · Play all 7th chords (`l8-build`) · Which kind
+  of 7th? · ii7–V7–Imaj7 in C and in F · R&B 7ths in C (`l8-time-rnb`: IVmaj7–iii7–ii7–Imaj7, smooth, in time). A wrong
+  7th chord in a Build level adds its recipe ("Cmaj7 = major triad + major 7th (a half step below the octave)",
+  `SEVENTH_RECIPE` in ModeChallenge). `l8-numeral` removed (no students yet).
   Phone Learn try screens: explanation column 34%, try column 46% (the success message wrapped and spilled off the Stage).
 - Jam Room tab (`ModeJam.tsx`, `audio/groove.ts`): backing = Groove (app-made drums + bass from the progression: Pop,
   Rock, Ballad, Funk, Lo-fi, Just the beat; a bar of clicks to count in) / Tracks (his audio files: `public/tracks/` +
