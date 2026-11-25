@@ -1,4 +1,4 @@
-import { GROOVES, Groove, TRACKS } from './groove';
+import { GROOVES, Groove, TRACKS, customStyle } from './groove';
 import { AudioEngine } from './audioEngine';
 import { keyById, parseNumeral } from '../utils/chords';
 import { BackingSeg } from '../utils/performance';
@@ -23,7 +23,7 @@ export function playBacking(segs: BackingSeg[], posNow: () => number, yt: YTCont
     if (seg.until !== undefined && seg.until <= pos) continue;
     const end = seg.until;
     if (seg.k === 'g') {
-      const style = GROOVES.find((g) => g.id === seg.g);
+      const style = seg.g === 'custom' && seg.cp ? customStyle(seg.cp, seg.bpm) : GROOVES.find((g) => g.id === seg.g);
       if (!style) continue;
       const key = keyById(seg.key);
       const roots = seg.n.map((n) => parseNumeral(key, n)?.chord.root).filter((r): r is number => r !== undefined);

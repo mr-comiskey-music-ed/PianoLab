@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { GROOVES, Groove, TRACKS } from '../audio/groove';
+import { GROOVES, Groove, GrooveStyle, TRACKS } from '../audio/groove';
 import { Chord, Diatonic, KEYS, KeyDef, Quality, chordName, chordPcs, detectChord, diatonic, diatonicSevenths, keyById, makeKey, parseChord, parseNumeral } from '../utils/chords';
 import { KEY_COUNT, pc, pcOf } from '../utils/music';
 import { MAJOR_SCALE } from '../utils/scales';
 import { textOn } from './ChordStrip';
 import { PianoRoll } from './PianoRoll';
 import { YouTubeBox, YTControl, youTubeId } from './YouTubeBox';
-import { BackingSeg, MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, formatLength, perfLength } from '../utils/performance';
+import { BackingSeg, CustomPattern, MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, formatLength, perfLength } from '../utils/performance';
 import { SavePerformance } from './ModeSandbox';
 import { Labels, ModeCtx, ModeParts } from './modeTypes';
 import youtubeData from '../data/youtube.json';
@@ -112,9 +112,64 @@ const Meter: React.FC<{ level: number }> = ({ level }) => (
   </div>
 );
 
+const ROWS: [keyof CustomPattern, string][] = [
+  ['h', 'Hi-hat'],
+  ['s', 'Snare'],
+  ['k', 'Kick'],
+  ['b', 'Bass'],
+];
+/** Where a Custom pattern starts: the Pop groove's beat. */
+const startPattern = (): CustomPattern => {
+  const pop = GROOVES[0];
+  return { k: [...pop.kick], s: [...pop.snare], h: [...pop.hat], b: pop.bass.map((x) => x[0]) };
+};
+
+/** The Custom pattern grid (his "doesn't have to be big"): 4 rows x 16 steps; click a square to turn it on or off. */
+const BeatGrid: React.FC<{ pattern: CustomPattern; onToggle: (row: keyof CustomPattern, step: number) => void; step: number; compact?: boolean }> = ({ pattern, onToggle, step, compact }) => (
+  <div className={`flex flex-col ${compact ? 'gap-0.5' : 'gap-1'}`} data-testid="beat-grid">
+    {ROWS.map(([row, label]) => (
+      <div key={row} className="flex items-center gap-1">
+        <span className={`h shrink-0 text-right ${compact ? 'w-10 text-[10px] text-wal2' : 'w-12 text-[12px] text-line2'}`}>{label}</span>
+        <div className="flex gap-[2px]">
+          {Array.from({ length: 16 }, (_, k) => {
+            const on = pattern[row].includes(k);
+            return (
+              <button
+                key={k}
+                aria-label={`${label} step ${k + 1}`}
+                aria-pressed={on}
+                data-testid={`beat-${row}-${k}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onToggle(row, k)}
+                className={`${compact ? 'h-3.5 w-[11px]' : 'h-5 w-6'} rounded-[3px] ${k % 4 === 0 ? 'ml-1 first:ml-0' : ''} ${on ? 'bg-brass' : k % 4 === 0 ? 'bg-[#5a4a3a]' : 'bg-[#3a2f24]'} ${k === step ? 'ring-2 ring-panel' : ''}`}
+              />
+            );
+          })}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   const [source, setSource] = useState<Source>('groove');
   const [grooveId, setGrooveId] = useState('pop');
+  // "Custom pattern": the student's own beat. The groove plays one shared style object, so edits are heard right away.
+  const [beatPat, setBeatPat] = useState<CustomPattern>(startPattern);
+  const liveCustom = useRef<GrooveStyle>({ id: 'custom', name: 'Custom pattern', bpm: 90, kick: [], snare: [], hat: [], bass: [] });
+  useEffect(() => {
+    const st = liveCustom.current;
+    st.kick = beatPat.k;
+    st.snare = beatPat.s;
+    st.hat = beatPat.h;
+    st.bass = beatPat.b.map((x) => [x, 'R'] as [number, 'R']);
+    // A saved performance keeps the pattern as it was last heard.
+    const open = segs.current.find((x) => x.until === undefined);
+    if (open && open.k === 'g' && open.g === 'custom') open.cp = { ...beatPat };
+  }, [beatPat]);
+  const toggleStep = (row: keyof CustomPattern, step: number) =>
+    setBeatPat((p) => ({ ...p, [row]: p[row].includes(step) ? p[row].filter((x) => x !== step) : [...p[row], step].sort((a, b) => a - b) }));
+  const styleName = grooveId === 'custom' ? 'Custom pattern' : `${GROOVES.find((g) => g.id === grooveId)?.name ?? 'Groove'} groove`;
   const [keyId, setKeyId] = useState('C');
   const [progId, setProgId] = useState('pop');
   const [custom, setCustom] = useState('I IV V I');
@@ -268,11 +323,11 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     const g = Groove.get();
     g.setLevel(backVol);
     if (source === 'groove') {
-      const style = GROOVES.find((x) => x.id === grooveId) ?? GROOVES[0];
+      const style = grooveId === 'custom' ? liveCustom.current : (GROOVES.find((x) => x.id === grooveId) ?? GROOVES[0]);
       const pos = clockNow();
       const heard = g.startGroove(style, bpm, chords.length ? chords.map((d) => d.chord.root) : [key.tonic]);
       closeSeg();
-      segs.current.push({ k: 'g', at: Math.round(pos + heard - performance.now()), g: style.id, key: key.id, n: chords.map((d) => d.numeral), bpm });
+      segs.current.push({ k: 'g', at: Math.round(pos + heard - performance.now()), g: style.id, key: key.id, n: chords.map((d) => d.numeral), bpm, ...(style.id === 'custom' ? { cp: { ...beatPat } } : {}) });
       setPlaying(true);
     } else if (source === 'track' && track) {
       setLoading(true);
@@ -343,7 +398,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
         <div className="card flex flex-col gap-1 px-2 py-1.5" data-testid="jam-assigned">
           <div className="h text-[11px] uppercase text-muted">Set up by your teacher</div>
           <div className="h text-[15px] text-wal3">
-            {source === 'groove' ? `${GROOVES.find((g) => g.id === grooveId)?.name ?? 'Groove'} groove` : source === 'track' ? (track?.title ?? 'Track') : 'YouTube video'}
+            {source === 'groove' ? styleName : source === 'track' ? (track?.title ?? 'Track') : 'YouTube video'}
             {' · '}
             {key.label}
           </div>
@@ -383,14 +438,16 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
         <>
           <label className="flex items-center gap-2">
             <span className="h w-14 shrink-0 text-wal3">Style</span>
-            <select className={sel} value={grooveId} data-testid="jam-style" onChange={pick((v) => changeSetting(() => { setGrooveId(v); setBpm(GROOVES.find((g) => g.id === v)?.bpm ?? 90); }))}>
+            <select className={sel} value={grooveId} data-testid="jam-style" onChange={pick((v) => changeSetting(() => { setGrooveId(v); if (v !== 'custom') setBpm(GROOVES.find((g) => g.id === v)?.bpm ?? 90); }))}>
               {GROOVES.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.name}
                 </option>
               ))}
+              <option value="custom">Custom pattern…</option>
             </select>
           </label>
+          {grooveId === 'custom' && ctx.phone && <BeatGrid pattern={beatPat} onToggle={toggleStep} step={playing && beat >= 0 ? Math.floor(beat * 4) % 16 : -1} compact />}
           <label className="flex items-center gap-2">
             <span className="h w-14 shrink-0 text-wal3">Key</span>
             <select className={sel} value={keyId} data-testid="jam-key" onChange={pick((v) => changeSetting(() => setKeyId(v)))}>
@@ -589,7 +646,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     ) : (
       <div className="flex h-full flex-col items-center justify-center gap-4 px-4" data-testid="jam-stage">
         <div className="h text-[13px] uppercase tracking-wider text-brass">
-          {source === 'track' ? (track?.title ?? 'No track') : `${GROOVES.find((g) => g.id === grooveId)?.name} groove`} · {key.label}
+          {source === 'track' ? (track?.title ?? 'No track') : styleName} · {key.label}
           {source === 'groove' ? ` · ${bpm} BPM` : ''}
         </div>
         {/* The chord chart: one box per bar; the bar playing now is lit, with its beats. */}
@@ -620,6 +677,9 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
           <div className="h text-[48px] leading-none text-brass" data-testid="jam-count">
             {countIn}
           </div>
+        )}
+        {source === 'groove' && grooveId === 'custom' && !ctx.phone && (
+          <BeatGrid pattern={beatPat} onToggle={toggleStep} step={playing && beat >= 0 ? Math.floor(beat * 4) % 16 : -1} />
         )}
         {nowPlaying}
       </div>

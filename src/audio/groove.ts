@@ -1,5 +1,7 @@
 import * as Tone from 'tone';
 import { AudioEngine } from './audioEngine';
+import type { CustomPattern } from '../utils/performance';
+export type { CustomPattern };
 import tracksData from '../data/tracks.json';
 
 /**
@@ -16,7 +18,8 @@ export interface GrooveStyle {
   kick: number[];
   snare: number[];
   hat: number[];
-  bass: [number, 'R' | '5' | 'O'][];
+  /** [16th, which note, length in 16ths (default 1.6; long for an 808)]. */
+  bass: [number, 'R' | '5' | 'O', number?][];
   /** Push every second 8th note late (0 = straight, 0.33 = a lazy lo-fi swing), in parts of a 16th. */
   swing?: number;
 }
@@ -27,8 +30,18 @@ export const GROOVES: GrooveStyle[] = [
   { id: 'ballad', name: 'Ballad', bpm: 70, kick: [0, 10], snare: [8], hat: [0, 4, 8, 12], bass: [[0, 'R'], [8, '5']] },
   { id: 'funk', name: 'Funk', bpm: 100, kick: [0, 3, 10], snare: [4, 12], hat: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], bass: [[0, 'R'], [3, 'O'], [6, 'R'], [10, '5'], [14, 'R']] },
   { id: 'lofi', name: 'Lo-fi', bpm: 80, kick: [0, 7, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R'], [10, 'R']], swing: 0.33 },
+  // His additions: reggaeton (the dembow: its bass is the tresillo), trap (half-time snare, fast hats, long 808s),
+  // boom-bap (swung 90s hip hop) and bossa nova.
+  { id: 'reggaeton', name: 'Reggaeton', bpm: 94, kick: [0, 4, 8, 12], snare: [3, 6, 11, 14], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 5], [6, 'R', 5], [12, 'R', 3]] },
+  { id: 'trap', name: 'Trap', bpm: 140, kick: [0, 7, 10], snare: [8], hat: [0, 1, 2, 4, 6, 7, 8, 10, 12, 13, 14, 15], bass: [[0, 'R', 7], [7, 'R', 3], [10, 'O', 6]] },
+  { id: 'boombap', name: 'Boom-bap', bpm: 90, kick: [0, 7, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [7, 'R'], [10, '5', 3]], swing: 0.25 },
+  { id: 'bossa', name: 'Bossa nova', bpm: 120, kick: [0, 3, 4, 7, 8, 11, 12, 15], snare: [0, 3, 6, 10, 13], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [3, '5'], [4, '5', 3], [8, 'R', 3], [11, '5'], [12, '5', 3]] },
   { id: 'click', name: 'Just the beat (clicks)', bpm: 80, kick: [], snare: [], hat: [], bass: [] },
 ];
+
+/** A Custom pattern as a groove style (id "custom"). */
+export const customStyle = (p: CustomPattern, bpm = 90): GrooveStyle => ({ id: 'custom', name: 'Custom pattern', bpm, kick: p.k, snare: p.s, hat: p.h, bass: p.b.map((st) => [st, 'R'] as [number, 'R']) });
+
 
 /** A teacher's audio track (`src/data/tracks.json`). The file lives in `public/tracks/`. */
 export interface BackingTrack {
@@ -140,7 +153,7 @@ export class Groove {
             if (b) {
               const root = roots[bar % roots.length];
               const midi = 36 + root + (b[1] === '5' ? 7 : b[1] === 'O' ? 12 : 0);
-              this.bass.triggerAttackRelease(Tone.Frequency(midi, 'midi').toFrequency(), sixteenth * 1.6, t, 0.8);
+              this.bass.triggerAttackRelease(Tone.Frequency(midi, 'midi').toFrequency(), sixteenth * (b[2] ?? 1.6), t, 0.8);
             }
           } catch {
             /* a note scheduled just as the groove stops: skip it */

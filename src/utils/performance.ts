@@ -1,5 +1,15 @@
 import { compress, decompress } from './codec';
 
+/** A student's own beat (Jam Room "Custom pattern"): which 16ths have a kick, snare, hi-hat and bass note (the root). */
+export interface CustomPattern {
+  k: number[];
+  s: number[];
+  h: number[];
+  b: number[];
+}
+/** Steps 0-15, each once, sorted (for patterns read back from a code or link). */
+export const cleanSteps = (x: unknown): number[] => (Array.isArray(x) ? [...new Set(x.filter((v): v is number => Number.isInteger(v) && v >= 0 && v < 16))].sort((a, b) => a - b) : []);
+
 /**
  * A Sandbox performance: what a student played, as notes. Nothing else (no name) is in it.
  * Times are milliseconds from the first note.
@@ -70,7 +80,7 @@ export const formatLength = (ms: number) => {
  * Stored in codes (key `j`) and links. Ids that no longer exist are skipped at play back.
  */
 export type BackingSeg =
-  | { k: 'g'; at: number; until?: number; g: string; key: string; n: string[]; bpm: number }
+  | { k: 'g'; at: number; until?: number; g: string; key: string; n: string[]; bpm: number; /** g "custom": the student's pattern. */ cp?: CustomPattern }
   | { k: 't'; at: number; until?: number; tr: string }
   | { k: 'y'; at: number; until?: number; v: string; vt: number };
 
@@ -88,7 +98,16 @@ export function cleanBacking(x: unknown): BackingSeg[] {
     const until = num(o.until);
     const base = until !== null ? { at, until } : { at };
     if (o.k === 'g' && str(o.g) && str(o.key, 4) && Array.isArray(o.n) && num(o.bpm)) {
-      out.push({ k: 'g', ...base, g: o.g as string, key: o.key as string, n: (o.n as unknown[]).filter((v): v is string => !!str(v, 8)).slice(0, 16), bpm: Math.max(40, Math.min(200, num(o.bpm)!)) });
+      const cp = o.cp && typeof o.cp === 'object' ? (o.cp as Record<string, unknown>) : null;
+      out.push({
+        k: 'g',
+        ...base,
+        g: o.g as string,
+        key: o.key as string,
+        n: (o.n as unknown[]).filter((v): v is string => !!str(v, 8)).slice(0, 16),
+        bpm: Math.max(40, Math.min(200, num(o.bpm)!)),
+        ...(cp ? { cp: { k: cleanSteps(cp.k), s: cleanSteps(cp.s), h: cleanSteps(cp.h), b: cleanSteps(cp.b) } } : {}),
+      });
     } else if (o.k === 't' && str(o.tr)) out.push({ k: 't', ...base, tr: o.tr as string });
     else if (o.k === 'y' && str(o.v, 11) && typeof o.vt === 'number' && Number.isFinite(o.vt)) out.push({ k: 'y', ...base, v: o.v as string, vt: Math.max(0, Math.round(o.vt * 10) / 10) });
   }
