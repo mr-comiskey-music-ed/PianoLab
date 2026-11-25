@@ -11,6 +11,8 @@ export interface LearnProgress {
   done: boolean;
   /** Index of the step the student is on. */
   step: number;
+  /** The furthest step reached (steps before it are done). */
+  max?: number;
 }
 
 export interface WorkSnapshot {
@@ -45,7 +47,7 @@ export function cleanSnapshot(raw: unknown): WorkSnapshot | null {
   if (isObj(raw.learn)) {
     for (const [id, v] of Object.entries(raw.learn).slice(0, 50)) {
       if (!isObj(v) || !/^[a-z0-9-]{1,40}$/.test(id)) continue;
-      learn[id] = { done: v.done === true, step: Math.round(num(v.step, 0, 200, 0)) };
+      learn[id] = { done: v.done === true, step: Math.round(num(v.step, 0, 200, 0)), ...(typeof v.max === 'number' ? { max: Math.round(num(v.max, 0, 200, 0)) } : {}) };
     }
   }
   // Older saves (Phase 1): Lesson 1 only.

@@ -54,6 +54,8 @@ export interface ModeCtx {
   learnDone: boolean;
   setLearnDone: (v: boolean) => void;
   learnStep: number;
+  /** The furthest Learn step reached in this lesson: steps before it count as done. */
+  learnMax: number;
   setLearnStep: (n: number) => void;
   goTo: (mode: 'learn' | 'practice' | 'challenge' | 'sandbox' | 'jam' | 'report') => void;
 }

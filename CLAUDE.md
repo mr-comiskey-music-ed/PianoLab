@@ -432,6 +432,17 @@ About page; no composition rubric):
 - **Batch view Listen** (his request): one performance at a time with its groove/track (YouTube ones: "With the video"
   opens the Sandbox), a now-playing bar (student, jump slider, time, Stop, Next student). Closing the window stops it.
   `e61`.
+- **His Chord rhythms round 2:** lesson picker is two rows (6 per row) once there are more than 8 lessons; the Challenge
+  Yourself buttons are one row of three (two short lines each) so long level lists still fit. Rhythm grid (`RhythmBox`):
+  counts, beat lines and hit blocks are all placed by the same percentages (a half note on 3 starts exactly under the 3;
+  `e62` checks it); bar lines strong, beats medium, +s faint. Off-beats last one 8th (`rhythmLengths`). Learn sections
+  "Syncopation" + "The tresillo" -> "More rhythms" (off-beats aren't called syncopation). Oom-pah "pah" also accepts the 3rd
+  + 5th without the root (`hitAlt`, also used by Challenges). Broken chords, arpeggios, bass lines and riffs show the
+  full-Stage waterfall while Listen / Play along runs (portal into the Stage, `FALLS`). New textures: `brokenSplit` (root
+  low in the left hand, the chord up in C4-C5) and `arp3` (C E G C E G C E | A C E A C E A C, his first arpeggio; root-3-5-
+  octave is now last, "Up to the octave"). New levels `lr-split`, `lr-arp3` (Lesson 7 has 11). **Learn remembers**: the
+  furthest step reached (`max` in autosave's learn progress) and a finished Learn count as done, so play-alongs aren't
+  redone when going back.
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

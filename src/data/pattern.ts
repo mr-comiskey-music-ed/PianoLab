@@ -5,7 +5,9 @@
  */
 /** `scale` (Lesson 7): the key's major scale up and down, one note per hit (the progression is ignored). */
 /** `line`: a bass line or riff written note by note (`line`), repeated every `lineBars` bars. */
-export type Texture = 'bass' | 'block' | 'bassChord' | 'broken' | 'arpeggio' | 'scale' | 'line';
+/** `brokenSplit`: oom-pah with the root low (left hand) and the whole chord up high (right hand). `arp3`: the triad
+ *  going round and round (C E G C E G…), the simplest arpeggio. */
+export type Texture = 'bass' | 'block' | 'bassChord' | 'broken' | 'brokenSplit' | 'arpeggio' | 'arp3' | 'scale' | 'line';
 /**
  * One note of a line. `b` = beat inside the line (0 = beat 1 of its first bar), `d` = length in beats (default: until
  * the next note). `n`: with `lineOf: 'chord'` (bass lines) a note of the bar's chord: R root, 3 its 3rd, 5 its 5th, b7,
@@ -39,7 +41,7 @@ export interface Pattern {
   lineBars?: number;
 }
 
-const TEXTURES: Texture[] = ['bass', 'block', 'bassChord', 'broken', 'arpeggio', 'scale', 'line'];
+const TEXTURES: Texture[] = ['bass', 'block', 'bassChord', 'broken', 'brokenSplit', 'arpeggio', 'arp3', 'scale', 'line'];
 const VOICINGS: Voicing[] = ['root', 'inversions', 'smoothest'];
 
 /** Returns a list of problems; an empty list means the pattern is well formed. */

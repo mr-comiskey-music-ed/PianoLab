@@ -64,7 +64,9 @@ export default function App() {
   const learnDone = learnMap[lesson.id]?.done ?? false;
   const learnStep = learnMap[lesson.id]?.step ?? 0;
   const setLearnDone = useCallback((v: boolean) => setLearnMap((p) => ({ ...p, [lessonId]: { step: p[lessonId]?.step ?? 0, done: v } })), [lessonId]);
-  const setLearnStep = useCallback((n: number) => setLearnMap((p) => ({ ...p, [lessonId]: { done: p[lessonId]?.done ?? false, step: n } })), [lessonId]);
+  // `max`: the furthest step reached, so steps already done stay done (no redoing play-alongs when going back).
+  const setLearnStep = useCallback((n: number) => setLearnMap((p) => ({ ...p, [lessonId]: { done: p[lessonId]?.done ?? false, step: n, max: Math.max(n, p[lessonId]?.max ?? 0, p[lessonId]?.step ?? 0) } })), [lessonId]);
+  const learnMax = learnMap[lesson.id]?.max ?? learnStep;
   const learned = Object.entries(learnMap).filter(([, v]) => v.done).map(([k]) => k);
   // Chord strip: its key follows the lesson (and can be changed in the strip). Numerals always show on it.
   const [stripKeyId, setStripKeyId] = useState(lesson.key ?? 'C');
@@ -296,6 +298,7 @@ export default function App() {
     learnDone,
     setLearnDone,
     learnStep,
+    learnMax,
     setLearnStep,
     goTo: setMode,
   };
@@ -508,7 +511,7 @@ export default function App() {
             {parts.labelControl && (
               <>
                 <div className="h text-[11px] uppercase text-muted">{parts.labelControl.title ?? 'Challenge Yourself'}</div>
-                <div className="mt-1 flex flex-col gap-1" role="radiogroup" aria-label={`${parts.labelControl.title ?? 'Challenge Yourself'} note names on the keys`}>
+                <div className="mt-1 grid grid-cols-3 gap-1" role="radiogroup" aria-label={`${parts.labelControl.title ?? 'Challenge Yourself'} note names on the keys`}>
                   {([['all', 'Show Note Names'], ['c', 'Show Cs'], ['off', 'Hide Note Names']] as const).map(([v, t]) => {
                     const ok = parts.labelControl!.allowed.includes(v);
                     return (
@@ -519,9 +522,16 @@ export default function App() {
                         disabled={!ok || parts.labelControl!.locked}
                         data-testid={`labels-${v}`}
                         onClick={() => parts.labelControl!.set(v)}
-                        className={`btn px-2 py-1.5 text-[14px] ${parts.labelControl!.value === v ? 'btn-brass' : ''}`}
+                        className={`btn px-1 py-1 text-[12px] leading-tight ${parts.labelControl!.value === v ? 'btn-brass' : ''}`}
                       >
-                        {t}
+                        {/* One row of three (room for longer level lists): "Show / Note Names" on two short lines. */}
+                        {t.replace(/^(Show|Hide) /, '$1\n')
+                          .split('\n')
+                          .map((w, k) => (
+                            <span key={k} className="block">
+                              {w}
+                            </span>
+                          ))}
                       </button>
                     );
                   })}
@@ -546,7 +556,7 @@ export default function App() {
           )}
           <div className={`stage flex-1 overflow-hidden border-transparent shadow-inner wood-v ${phone ? 'min-h-[60px] border-x-[10px] border-t-[6px]' : 'min-h-[150px] border-x-[10px] border-t-[10px]'} ${showStrip && (!phone || mode === 'sandbox') ? '' : 'rounded-t-lg'}`} style={{ borderImage: 'none' }}>
             <div className={`h-full w-full ${phone ? 'phone-stage' : ''}`}>
-            <div className="stage h-full w-full rounded-sm" data-testid="stage">
+            <div className="stage relative h-full w-full rounded-sm" data-testid="stage">
               {parts.stage}
             </div>
             </div>

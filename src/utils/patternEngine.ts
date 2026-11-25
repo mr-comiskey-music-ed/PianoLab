@@ -23,6 +23,8 @@ export interface TimedHit {
   bar: number;
   /** The bar's whole chord (pitch classes), e.g. for a root-only hit. */
   chordPcs: number[];
+  /** The bar's chord root (pitch class): oom-pah "pah" hits also accept the chord without it (3rd + 5th). */
+  rootPc?: number;
 }
 
 /** A bar's chord, for the labels on the waterfall. */
@@ -69,6 +71,11 @@ export function rhythmBeats(r: Rhythm): number[] {
   }
 }
 
+/** How long each hit lasts, when it isn't simply "until the next one" (off-beats are short 8ths, with rests between). */
+export function rhythmLengths(r: Rhythm): number[] | null {
+  return r === 'sync:offbeats' ? [0.5, 0.5, 0.5, 0.5] : null;
+}
+
 /** "V" in C major -> the G chord (with its numeral and colour). Accepts "vii°"/"viio" and "ii°"/"iio", and 7th chords
  *  (Lesson 8): "V7", "ii7", "Imaj7", "viiø7". */
 export function resolveNumeral(k: KeyDef, numeral: string) {
@@ -86,6 +93,7 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
   if (p.texture === 'scale') return scaleTimeline(p, key, tempo);
   if (p.texture === 'line') return lineTimeline(p, key, tempo);
   const hitsInBar = rhythmBeats(p.rhythm);
+  const lens = rhythmLengths(p.rhythm);
   const hits: TimedHit[] = [];
   const bars: BarInfo[] = [];
   let prev: number[] | null = null;
@@ -103,10 +111,12 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
     prev = notes;
     bars.push({ bar, beat: bar * 4, symbol: chordName(chord), numeral: d.numeral, color: d.color });
     const root = BASE + chord.root;
+    // Split oom-pah: the chord goes up to the right-hand side (an inversion that fits C4-C5).
+    const high = p.texture === 'brokenSplit' ? [0, 1, 2].map((inv) => voicing(chord, inv, 60)).find((v) => v[0] >= 60 && v[v.length - 1] <= 72) ?? notes.map((n) => n + 12) : notes;
     hitsInBar.forEach((b, i) => {
       const next = hitsInBar[i + 1] ?? 4;
-      const hit = textureHit(p.texture, notes, root, i);
-      hits.push({ beat: bar * 4 + b, dur: next - b, notes: hit, pcs: Array.from(new Set(hit.map(pc))), kind: hit.length > 1 ? 'chord' : 'note', bar, chordPcs: Array.from(new Set(notes.map(pc))) });
+      const hit = textureHit(p.texture, p.texture === 'brokenSplit' && i % 2 ? high : notes, root, i);
+      hits.push({ beat: bar * 4 + b, dur: lens?.[i] ?? next - b, notes: hit, pcs: Array.from(new Set(hit.map(pc))), kind: hit.length > 1 ? 'chord' : 'note', bar, chordPcs: Array.from(new Set(notes.map(pc))), rootPc: pc(chord.root) });
     });
   }
   return { key, hits, bars, beats: p.bars * 4, tempo };
@@ -214,14 +224,30 @@ function textureHit(t: Texture, chord: number[], root: number, i: number): numbe
       // the root on the first hit of the bar, the chord on the rest (both together if the bar has one hit)
       return i === 0 ? [root] : chord;
     case 'broken':
+    case 'brokenSplit':
       // "oom-pah": root, chord, root, chord
       return i % 2 === 0 ? [root] : chord;
+    case 'arp3':
+      // round and round the triad: root, 3rd, 5th, root, 3rd, 5th…
+      return [chord[i % chord.length]];
     case 'arpeggio': {
       // up the chord one note at a time: root, 3rd, 5th, top root
       const up = [...chord, chord[0] + 12];
       return [up[i % up.length]];
     }
   }
+}
+
+/**
+ * Another right answer for a hit, besides its own notes. Root-then-chord patterns: a root-only beat also accepts the
+ * whole chord (with Chord Names Only you can't see it's just the root). Oom-pah: the "pah" also accepts the chord without
+ * its root, the 3rd and 5th only (his call).
+ */
+export function hitAlt(t: Texture, h: TimedHit): number[] | undefined {
+  const rootThenChord = t === 'bassChord' || t === 'broken' || t === 'brokenSplit';
+  if (rootThenChord && h.kind === 'note') return h.chordPcs;
+  if ((t === 'broken' || t === 'brokenSplit') && h.kind === 'chord' && h.rootPc !== undefined) return h.chordPcs.filter((x) => x !== h.rootPc);
+  return undefined;
 }
 
 /** Beats -> milliseconds at a tempo. */

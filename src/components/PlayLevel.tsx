@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Level, ScreenHelp } from '../types';
-import { Timeline, beatMs, buildTimeline, chordSummary } from '../utils/patternEngine';
+import { Timeline, beatMs, buildTimeline, chordSummary, hitAlt } from '../utils/patternEngine';
 import { HitResult, NotesCheck, TimingJudge, TimingSummary, pitchClassCheck, steadyOffset, summarize } from '../utils/timing';
 import { chordPcs, moveDistance, moveSizes, parseChord } from '../utils/chords';
 import { GROOVES, Groove } from '../audio/groove';
@@ -47,7 +47,7 @@ export function usePlayLevel(
    * patterns only, Chromebooks only (no room on a phone). An assignment can fix it on or hide it; the code records it.
    */
   const shapesRule = ctx.assignment?.shapes ?? 'choose';
-  const hasChords = !!pattern && ['block', 'bassChord', 'broken'].includes(pattern.texture);
+  const hasChords = !!pattern && ['block', 'bassChord', 'broken', 'brokenSplit'].includes(pattern.texture);
   const shapesAllowed = hasChords && !ctx.phone && shapesRule !== 'off';
   const [shapesPick, setShapesPick] = useState(false);
   const shapes = shapesAllowed && (shapesRule === 'on' || shapesPick);
@@ -130,11 +130,10 @@ export function usePlayLevel(
     } else {
       // Root-only hits in a chord pattern (root, then chord) also accept the whole chord in any inversion: with Chord
       // Names Only you can't see it's just the root. Wrong chords can be fixed for half the chord's length (at least 0.4 s).
-      const rootThenChord = pattern?.texture === 'bassChord' || pattern?.texture === 'broken';
       const expected = timeline.hits.map((h) => ({
         t: t0 + h.beat * bm,
         pcs: h.pcs,
-        ...(rootThenChord && h.kind === 'note' ? { alt: h.chordPcs } : {}),
+        ...(pattern && hitAlt(pattern.texture, h) ? { alt: hitAlt(pattern.texture, h) } : {}),
         slideMs: Math.max(400, h.dur * bm * 0.5),
       }));
       // For browser tests: when each hit is due and its keys (no student data).
@@ -234,7 +233,7 @@ export function usePlayLevel(
 
   const running = phase !== 'idle';
   // Scales (Lesson 7) and arpeggios fall as note blocks only: "Chord Names Only" has nothing to show for a scale.
-  const shownScreens: ScreenHelp[] = pattern?.texture === 'scale' || pattern?.texture === 'arpeggio' ? ['blocks'] : SCREEN_ORDER;
+  const shownScreens: ScreenHelp[] = pattern && ['scale', 'arpeggio', 'arp3', 'line'].includes(pattern.texture) ? ['blocks'] : SCREEN_ORDER;
   const allowedScreens = shownScreens.filter((s) => SCREEN_ORDER.indexOf(s) >= SCREEN_ORDER.indexOf(level.screen ?? 'blocks'));
 
   const settingsUI = (

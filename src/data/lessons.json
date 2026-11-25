@@ -3668,9 +3668,9 @@
         },
         {
           "id": "lr-learn-offbeats",
-          "section": "Syncopation",
+          "section": "More rhythms",
           "title": "Off the beat",
-          "say": "Syncopation means playing between the beats.\nHere the chord comes only on the +s.\nKeep the numbers going in your head (or tap your foot on them) and play in the gaps. It is the sound of reggae and ska.",
+          "say": "Now the chord comes only on the +s (the upbeats), short, never on the numbers.\nKeep the numbers going in your head (or tap your foot on them) and play in the gaps.\nIt is the sound of reggae and ska.",
           "need": 0,
           "rhythm": {
             "id": "lr-l-off",
@@ -3690,7 +3690,7 @@
         },
         {
           "id": "lr-try-offbeats",
-          "section": "Syncopation",
+          "section": "More rhythms",
           "title": "Play off the beat",
           "say": "Tap your foot on 1 2 3 4. Play only when your foot comes up.",
           "need": 1,
@@ -3712,7 +3712,7 @@
         },
         {
           "id": "lr-learn-tresillo",
-          "section": "The tresillo",
+          "section": "More rhythms",
           "title": "The tresillo",
           "say": "The tresillo (\"little three\") groups 8 eighths as 3 + 3 + 2.\nPlay on 1, on the + of 2, and on 4.\nIt is the 3 side of the son clave from Cuba, and it drives countless pop, Latin, reggaeton and R&B songs.",
           "need": 0,
@@ -3734,7 +3734,7 @@
         },
         {
           "id": "lr-try-tresillo",
-          "section": "The tresillo",
+          "section": "More rhythms",
           "title": "Play the tresillo",
           "say": "Count 1 + 2 + 3 + 4 + and play on 1, the + of 2, and 4.\nOr think of it as long, long, short.",
           "need": 1,
@@ -3758,7 +3758,7 @@
           "id": "lr-learn-oompah",
           "section": "Broken chords",
           "title": "Oom-pah",
-          "say": "Break the chord up: the root alone on 1 and 3, the whole chord on 2 and 4.\nOom-pah, oom-pah: the bass and the chord take turns.\nYou can play the root with your left hand.",
+          "say": "Break the chord up: the root alone on 1 and 3, the chord on 2 and 4.\nOom-pah, oom-pah: the bass and the chord take turns.\nThe \"pah\" can be the whole chord, or just its 3rd and 5th.",
           "need": 0,
           "rhythm": {
             "id": "lr-l-oom",
@@ -3780,7 +3780,7 @@
           "id": "lr-try-oompah",
           "section": "Broken chords",
           "title": "Play oom-pah",
-          "say": "Root, chord, root, chord.",
+          "say": "Root, chord, root, chord. (For the chord, the 3rd and 5th alone are fine too.)",
           "need": 1,
           "tryText": "Play C, then G: root on 1 and 3, chord on 2 and 4.",
           "rhythm": {
@@ -3799,10 +3799,98 @@
           }
         },
         {
-          "id": "lr-learn-arpeggio",
+          "id": "lr-learn-split",
+          "section": "Broken chords",
+          "title": "Split hands",
+          "say": "Now spread it out: the left hand plays the root low, on the left of the keyboard.\nThe right hand plays the whole chord up high, on the right.\nThat is how a lot of piano accompaniment sounds.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-split",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V"
+            ],
+            "texture": "brokenSplit",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-try-split",
+          "section": "Broken chords",
+          "title": "Play split hands",
+          "say": "Left hand: the root, low. Right hand: the chord, high.",
+          "need": 1,
+          "tryText": "Play C, then G: low root on 1 and 3, the chord up high on 2 and 4.",
+          "rhythm": {
+            "id": "lr-t-split",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V"
+            ],
+            "texture": "brokenSplit",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2
+          }
+        },
+        {
+          "id": "lr-learn-arp3",
           "section": "Broken chords",
           "title": "Arpeggios",
-          "say": "An arpeggio plays the chord one note at a time, going up: root, 3rd, 5th, then the root an octave up.\nIn 8th notes that is two runs up per bar.\nIt is the flowing sound of piano ballads.",
+          "say": "An arpeggio plays the chord one note at a time.\nGo round and round the triad in 8th notes: C E G C E G C E, then A C E A C E A C.\nThree notes in a pattern of eight: it rolls over the bar.",
+          "need": 0,
+          "rhythm": {
+            "id": "lr-l-arp3",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi"
+            ],
+            "texture": "arp3",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lr-try-arp3",
+          "section": "Broken chords",
+          "title": "Play the triad round and round",
+          "say": "Fingers 1 3 5 on C E G, then on A C E. Keep going round.",
+          "need": 1,
+          "tryText": "Play C E G C E G C E, then A C E A C E A C.",
+          "rhythm": {
+            "id": "lr-t-arp3",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi"
+            ],
+            "texture": "arp3",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2
+          }
+        },
+        {
+          "id": "lr-learn-arpeggio",
+          "section": "Broken chords",
+          "title": "Up to the octave",
+          "say": "Now go up the chord to the root an octave higher: root, 3rd, 5th, octave.\nIn 8th notes that is two runs up per bar.\nIt is the flowing sound of piano ballads.",
           "need": 0,
           "rhythm": {
             "id": "lr-l-arp",
@@ -4066,6 +4154,62 @@
           },
           "screen": "blocks",
           "groove": "pop"
+        },
+        {
+          "id": "lr-split",
+          "title": "Split hands",
+          "blurb": "Low root in the left hand, the chord high in the right.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-split",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "brokenSplit",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 96,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lr-arp3",
+          "title": "Arpeggio triads",
+          "blurb": "C E G C E G C E: round and round each chord.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lr-arp3",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi",
+              "IV",
+              "V"
+            ],
+            "texture": "arp3",
+            "rhythm": "eighths",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "ballad"
         },
         {
           "id": "lr-arpeggio",

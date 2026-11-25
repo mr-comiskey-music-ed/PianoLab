@@ -125,7 +125,9 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   const [demoIdx, setDemoIdx] = useState(-1);
   const [demoing, setDemoing] = useState(false);
   const step = steps[Math.min(i, steps.length - 1)];
-  const stepDone = !!step.show || count >= step.need;
+  // Done: show steps, a try that was just passed, or any step before the furthest one reached (or the whole Learn is
+  // finished): no redoing play-alongs when going back (his request).
+  const stepDone = !!step.show || count >= step.need || ctx.learnDone || i < ctx.learnMax;
   const last = i === steps.length - 1;
   const stepRef = useRef(step);
   stepRef.current = step;
@@ -420,11 +422,11 @@ export function useLearn(ctx: ModeCtx): ModeParts {
               <div className="h text-muted uppercase text-[11px]">{sec}</div>
               <div className="mt-0.5 flex flex-wrap gap-1">
                 {own.map(({ s, k }) => {
-                  const reached = k < i || (k === i && stepDone) || ctx.learnDone;
+                  const reached = k < Math.max(i, ctx.learnMax) || (k === i && stepDone) || ctx.learnDone;
                   return (
                     <button
                       key={s.id}
-                      disabled={!(ctx.learnDone || k <= i)}
+                      disabled={!(ctx.learnDone || k <= Math.max(i, ctx.learnMax))}
                       onClick={() => goStep(k, false)}
                       className={`h rounded-md border px-2 py-0.5 text-[12px] ${k === i ? 'border-brass2 bg-brass text-brasstext' : reached ? 'border-line2 bg-panel text-good' : 'border-line bg-page text-muted'}`}
                     >
