@@ -86,7 +86,8 @@ export function usePlayLevel(
       const g = Groove.get();
       g.setLevel(1);
       const roots = timeline.bars.map((b) => parseChord(b.symbol)?.root ?? timeline.key.tonic);
-      const beat1 = g.startGroove(grooveStyle, tempo, roots, LEAD_MS / 1000, -COUNT_IN);
+      const style = level.grooveBass === false ? { ...grooveStyle, bass: [] } : grooveStyle;
+      const beat1 = g.startGroove(style, tempo, roots, LEAD_MS / 1000, -COUNT_IN);
       stopClicks.current = () => g.stop();
       firstHeardAt = beat1 - COUNT_IN * bm;
     } else {

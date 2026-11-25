@@ -57,7 +57,19 @@ const SHORT_GAP = 2000;
 export const JAM_KEYS = KEYS.filter((k) => k.mode === 'major' || ['Am', 'Em', 'Dm'].includes(k.id));
 
 /** The pitch classes of a key's scale (major, or natural minor). */
-const scalePcs = (k: KeyDef) => (k.mode === 'major' ? MAJOR_SCALE.slice(0, 7) : [0, 2, 3, 5, 7, 8, 10]).map((s) => pc(k.tonic + s));
+/** Which notes Melody mode marks and Key lock lets through: the key's scale, its pentatonic, or the blues scale. */
+export type JamScale = 'key' | 'penta' | 'blues';
+export const scalePcs = (k: KeyDef, which: JamScale = 'key') =>
+  (which === 'penta'
+    ? k.mode === 'major'
+      ? [0, 2, 4, 7, 9]
+      : [0, 3, 5, 7, 10]
+    : which === 'blues'
+      ? [0, 3, 5, 6, 7, 10]
+      : k.mode === 'major'
+        ? MAJOR_SCALE.slice(0, 7)
+        : [0, 2, 3, 5, 7, 8, 10]
+  ).map((s) => pc(k.tonic + s));
 
 /** Read numerals typed by a student ("I V vi IV", "I - IV - V7"). Unreadable ones are dropped. */
 export function readNumerals(k: KeyDef, text: string): Diatonic[] {
@@ -182,6 +194,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   const [sheetPlace, setSheetPlace] = useState(-1);
   const [melody, setMelody] = useState(false);
   const [keyLock, setKeyLock] = useState(false);
+  const [jamScale, setJamScale] = useState<JamScale>('key');
   const [backVol, setBackVol] = useState(1);
   const [pianoVol, setPianoVol] = useState(1);
   const [playing, setPlaying] = useState(false);
@@ -344,7 +357,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   };
 
   // Melody mode / Key lock: the key's notes on the keys in view.
-  const inKey = new Set(scalePcs(key));
+  const inKey = new Set(scalePcs(key, jamScale));
   const view = Array.from({ length: KEY_COUNT }, (_, i) => ctx.viewStart + i);
   const tint = active && melody ? new Set(view.filter((m) => inKey.has(pc(m)))) : undefined;
   const dim = active && keyLock ? new Set(view.filter((m) => !inKey.has(pc(m)))) : undefined;
@@ -552,6 +565,21 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
           Key lock
         </button>
       </div>
+      {(melody || keyLock) && (
+        <div className="flex gap-1" role="radiogroup" aria-label="Which notes" data-testid="jam-scale">
+          {(
+            [
+              ['key', key.mode === 'major' ? 'Major scale' : 'Minor scale'],
+              ['penta', 'Pentatonic'],
+              ['blues', 'Blues'],
+            ] as const
+          ).map(([id, label]) => (
+            <button key={id} role="radio" aria-checked={jamScale === id} data-testid={`jam-scale-${id}`} className={`btn flex-1 px-1 py-0.5 text-[12px] ${jamScale === id ? 'btn-brass' : ''}`} onClick={() => setJamScale(id)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="card flex flex-col gap-0.5 px-2 py-1.5" data-testid="jam-mixer">
         <div className="h text-[11px] uppercase text-muted">Mix</div>
         {(

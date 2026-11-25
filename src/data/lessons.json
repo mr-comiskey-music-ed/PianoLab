@@ -4098,8 +4098,2263 @@
       ]
     },
     {
-      "id": "lesson-7",
+      "id": "lesson-bass",
       "number": 8,
+      "title": "Bass lines",
+      "key": "C",
+      "numerals": true,
+      "practice": "Play just the root of each chord, low, with your left hand. Then try the styles: rock 8ths, root and 5th, octaves, off-beats, a trap 808, walking to the next chord.",
+      "learn": [
+        {
+          "id": "lb-learn-roots",
+          "section": "Roots",
+          "title": "The bass plays the root",
+          "say": "The bass holds the band together: it plays the root of each chord, low.\nPop and ballads keep it simple: the root on the beat.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-roots",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R"
+              },
+              {
+                "b": 1,
+                "n": "R"
+              },
+              {
+                "b": 2,
+                "n": "R"
+              },
+              {
+                "b": 3,
+                "n": "R"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lb-try-roots",
+          "section": "Roots",
+          "title": "Play roots on the beat",
+          "say": "C for a bar, then F. Use your left hand.",
+          "need": 1,
+          "tryText": "Play the roots, C then F, on every beat.",
+          "rhythm": {
+            "id": "lb-t-roots",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R"
+              },
+              {
+                "b": 1,
+                "n": "R"
+              },
+              {
+                "b": 2,
+                "n": "R"
+              },
+              {
+                "b": 3,
+                "n": "R"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lb-learn-rock",
+          "section": "Rock",
+          "title": "Rock: pump the root",
+          "say": "Rock bass drives: the root in steady 8th notes, like an engine.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-rock",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
+                "b": 0.5,
+                "n": "R"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
+              },
+              {
+                "b": 1.5,
+                "n": "R"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
+              },
+              {
+                "b": 2.5,
+                "n": "R"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
+              },
+              {
+                "b": 3.5,
+                "n": "R"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lb-try-rock",
+          "section": "Rock",
+          "title": "Play rock 8ths",
+          "say": "Keep it even and steady: 1 + 2 + 3 + 4 +.",
+          "need": 1,
+          "tryText": "Pump the root in 8th notes: C, then F.",
+          "rhythm": {
+            "id": "lb-t-rock",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 72,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
+                "b": 0.5,
+                "n": "R"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
+              },
+              {
+                "b": 1.5,
+                "n": "R"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
+              },
+              {
+                "b": 2.5,
+                "n": "R"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
+              },
+              {
+                "b": 3.5,
+                "n": "R"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lb-learn-fifth",
+          "section": "Root and 5th",
+          "title": "Root and 5th",
+          "say": "Country, folk and early rock and roll: the root on 1, the 5th on 3.\nThe 5th is the top note of the triad: C to G, F to C.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-fifth",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 2
+              },
+              {
+                "b": 2,
+                "n": "5",
+                "d": 2
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lb-try-fifth",
+          "section": "Root and 5th",
+          "title": "Play root and 5th",
+          "say": "Root, then 5th. Root, then 5th.",
+          "need": 1,
+          "tryText": "Play root on 1, 5th on 3: C then G, F then C.",
+          "rhythm": {
+            "id": "lb-t-fifth",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 2
+              },
+              {
+                "b": 2,
+                "n": "5",
+                "d": 2
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lb-learn-octave",
+          "section": "Dance music",
+          "title": "Octaves",
+          "say": "Disco and dance music bounce between the root and the root an octave up, in 8th notes.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-oct",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
+                "b": 0.5,
+                "n": "O"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
+              },
+              {
+                "b": 1.5,
+                "n": "O"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
+              },
+              {
+                "b": 2.5,
+                "n": "O"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
+              },
+              {
+                "b": 3.5,
+                "n": "O"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lb-learn-edm",
+          "section": "Dance music",
+          "title": "EDM: off the beat",
+          "say": "In house and EDM the kick drum hits every beat.\nThe bass gets out of its way and plays on the +s, in the gaps.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-edm",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 2.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 3.5,
+                "n": "R",
+                "d": 0.5
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lb-try-edm",
+          "section": "Dance music",
+          "title": "Play off-beat bass",
+          "say": "Tap your foot on the beat (that is the kick) and play when it comes up.",
+          "need": 1,
+          "tryText": "Play the roots on the +s: C, then F.",
+          "rhythm": {
+            "id": "lb-t-edm",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 2.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 3.5,
+                "n": "R",
+                "d": 0.5
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lb-learn-trap",
+          "section": "Hip hop",
+          "title": "Trap: the 808",
+          "say": "Trap bass is the 808: a long, low, booming note.\nFew notes, held long and placed off the beat. The jump to the octave adds bounce.\nThe hi-hats do the fast stuff, so the bass doesn't have to.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-trap",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 1.5
+              },
+              {
+                "b": 1.5,
+                "n": "R",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "O",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lb-try-trap",
+          "section": "Hip hop",
+          "title": "Play an 808 line",
+          "say": "Long, long, then the octave. Hold each note for its whole length.",
+          "need": 1,
+          "tryText": "Play the 808 line: root, root, octave.",
+          "rhythm": {
+            "id": "lb-t-trap",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 1.5
+              },
+              {
+                "b": 1.5,
+                "n": "R",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "O",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lb-learn-walk",
+          "section": "Walking",
+          "title": "Walk to the next chord",
+          "say": "Motown, R&B and jazz bass walk: root, 3rd, 5th, then a note a half step away from the next root.\nThat last note leads your ear into the next chord.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-walk",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "A"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lb-try-walk",
+          "section": "Walking",
+          "title": "Play a walking line",
+          "say": "C E G, then E leads up to F. F A C, then B leads up to C.",
+          "need": 1,
+          "tryText": "Walk: root, 3rd, 5th, then lead into the next root.",
+          "rhythm": {
+            "id": "lb-t-walk",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "A"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lb-learn-reggaeton",
+          "section": "Latin",
+          "title": "Reggaeton: the tresillo",
+          "say": "Reggaeton and lots of Latin pop put the bass on the tresillo from Lesson 7: 1, the + of 2, and 4.",
+          "need": 0,
+          "rhythm": {
+            "id": "lb-l-reg",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 1.5
+              },
+              {
+                "b": 1.5,
+                "n": "R",
+                "d": 1.5
+              },
+              {
+                "b": 3,
+                "n": "R",
+                "d": 1
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "show": true
+        }
+      ],
+      "levels": [
+        {
+          "id": "lb-roots",
+          "title": "Roots on the beat",
+          "blurb": "Be the bass player: roots on every beat.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-roots",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V",
+              "vi",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "R"
+              },
+              {
+                "b": 1,
+                "n": "R"
+              },
+              {
+                "b": 2,
+                "n": "R"
+              },
+              {
+                "b": 3,
+                "n": "R"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "pop",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-rock",
+          "title": "Rock 8ths",
+          "blurb": "Pump the root in 8th notes: G – C – D – C.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-rock",
+            "key": "G",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 104,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
+                "b": 0.5,
+                "n": "R"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
+              },
+              {
+                "b": 1.5,
+                "n": "R"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
+              },
+              {
+                "b": 2.5,
+                "n": "R"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
+              },
+              {
+                "b": 3.5,
+                "n": "R"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "rock",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-fifth",
+          "title": "Root and 5th",
+          "blurb": "Root on 1, 5th on 3.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-fifth",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "IV",
+              "V",
+              "I"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 96,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 2
+              },
+              {
+                "b": 2,
+                "n": "5",
+                "d": 2
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "pop",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-octave",
+          "title": "Disco octaves",
+          "blurb": "Root, octave, root, octave in 8th notes.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-octave",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "vi",
+              "IV",
+              "I",
+              "V"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 100,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0.0,
+                "n": "R"
+              },
+              {
+                "b": 0.5,
+                "n": "O"
+              },
+              {
+                "b": 1.0,
+                "n": "R"
+              },
+              {
+                "b": 1.5,
+                "n": "O"
+              },
+              {
+                "b": 2.0,
+                "n": "R"
+              },
+              {
+                "b": 2.5,
+                "n": "O"
+              },
+              {
+                "b": 3.0,
+                "n": "R"
+              },
+              {
+                "b": 3.5,
+                "n": "O"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "funk",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-edm",
+          "title": "EDM off-beats",
+          "blurb": "The kick takes the beat, you take the +s.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-edm",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "vi",
+              "IV",
+              "I",
+              "V"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 120,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 2.5,
+                "n": "R",
+                "d": 0.5
+              },
+              {
+                "b": 3.5,
+                "n": "R",
+                "d": 0.5
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "house",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-trap",
+          "title": "Trap 808",
+          "blurb": "Long 808 notes with an octave bounce.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-trap",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "vi",
+              "IV",
+              "I",
+              "V"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 140,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 1.5
+              },
+              {
+                "b": 1.5,
+                "n": "R",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "O",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "trap",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-walk",
+          "title": "Walking bass",
+          "blurb": "Root, 3rd, 5th, then lead into the next chord.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-walk",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "vi",
+              "IV",
+              "V"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "R"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "A"
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "pop",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-reggaeton",
+          "title": "Reggaeton bass",
+          "blurb": "The tresillo, on the roots.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-reggaeton",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "vi",
+              "IV",
+              "I",
+              "V"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 94,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 1.5
+              },
+              {
+                "b": 1.5,
+                "n": "R",
+                "d": 1.5
+              },
+              {
+                "b": 3,
+                "n": "R",
+                "d": 1
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "reggaeton",
+          "grooveBass": false
+        },
+        {
+          "id": "lb-both",
+          "title": "Bass and chords",
+          "blurb": "Left hand: the root on 1. Right hand: the chord on 2, 3 and 4.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lb-both",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V",
+              "vi",
+              "IV"
+            ],
+            "texture": "bassChord",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 8
+          },
+          "screen": "blocks",
+          "groove": "pop",
+          "grooveBass": false
+        }
+      ]
+    },
+    {
+      "id": "lesson-riffs",
+      "number": 9,
+      "title": "Riffs and melodies",
+      "key": "Am",
+      "numerals": true,
+      "practice": "Put on a groove in the Jam Room, turn on Key lock with Pentatonic, and make up a riff: start with one note and a rhythm, then add a second note, then a third.",
+      "learn": [
+        {
+          "id": "lm-learn-one",
+          "section": "Riffs",
+          "title": "One-note riff",
+          "say": "A riff is a short tune that repeats, like a guitar riff or a synth hook.\nStart with ONE note. The rhythm is what makes it a riff.",
+          "need": 0,
+          "rhythm": {
+            "id": "lm-l-one",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1.5
+              },
+              {
+                "b": 1.5,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "0",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lm-try-one",
+          "section": "Riffs",
+          "title": "Play a one-note riff",
+          "say": "Just A: long, long, short.",
+          "need": 1,
+          "tryText": "Play the one-note riff on A.",
+          "rhythm": {
+            "id": "lm-t-one",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1.5
+              },
+              {
+                "b": 1.5,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "0",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lm-learn-two",
+          "section": "Riffs",
+          "title": "Two-note riff",
+          "say": "Add a second note: C, three half steps up.\nTwo notes and a rhythm already sound like a song.",
+          "need": 0,
+          "rhythm": {
+            "id": "lm-l-two",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 1,
+                "n": "0",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "3",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "0",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lm-try-two",
+          "section": "Riffs",
+          "title": "Play a two-note riff",
+          "say": "A, A, C, A.",
+          "need": 1,
+          "tryText": "Play the two-note riff: A and C.",
+          "rhythm": {
+            "id": "lm-t-two",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 1,
+                "n": "0",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "3",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "0",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lm-learn-three",
+          "section": "Riffs",
+          "title": "Three-note riff",
+          "say": "A third note: D. Go up and come back home.",
+          "need": 0,
+          "rhythm": {
+            "id": "lm-l-three",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 1,
+                "n": "3",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "5",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "3",
+                "d": 0.5
+              },
+              {
+                "b": 3,
+                "n": "0",
+                "d": 1
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lm-try-three",
+          "section": "Riffs",
+          "title": "Play a three-note riff",
+          "say": "A, C, D, C, A.",
+          "need": 1,
+          "tryText": "Play the three-note riff: A, C and D.",
+          "rhythm": {
+            "id": "lm-t-three",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 1,
+                "n": "3",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "5",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "3",
+                "d": 0.5
+              },
+              {
+                "b": 3,
+                "n": "0",
+                "d": 1
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          }
+        },
+        {
+          "id": "lm-learn-penta",
+          "section": "Pentatonic",
+          "title": "The pentatonic scale",
+          "say": "Those notes come from the minor pentatonic scale: A C D E G.\nFive notes that sound good over every chord in A minor.\nRiffs and solos in rock, blues, pop and hip hop live here.",
+          "need": 0,
+          "rhythm": {
+            "id": "lm-l-penta",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "7"
+              },
+              {
+                "b": 4,
+                "n": "10"
+              },
+              {
+                "b": 5,
+                "n": "12"
+              },
+              {
+                "b": 6,
+                "n": "10"
+              },
+              {
+                "b": 7,
+                "n": "7"
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lm-try-penta",
+          "section": "Pentatonic",
+          "title": "Play the pentatonic",
+          "say": "Up from A to A, then back down to E.",
+          "need": 1,
+          "tryText": "Play the A minor pentatonic up and back down.",
+          "rhythm": {
+            "id": "lm-t-penta",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "7"
+              },
+              {
+                "b": 4,
+                "n": "10"
+              },
+              {
+                "b": 5,
+                "n": "12"
+              },
+              {
+                "b": 6,
+                "n": "10"
+              },
+              {
+                "b": 7,
+                "n": "7"
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 2
+          }
+        },
+        {
+          "id": "lm-learn-blues",
+          "section": "Pentatonic",
+          "title": "The blue note",
+          "say": "Add one note between D and E: D♯ (or E♭). It is the blue note.\nSlide through it on the way to E; don't sit on it.",
+          "need": 0,
+          "rhythm": {
+            "id": "lm-l-blues",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "iv"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5",
+                "d": 0.5
+              },
+              {
+                "b": 2.5,
+                "n": "6",
+                "d": 0.5
+              },
+              {
+                "b": 3,
+                "n": "7",
+                "d": 1
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "show": true
+        },
+        {
+          "id": "lm-learn-call",
+          "section": "Phrases",
+          "title": "Call and response",
+          "say": "Melodies talk. Bar 1 asks a question: it climbs and stops up high, unfinished.\nBar 2 answers: it comes back home to A.",
+          "need": 0,
+          "rhythm": {
+            "id": "lm-l-call",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "7"
+              },
+              {
+                "b": 4,
+                "n": "5"
+              },
+              {
+                "b": 5,
+                "n": "3"
+              },
+              {
+                "b": 6,
+                "n": "0",
+                "d": 2
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lm-try-call",
+          "section": "Phrases",
+          "title": "Play call and response",
+          "say": "Up A C D E (the question), then D C A (the answer).",
+          "need": 1,
+          "tryText": "Play the call, then the response.",
+          "rhythm": {
+            "id": "lm-t-call",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "0"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "7"
+              },
+              {
+                "b": 4,
+                "n": "5"
+              },
+              {
+                "b": 5,
+                "n": "3"
+              },
+              {
+                "b": 6,
+                "n": "0",
+                "d": 2
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 2
+          }
+        },
+        {
+          "id": "lm-learn-land",
+          "section": "Phrases",
+          "title": "Land on a chord tone",
+          "say": "End a phrase on a note of the chord that is playing and it sounds finished.\nOver Am that is A, C or E. Over F it is F, A or C.\nHere both phrases land on C, which is in both chords.",
+          "need": 0,
+          "rhythm": {
+            "id": "lm-l-land",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 80,
+            "bars": 2,
+            "line": [
+              {
+                "b": 0,
+                "n": "7"
+              },
+              {
+                "b": 1,
+                "n": "5"
+              },
+              {
+                "b": 2,
+                "n": "3",
+                "d": 2
+              },
+              {
+                "b": 4,
+                "n": "7"
+              },
+              {
+                "b": 5,
+                "n": "5"
+              },
+              {
+                "b": 6,
+                "n": "3",
+                "d": 2
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 2
+          },
+          "show": true
+        },
+        {
+          "id": "lm-learn-yours",
+          "section": "Phrases",
+          "title": "Make your own",
+          "say": "Now make your own riff in the Jam Room.\nPick a groove, then turn on Key lock and choose Pentatonic: every key you can play will fit.\nStart with one note and a rhythm. Then add a second note. Then a third.",
+          "need": 0,
+          "show": true
+        }
+      ],
+      "levels": [
+        {
+          "id": "lm-one",
+          "title": "One-note riff",
+          "blurb": "One note, a rhythm, over Am – F – C – G.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lm-one",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI",
+              "III",
+              "VII"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1.5
+              },
+              {
+                "b": 1.5,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "0",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lm-one-sync",
+          "title": "One-note riff, funky",
+          "blurb": "Still one note, with a syncopated rhythm.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lm-one-sync",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI",
+              "III",
+              "VII"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 96,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 0.75
+              },
+              {
+                "b": 0.75,
+                "n": "0",
+                "d": 0.75
+              },
+              {
+                "b": 1.5,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "0",
+                "d": 0.5
+              },
+              {
+                "b": 3,
+                "n": "0",
+                "d": 0.5
+              },
+              {
+                "b": 3.5,
+                "n": "0",
+                "d": 0.5
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "funk"
+        },
+        {
+          "id": "lm-two",
+          "title": "Two-note riff",
+          "blurb": "A and C.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lm-two",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI",
+              "III",
+              "VII"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 100,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 1,
+                "n": "0",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "3",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "0",
+                "d": 1.5
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "rock"
+        },
+        {
+          "id": "lm-three",
+          "title": "Three-note riff",
+          "blurb": "A, C and D, over a reggaeton beat.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lm-three",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI",
+              "III",
+              "VII"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 94,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "0",
+                "d": 1
+              },
+              {
+                "b": 1,
+                "n": "3",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "5",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "3",
+                "d": 0.5
+              },
+              {
+                "b": 3,
+                "n": "0",
+                "d": 1
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "reggaeton"
+        },
+        {
+          "id": "lm-penta",
+          "title": "Pentatonic up and down",
+          "blurb": "A C D E G A, and back.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lm-penta",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI",
+              "III",
+              "VII"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "0"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "7"
+              },
+              {
+                "b": 4,
+                "n": "10"
+              },
+              {
+                "b": 5,
+                "n": "12"
+              },
+              {
+                "b": 6,
+                "n": "10"
+              },
+              {
+                "b": 7,
+                "n": "7"
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 2
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lm-blues",
+          "title": "Blues riff",
+          "blurb": "Through the blue note: A C D D♯ E.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lm-blues",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "iv"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 96,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "0"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5",
+                "d": 0.5
+              },
+              {
+                "b": 2.5,
+                "n": "6",
+                "d": 0.5
+              },
+              {
+                "b": 3,
+                "n": "7",
+                "d": 1
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "rock"
+        },
+        {
+          "id": "lm-call",
+          "title": "Call and response",
+          "blurb": "The question, then the answer.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lm-call",
+            "key": "A",
+            "mode": "minor",
+            "progression": [
+              "i",
+              "VI",
+              "III",
+              "VII"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 90,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "0"
+              },
+              {
+                "b": 1,
+                "n": "3"
+              },
+              {
+                "b": 2,
+                "n": "5"
+              },
+              {
+                "b": 3,
+                "n": "7"
+              },
+              {
+                "b": 4,
+                "n": "5"
+              },
+              {
+                "b": 5,
+                "n": "3"
+              },
+              {
+                "b": 6,
+                "n": "0",
+                "d": 2
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 2
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lm-major",
+          "title": "Riff in C major",
+          "blurb": "The major pentatonic (C D E G A) over C – G – Am – F.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "lm-major",
+            "key": "C",
+            "mode": "major",
+            "progression": [
+              "I",
+              "V",
+              "vi",
+              "IV"
+            ],
+            "texture": "line",
+            "rhythm": "quarter",
+            "voicing": "root",
+            "tempo": 100,
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "7",
+                "d": 0.5
+              },
+              {
+                "b": 0.5,
+                "n": "9",
+                "d": 0.5
+              },
+              {
+                "b": 1,
+                "n": "7",
+                "d": 0.5
+              },
+              {
+                "b": 1.5,
+                "n": "4",
+                "d": 1
+              },
+              {
+                "b": 2.5,
+                "n": "2",
+                "d": 0.5
+              },
+              {
+                "b": 3,
+                "n": "0",
+                "d": 1
+              }
+            ],
+            "lineOf": "key",
+            "lineBars": 1
+          },
+          "screen": "blocks",
+          "groove": "pop"
+        },
+        {
+          "id": "lm-echo",
+          "title": "Copy the riff",
+          "blurb": "Listen to a pentatonic riff, then play it back.",
+          "type": "echo",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [
+            {
+              "text": "Copy the riff (4 notes).",
+              "notes": [
+                "A3",
+                "C4",
+                "D4",
+                "C4"
+              ]
+            },
+            {
+              "text": "Copy the riff (4 notes).",
+              "notes": [
+                "A3",
+                "A3",
+                "C4",
+                "A3"
+              ]
+            },
+            {
+              "text": "Copy the riff (4 notes).",
+              "notes": [
+                "E4",
+                "D4",
+                "C4",
+                "A3"
+              ]
+            },
+            {
+              "text": "Copy the riff (4 notes).",
+              "notes": [
+                "A3",
+                "C4",
+                "D4",
+                "E4"
+              ]
+            },
+            {
+              "text": "Copy the riff (4 notes).",
+              "notes": [
+                "G4",
+                "E4",
+                "D4",
+                "C4"
+              ]
+            },
+            {
+              "text": "Copy the riff (4 notes).",
+              "notes": [
+                "C4",
+                "D4",
+                "C4",
+                "A3"
+              ]
+            },
+            {
+              "text": "Copy the riff (4 notes).",
+              "notes": [
+                "A3",
+                "C4",
+                "A3",
+                "G3"
+              ]
+            },
+            {
+              "text": "Copy the riff (4 notes).",
+              "notes": [
+                "D4",
+                "E4",
+                "G4",
+                "E4"
+              ]
+            }
+          ],
+          "echo": "hint"
+        }
+      ]
+    },
+    {
+      "id": "lesson-7",
+      "number": 10,
       "title": "Major scales",
       "key": "C",
       "numerals": true,
@@ -4502,7 +6757,7 @@
     },
     {
       "id": "lesson-8",
-      "number": 9,
+      "number": 11,
       "title": "7th chords",
       "key": "C",
       "numerals": true,

@@ -4,7 +4,19 @@
  * Data files (JSON) hold the patterns, so adding one means editing a list.
  */
 /** `scale` (Lesson 7): the key's major scale up and down, one note per hit (the progression is ignored). */
-export type Texture = 'bass' | 'block' | 'bassChord' | 'broken' | 'arpeggio' | 'scale';
+/** `line`: a bass line or riff written note by note (`line`), repeated every `lineBars` bars. */
+export type Texture = 'bass' | 'block' | 'bassChord' | 'broken' | 'arpeggio' | 'scale' | 'line';
+/**
+ * One note of a line. `b` = beat inside the line (0 = beat 1 of its first bar), `d` = length in beats (default: until
+ * the next note). `n`: with `lineOf: 'chord'` (bass lines) a note of the bar's chord: R root, 3 its 3rd, 5 its 5th, b7,
+ * O the octave, L5 the 5th below, A a half step below the next bar's root (leading into it), A+ a half step above it;
+ * with `lineOf: 'key'` (riffs) half steps up from the key's home note ("0", "3", "7", "12").
+ */
+export interface LineNote {
+  b: number;
+  n: string;
+  d?: number;
+}
 export type Rhythm = 'whole' | 'half' | 'quarter' | 'eighths' | `sync:${string}`;
 export type Voicing = 'root' | 'inversions' | 'smoothest';
 
@@ -21,9 +33,13 @@ export interface Pattern {
   /** Beats per minute. */
   tempo: number;
   bars: number;
+  /** texture `line`: the notes, what they're relative to, and how many bars before it repeats (default 1). */
+  line?: LineNote[];
+  lineOf?: 'chord' | 'key';
+  lineBars?: number;
 }
 
-const TEXTURES: Texture[] = ['bass', 'block', 'bassChord', 'broken', 'arpeggio', 'scale'];
+const TEXTURES: Texture[] = ['bass', 'block', 'bassChord', 'broken', 'arpeggio', 'scale', 'line'];
 const VOICINGS: Voicing[] = ['root', 'inversions', 'smoothest'];
 
 /** Returns a list of problems; an empty list means the pattern is well formed. */
@@ -38,5 +54,6 @@ export function validatePattern(p: Partial<Pattern>): string[] {
   if (!p.voicing || !VOICINGS.includes(p.voicing)) bad.push('voicing is not recognised');
   if (typeof p.tempo !== 'number' || p.tempo < 30 || p.tempo > 240) bad.push('tempo must be 30-240');
   if (typeof p.bars !== 'number' || p.bars < 1) bad.push('bars must be at least 1');
+  if (p.texture === 'line' && !(Array.isArray(p.line) && p.line.length)) bad.push('a line needs its notes');
   return bad;
 }

@@ -56,6 +56,21 @@ describe('lesson content', () => {
           }
         }
   });
+  it('every timed pattern (levels and Learn rhythms) fits on the 25 keys, and every line note means a note', () => {
+    for (const l of LESSONS) {
+      const pats = [...l.levels.map((v) => v.pattern), ...l.learn.map((s) => s.rhythm)].filter((p): p is NonNullable<typeof p> => !!p);
+      for (const p of pats) {
+        expect(validatePattern(p), p.id).toEqual([]);
+        const tl = buildTimeline(p);
+        for (const h of tl.hits) for (const n of h.notes) expect(n >= 48 && n <= 72, `${p.id}: note ${n} at beat ${h.beat}`).toBe(true);
+        if (p.texture === 'line') {
+          const perSpan = p.line!.length;
+          const spans = Math.ceil(p.bars / (p.lineBars ?? 1));
+          expect(tl.hits.length, `${p.id}: every line note resolves`).toBe(perSpan * spans);
+        }
+      }
+    }
+  });
   it('timed levels are well formed', () => {
     for (const l of LESSONS)
       for (const v of l.levels) {

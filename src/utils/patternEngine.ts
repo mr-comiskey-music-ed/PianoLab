@@ -1,5 +1,5 @@
 import { Pattern, Rhythm, Texture } from '../data/pattern';
-import { Chord, KeyDef, chordName, diatonic, diatonicSevenths, makeKey, parseNumeral, smoothestVoicing, voicing } from './chords';
+import { Chord, KeyDef, chordName, chordPcs, diatonic, diatonicSevenths, makeKey, parseNumeral, smoothestVoicing, voicing } from './chords';
 import { pc, pcOf } from './music';
 import { MAJOR_SCALE } from './scales';
 
@@ -84,6 +84,7 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
   const tonic = pcOf(p.key) ?? 0;
   const key = makeKey(tonic, p.mode);
   if (p.texture === 'scale') return scaleTimeline(p, key, tempo);
+  if (p.texture === 'line') return lineTimeline(p, key, tempo);
   const hitsInBar = rhythmBeats(p.rhythm);
   const hits: TimedHit[] = [];
   const bars: BarInfo[] = [];
@@ -134,11 +135,77 @@ function scaleTimeline(p: Pattern, key: KeyDef, tempo: number): Timeline {
   return { key, hits, bars, beats: loops * 16, tempo, scale: true };
 }
 
+/** The bar's chord (numeral resolved in the key), or the tonic chord if it doesn't read. */
+const barChord = (p: Pattern, key: KeyDef, bar: number) => resolveNumeral(key, p.progression[bar % p.progression.length]) ?? diatonic(key)[0];
+
+/** Which note a line token means (see `LineNote`). */
+export function lineNote(token: string, chord: Chord, next: Chord, tonic: number, of: 'chord' | 'key'): number | null {
+  if (of === 'key') {
+    const n = Number(token);
+    return Number.isFinite(n) ? BASE + tonic + n : null;
+  }
+  const root = BASE + chord.root;
+  const tones = chordPcs(chord).map((x) => (x - chord.root + 12) % 12); // [0, 3rd, 5th, (7th)]
+  const nextRoot = BASE + next.root;
+  switch (token) {
+    case 'R':
+      return root;
+    case '3':
+      return root + tones[1];
+    case '5':
+      return root + tones[2];
+    case 'b7':
+      return root + 10;
+    case 'O':
+      return root + 12;
+    case 'L5':
+      return root - 5 >= BASE ? root - 5 : root + 7;
+    case 'A':
+      return nextRoot - 1 >= BASE ? nextRoot - 1 : nextRoot + 1;
+    case 'A+':
+      return nextRoot + 1;
+    default:
+      return null;
+  }
+}
+
+/**
+ * Bass lines and riffs: the line's notes, bar after bar (a line can span `lineBars` bars before repeating). Bass lines
+ * follow each bar's chord (root, 5th, a note leading into the next chord...); riffs stay in the key.
+ */
+function lineTimeline(p: Pattern, key: KeyDef, tempo: number): Timeline {
+  const span = Math.max(1, p.lineBars ?? 1);
+  const of = p.lineOf ?? 'chord';
+  const line = [...(p.line ?? [])].sort((a, b) => a.b - b.b);
+  const hits: TimedHit[] = [];
+  const bars: BarInfo[] = [];
+  for (let bar = 0; bar < p.bars; bar++) {
+    const d = barChord(p, key, bar);
+    bars.push({ bar, beat: bar * 4, symbol: chordName(d.chord), numeral: d.numeral, color: d.color });
+  }
+  for (let start = 0; start < p.bars; start += span) {
+    line.forEach((ln, i) => {
+      const beat = start * 4 + ln.b;
+      if (beat >= p.bars * 4) return;
+      const bar = Math.floor(beat / 4);
+      const chord = barChord(p, key, bar).chord;
+      const next = barChord(p, key, bar + 1).chord;
+      const note = lineNote(ln.n, chord, next, key.tonic, of);
+      if (note === null) return;
+      const until = line[i + 1]?.b ?? span * 4;
+      const dur = Math.min(ln.d ?? until - ln.b, p.bars * 4 - beat);
+      hits.push({ beat, dur, notes: [note], pcs: [pc(note)], kind: 'note', bar, chordPcs: chordPcs(chord) });
+    });
+  }
+  return { key, hits, bars, beats: p.bars * 4, tempo };
+}
+
 /** What one hit plays, for each texture (SPEC section 6). `i` is the hit's place in its bar. */
 function textureHit(t: Texture, chord: number[], root: number, i: number): number[] {
   switch (t) {
     case 'scale':
-      return chord; // (scales have their own timeline)
+    case 'line':
+      return chord; // (scales and lines have their own timelines)
     case 'bass':
       return [root]; // single notes: the chord's root
     case 'block':

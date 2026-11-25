@@ -97,6 +97,8 @@ export interface Level {
   target?: number;
   /** play: an app-made groove (Jam Room style id, e.g. "pop") plays along instead of plain clicks (students can switch). */
   groove?: string;
+  /** play with a groove: false = the groove leaves out its bass (bass-line levels: the student is the bass player). */
+  grooveBass?: boolean;
   /** nameChord: also play the chord out loud (with "Hear it again"). */
   playChord?: boolean;
   /** smooth: the first chord's keys, e.g. ["C4","E4","G4"]. */

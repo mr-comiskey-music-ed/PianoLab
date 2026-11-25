@@ -36,6 +36,7 @@ export const GROOVES: GrooveStyle[] = [
   { id: 'trap', name: 'Trap', bpm: 140, kick: [0, 7, 10], snare: [8], hat: [0, 1, 2, 4, 6, 7, 8, 10, 12, 13, 14, 15], bass: [[0, 'R', 7], [7, 'R', 3], [10, 'O', 6]] },
   { id: 'boombap', name: 'Boom-bap', bpm: 90, kick: [0, 7, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [7, 'R'], [10, '5', 3]], swing: 0.25 },
   { id: 'bossa', name: 'Bossa nova', bpm: 120, kick: [0, 3, 4, 7, 8, 11, 12, 15], snare: [0, 3, 6, 10, 13], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [3, '5'], [4, '5', 3], [8, 'R', 3], [11, '5'], [12, '5', 3]] },
+  { id: 'house', name: 'House / EDM', bpm: 124, kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14], bass: [[2, 'R'], [6, 'R'], [10, 'R'], [14, 'R']] },
   { id: 'click', name: 'Just the beat (clicks)', bpm: 80, kick: [], snare: [], hat: [], bass: [] },
 ];
 
