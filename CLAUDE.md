@@ -9,7 +9,7 @@ Drills are the means; students making music is the goal.
   the code (like SynthLab); the app never stores it. Older codes with no name still work; the batch view then uses any text
   pasted next to the code.
 - Only things kept in the browser: autosave (`pianolab:v1:autosave`), latency (`pianolab:v1:latency`), personal bests
-  (`pianolab:v1:best`), Custom Synth patches (`pianolab:v1:synths`: sound settings + patch names). Never a student name.
+  (`pianolab:v1:best`), Custom Synth patches (`pianolab:v1:synths`: sound settings + patch names), welcome seen (`pianolab:v1:welcomed` = "1"). Never a student name.
   A Sandbox recording lives in memory only (gone on reload) unless saved as a code/link/.mid. "Restore your last session?" prompt first; autosave stays off until answered.
 - **Chromebooks first**: each student has a Chromebook, a **25-key USB MIDI keyboard** and headphones. Keep it light and
   fast. Sounds load only when picked. Mobile is nice-to-have only.
@@ -361,6 +361,26 @@ list), all screens. Jam Room: the "You're playing" line has a fixed height (`h-1
 iframes fill their frame (`[data-testid='youtube'] iframe` in index.css; YouTube's default 640x390 made a box in a box).
 **Glissando** (`Piano.tsx` `move`): sliding a held finger, or the mouse with its button down, across the keys plays each
 key it reaches and lets go of the one it left; keys another finger holds aren't cut off. `e41` tests these.
+
+**Last build phase (his picks; class record skipped):**
+- Phones: the Sandbox Stage has Save performance with Play back / Pause under it (top right, once something is recorded);
+  the Jam Room's ▶ Play / ■ Stop sits under its Save bar (not for YouTube). YouTube on phones fills the whole short Stage
+  (`YouTubeBox cover`: top and bottom cropped, the Stage's 0.8 zoom undone, `.yt-cover` in index.css) instead of a small
+  box. (YouTube is blocked in the test browser; `e49` uses a stand-in player.)
+- **Everything assignable** (`utils/assignment.ts`, new keys, old ones unchanged): `l` Learn lessons, `e` Echo at least
+  See First Note / By Ear, `w` timed levels at most Chord Names Only (not scale levels), `o` opens on Learn / Challenges /
+  Sandbox / Jam Room (automatic otherwise: levels, then Learn, then Jam), `m` a note from the teacher (banner), `j` a Jam
+  Room setup (groove style + key + preset or the teacher's own numerals + slowest tempo, or one of his tracks, or a
+  YouTube video + key; Key lock and Melody mode each off / on / student chooses). A link can assign only Learn, only the
+  Jam Room or only the Sandbox. Learn-only lessons show "No Challenges in this assignment" in Challenges; a Jam/Sandbox-only
+  link keeps every lesson open with no levels. A set-up Jam Room shows "Set up by your teacher" (tempo can only go faster).
+  Saved performances (Sandbox, Jam) carry the assignment name in the code. Builder: Grade Report > Make an assignment
+  link (Learn tick box on each lesson; timed/Echo options appear only when such levels are ticked). `e51` tests it.
+- **Welcome walkthrough** (`Welcome.tsx`): 5 cards (playing: MIDI / computer keys / touch · Learn, Practice, Challenges ·
+  latency check · Sandbox and Jam Room · turning in a code; phone wording differs). Shows on a first visit only (not for a
+  returning student who gets the restore prompt); reopen with "?" in the top bar (phones: ⋯ > How it works). The phone
+  nav hint waits until it closes. **Browser tests must set `pianolab:v1:welcomed` = "1"** or the welcome covers the page.
+- Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
 ## Open items (last updated end of Phase 1 testing)
 - Waiting on Mr. Comiskey's Chromebook test of: Soft Piano (gentler crackle), Pad (softer swell).

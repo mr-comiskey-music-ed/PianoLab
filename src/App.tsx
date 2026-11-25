@@ -16,6 +16,7 @@ import { ChordStrip } from './components/ChordStrip';
 import { INVERSION_NAMES, detectChord, diatonic, keyById, stripVoicing } from './utils/chords';
 import { useSandbox } from './components/ModeSandbox';
 import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
+import { Welcome, welcomeSeen } from './components/Welcome';
 import { useLearn } from './components/ModeLearn';
 import { usePractice } from './components/ModePractice';
 import { useChallenge } from './components/ModeChallenge';
@@ -125,10 +126,12 @@ export default function App() {
   const compact = screen !== 'full';
   const [drawer, setDrawer] = useState<null | 'left' | 'right'>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  // The welcome walkthrough: on a first visit (not for a returning student, who gets "Restore your last session?").
+  const [welcome, setWelcome] = useState(() => !welcomeSeen() && !loadSaved());
   // Phones: a hint under the lesson-menu button, shown once per visit, gone after a few seconds or the first tap.
   const [navHint, setNavHint] = useState(true);
   useEffect(() => {
-    if (!phone || !navHint) return;
+    if (!phone || !navHint || welcome) return; // after the welcome closes
     const t = window.setTimeout(() => setNavHint(false), 6000);
     const off = () => setNavHint(false);
     window.addEventListener('pointerdown', off, { once: true });
@@ -136,7 +139,7 @@ export default function App() {
       window.clearTimeout(t);
       window.removeEventListener('pointerdown', off);
     };
-  }, [phone, navHint]);
+  }, [phone, navHint, welcome]);
   const [modal, setModal] = useState<null | 'latency' | 'batch' | 'assign'>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [customParams, setCustomParams] = useState<SynthParams>(() => {
@@ -402,7 +405,7 @@ export default function App() {
               <span className="h text-[10px] text-brass">{mode === 'jam' ? 'Jam Room' : mode === 'sandbox' ? 'Sandbox' : `Lesson ${lesson.number}`}</span>
               <span className="h text-[13px]">{mode === 'jam' ? 'Setup' : mode === 'sandbox' ? 'Options' : (parts.navLabel ?? 'Practice')} ▾</span>
             </button>
-            {navHint && (mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
+            {navHint && !welcome && (mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
               // A first-visit hint (not saved anywhere: it shows once per visit).
               <span className="pop absolute left-0 top-full z-50 mt-2 w-max max-w-[220px] rounded-lg bg-brass px-2.5 py-1.5 text-[13px] font-semibold text-brasstext shadow-lg" data-testid="nav-hint" onClick={() => setNavHint(false)}>
                 <span className="absolute -top-1.5 left-4 h-3 w-3 rotate-45 bg-brass" />
@@ -452,6 +455,9 @@ export default function App() {
           <span className={`h rounded-md border px-2 py-1 ${midiChip.ok ? 'border-[#7aa65a] text-[#cfe3b4]' : 'border-wal1 text-line2'}`} data-testid="midi-status">
             {midiChip.text}
           </span>
+          <button className="h rounded-md border border-wal1 px-2 py-1 text-line hover:bg-white/10" onClick={() => setWelcome(true)} data-testid="help-chip" title="How PianoLab works">
+            {compact ? 'How it works' : '?'}
+          </button>
           <button className="h rounded-md border border-wal1 px-2 py-1 text-line hover:bg-white/10" onClick={() => setModal('latency')} data-testid="latency-chip">
             {latency === null ? 'Latency: not set. Tap to check' : `Latency: ${latency} ms`}
           </button>
@@ -652,6 +658,7 @@ export default function App() {
         />
       )}
       {parts.overlay}
+      {welcome && <Welcome phone={phone} onClose={() => setWelcome(false)} />}
       {modal === 'latency' && <LatencyModal engine={engine} subscribe={subscribe} onDone={setLatency} onClose={() => setModal(null)} pauseMetro={() => onMetro({ ...metro, on: false })} />}
       {modal === 'batch' && <BatchModal engine={engine} onClose={() => setModal(null)} />}
       {modal === 'assign' && <AssignModal lessons={LESSONS} onClose={() => setModal(null)} />}
