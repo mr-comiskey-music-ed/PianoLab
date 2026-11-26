@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { EchoHelp, Level, Prompt } from '../types';
 import { KEY_COUNT, isBlack, letterOf, parseNote, pc, pcOf, pretty } from '../utils/music';
 import { Chord, chordLongName, chordName, chordPcs, detectChord, keyById, matchesChord, pcName, moveDistance, parseChord, smoothestVoicing, voicing } from '../utils/chords';
@@ -521,13 +521,17 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
         <div className="h text-[11px] uppercase text-muted">Lesson {ctx.lesson.number} · Challenges</div>
         <h2 className="h text-[19px] leading-tight text-wal3">{ctx.lesson.title}</h2>
       </div>
-      <div className="flex flex-col gap-0.5">
+      <div className={`flex flex-col ${levels.some((v) => v.section) ? "gap-px" : "gap-0.5"}`}>
         {levels.map((l, k) => {
           const r = bestResult(l.id);
+          // With section headings (Chord rhythms) the rows get a little slimmer so the list still fits a Chromebook.
+          const sections = levels.some((v) => v.section);
           const sel = l.id === selected;
+          const head = l.section && l.section !== levels[k - 1]?.section ? l.section : null;
           return (
+            <Fragment key={l.id}>
+            {head && <div className={`h text-[10px] uppercase leading-none text-muted ${k ? 'mt-[3px]' : ''}`} data-testid="level-section">{head}</div>}
             <button
-              key={l.id}
               data-testid={`level-${l.id}`}
               onClick={() => {
                 setSelected(l.id);
@@ -536,7 +540,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
                 setFinished(null);
                 setMsg('');
               }}
-              className={`flex items-center justify-between gap-2 rounded-lg border px-2.5 py-[3px] text-left ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
+              className={`flex items-center justify-between gap-2 rounded-lg border px-2.5 ${sections ? 'py-px' : 'py-[3px]'} text-left ${sel ? 'border-brass2 bg-[#fbeecb]' : 'border-line bg-panel hover:bg-[#fff8ea]'}`}
             >
               {/* One line per level ("1 · Name C, F and G"), so a lesson with 6 levels still fits a Chromebook screen. */}
               <span className="min-w-0 text-[14px] font-semibold leading-tight text-wal3">
@@ -547,6 +551,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
                 {r ? `${passed(r.raw, l) ? '✓ ' : ''}${floored(r.raw)}%` : `${l.pass}% to pass`}
               </span>
             </button>
+            </Fragment>
           );
         })}
       </div>

@@ -3,6 +3,7 @@ import { AudioEngine } from './audioEngine';
 import type { CustomPattern } from '../utils/performance';
 export type { CustomPattern };
 import tracksData from '../data/tracks.json';
+import { chordPcs, parseChord } from '../utils/chords';
 
 /**
  * Jam Room backing (SPEC section 10): grooves the app makes from the chosen progression (drums + bass, no downloads,
@@ -24,6 +25,15 @@ export interface GrooveStyle {
   swing?: number;
 }
 
+/** Each bar's chord as soft pad notes, low (root between F2 and E3, root position), under a riff. */
+export const padChords = (symbols: string[]): number[][] =>
+  symbols.map((sym) => {
+    const c = parseChord(sym);
+    if (!c) return [];
+    const root = 41 + ((c.root - 5 + 12) % 12);
+    return chordPcs(c).map((p) => root + ((p - c.root + 12) % 12));
+  });
+
 export const GROOVES: GrooveStyle[] = [
   { id: 'pop', name: 'Pop', bpm: 96, kick: [0, 6, 8], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R'], [6, 'R'], [8, 'R'], [14, '5']] },
   { id: 'rock', name: 'Rock', bpm: 110, kick: [0, 8, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R'], [2, 'R'], [4, 'R'], [6, 'R'], [8, 'R'], [10, 'R'], [12, 'R'], [14, 'R']] },
@@ -33,7 +43,7 @@ export const GROOVES: GrooveStyle[] = [
   // His additions: reggaeton (the dembow: its bass is the tresillo), trap (half-time snare, fast hats, long 808s),
   // boom-bap (swung 90s hip hop) and bossa nova.
   { id: 'reggaeton', name: 'Reggaeton', bpm: 94, kick: [0, 4, 8, 12], snare: [3, 6, 11, 14], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 5], [6, 'R', 5], [12, 'R', 3]] },
-  { id: 'trap', name: 'Trap', bpm: 140, kick: [0, 7, 10], snare: [8], hat: [0, 1, 2, 4, 6, 7, 8, 10, 12, 13, 14, 15], bass: [[0, 'R', 7], [7, 'R', 3], [10, 'O', 6]] },
+  { id: 'trap', name: 'Trap', bpm: 140, kick: [0, 6, 10], snare: [8], hat: [0, 1, 2, 4, 6, 7, 8, 10, 12, 13, 14, 15], bass: [[0, 'R', 6], [6, 'R', 4], [10, 'O', 6]] }, // his rule: the kick and the 808 always hit together (= the lesson's 808 line)
   { id: 'boombap', name: 'Boom-bap', bpm: 90, kick: [0, 7, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [7, 'R'], [10, '5', 3]], swing: 0.25 },
   { id: 'bossa', name: 'Bossa nova', bpm: 120, kick: [0, 3, 4, 7, 8, 11, 12, 15], snare: [0, 3, 6, 10, 13], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [3, '5'], [4, '5', 3], [8, 'R', 3], [11, '5'], [12, '5', 3]] },
   // Reggae one drop (his request for the off-beat chords): no kick on 1, kick and rim together on 3, a laid-back bass.
@@ -87,6 +97,8 @@ export class Groove {
     envelope: { attack: 0.005, decay: 0.2, sustain: 0.6, release: 0.15 },
     filterEnvelope: { attack: 0.005, decay: 0.15, sustain: 0.3, release: 0.2, baseFrequency: 120, octaves: 2.5 },
   });
+  /** Soft chords under a riff (Riffs and melodies: his "play the chords in a lower octave"), made when first used. */
+  private pad: Tone.PolySynth | null = null;
   private player: Tone.Player | null = null;
   /** The Trap groove's bass: his 808 sample (a C1), loaded the first time Trap plays. */
   private eight08: Tone.Sampler | null = null;
@@ -135,8 +147,13 @@ export class Groove {
    * Start an app-made groove: `roots` = each bar's chord root (pitch class), repeating. Starts `lead` seconds from now
    * (a 1-bar count-in of clicks first). Returns when beat 1 of bar 1 will be heard (performance.now() ms).
    */
-  startGroove(style: GrooveStyle, bpm: number, roots: number[], lead = 0.3, fromBeat = -4): number {
+  startGroove(style: GrooveStyle, bpm: number, roots: number[], lead = 0.3, fromBeat = -4, chords?: number[][]): number {
     this.stop();
+    if (chords?.length && !this.pad) {
+      this.pad = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.4, sustain: 0.55, release: 0.8 } });
+      this.pad.volume.value = -15;
+      this.pad.connect(this.out);
+    }
     const engine = AudioEngine.get();
     if (style.id === 'trap') this.load808();
     this.spb = 60 / bpm;
@@ -159,8 +176,13 @@ export class Groove {
         if (t > horizon) break;
         if (style.id === 'click') {
           if (s % 4 === 0) engine.clickAt(t, s / 4);
+          if (s === 0 && chords?.length && this.pad) this.pad.triggerAttackRelease(chords[bar % chords.length].map((m) => Tone.Frequency(m, 'midi').toFrequency()), this.spb * 3.85, t, 0.6);
         } else {
           try {
+            if (s === 0 && chords?.length && this.pad) {
+              const c = chords[bar % chords.length];
+              this.pad.triggerAttackRelease(c.map((m) => Tone.Frequency(m, 'midi').toFrequency()), this.spb * 3.85, t, 0.6);
+            }
             if (style.kick.includes(s)) this.kick.triggerAttackRelease('C1', '8n', t, 0.9);
             if (style.snare.includes(s)) this.snare.triggerAttackRelease('16n', t, 0.8);
             if (style.hat.includes(s)) this.hat.triggerAttackRelease('32n', t, s % 4 === 0 ? 0.7 : 0.45);
@@ -214,6 +236,7 @@ export class Groove {
       /* not playing */
     }
     this.bass.triggerRelease();
+    this.pad?.releaseAll();
   }
 
   /** Where the music is now: beats since beat 1 of bar 1 (negative during the count-in), on the audio clock as heard. */

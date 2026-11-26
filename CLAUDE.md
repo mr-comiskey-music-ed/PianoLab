@@ -457,6 +457,15 @@ About page; no composition rubric):
   Root and 5th = root on 1 held, 5th on beat 4; the EDM off-beat steps are gone (he'd never heard it): Octaves (show +
   try) then Octaves with a 5th (the 5th on the last 8th; show + try, House groove); level `lb-edm` is now "Octaves with a
   5th" (id kept). `e64`.
+- **His round 4:** Chord rhythms Challenges have the same section headings as Learn (Note lengths · 8th notes · More
+  rhythms · Broken chords · Arpeggios; level `section`, rows slimmer so 11 levels + headings fit). Trap groove: kick and 808
+  always hit together (kick = bass steps 0, 6, 10 = the lesson's 808 line). Bass "Walking" -> **Passing notes** (G – C – Em –
+  D: hold the root, a passing note on 4: B, D, E♭; ids `lb-learn-walk`/`lb-try-walk`/`lb-walk` kept). Line notes outside the
+  key are spelled by where they go (E♭ down into D, D♯ up into E; `TimedHit.name`). Reggaeton bass = root, 5th, octave.
+  Major scales Learn: a right-hand diagram (`HandDiagram.tsx`, finger numbers) lights the finger with the demo; on try steps
+  the finger just played lights and the next has a dashed ring; "Thumb under!" when the thumb tucks. Riffs and melodies:
+  soft chords low (root F2–E3) under every riff step and level (`pad`; a PolySynth in `groove.ts`, the click style carries
+  it when there's no groove). `lm-three` follows the dembow (3+3+2 16ths with the snare: A C D | A C A).
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

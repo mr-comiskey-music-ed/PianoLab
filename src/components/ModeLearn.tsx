@@ -7,7 +7,8 @@ import { ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
 import { Col, StageBox } from './StageRow';
 import { RhythmBox } from './RhythmBox';
-import { MAJOR_SCALE, scaleStep } from '../utils/scales';
+import { MAJOR_SCALE, fingering, scaleStep } from '../utils/scales';
+import { HandDiagram } from './HandDiagram';
 
 /** Position of a white key counting only white keys (C0 = 0, D0 = 1 ...). Black keys: null. */
 const WHITE_INDEX = [0, null, 1, null, 2, 3, null, 4, null, 5, null, 6];
@@ -128,6 +129,16 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   // Done: show steps, a try that was just passed, or any step before the furthest one reached (or the whole Learn is
   // finished): no redoing play-alongs when going back (his request).
   const stepDone = !!step.show || count >= step.need || ctx.learnDone || i < ctx.learnMax;
+  // Finger numbers (Major scales): tags that are all 1-5 are fingers, shown on a hand that follows the demo.
+  const tagVals = Object.values(step.tags ?? {});
+  const fingerTags = tagVals.length > 0 && tagVals.every((v) => /^[1-5]$/.test(v));
+  const fingerAt = (k: number) => (k >= 0 && step.demo?.[k] && step.tags?.[step.demo[k]] ? Number(step.tags[step.demo[k]]) : null);
+  const demoFinger = fingerTags ? fingerAt(demoIdx) : null;
+  const demoTuck = demoFinger === 1 && (fingerAt(demoIdx - 1) ?? 0) > 2;
+  const scaleFingers = step.tryScale ? fingering(step.tryScale) : [];
+  const tryFinger = scaleCount > 0 ? (scaleFingers[scaleCount - 1] ?? null) : null;
+  const tryNext = scaleFingers[scaleCount] ?? null;
+  const tryTuck = tryFinger === 1 && (scaleFingers[scaleCount - 2] ?? 0) > 2;
   const last = i === steps.length - 1;
   const stepRef = useRef(step);
   stepRef.current = step;
@@ -509,9 +520,17 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         </div>
       ) : step.rhythm ? (
         // A rhythm, on a counting grid, played in time with the clicks (Chord rhythms lesson).
-        <RhythmBox ctx={ctx} pattern={step.rhythm} onLit={setDemoLit} groove={step.groove} grooveBass={step.grooveBass} />
+        <RhythmBox ctx={ctx} pattern={step.rhythm} onLit={setDemoLit} groove={step.groove} grooveBass={step.grooveBass} pad={step.pad} />
       ) : (
-        <DemoRow demo={step.demo ?? []} current={demoIdx} tags={step.tags} />
+        fingerTags ? (
+          // Major scales: the finger numbers on a hand, lighting up with the demo (his request).
+          <div className="flex items-center gap-5">
+            <HandDiagram finger={demoFinger} tuck={demoTuck} size={ctx.phone ? 72 : 120} />
+            <DemoRow demo={step.demo ?? []} current={demoIdx} tags={step.tags} />
+          </div>
+        ) : (
+          <DemoRow demo={step.demo ?? []} current={demoIdx} tags={step.tags} />
+        )
       )}
       <div className="flex gap-2">
         {!step.rhythm && (
@@ -557,6 +576,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           pattern={step.rhythm}
           groove={step.groove}
           grooveBass={step.grooveBass}
+          pad={step.pad}
           tryIt
           onLit={setDemoLit}
           onPass={() => {
@@ -564,6 +584,10 @@ export function useLearn(ctx: ModeCtx): ModeParts {
             setMsg({ kind: 'good', text: 'Yes! That’s the rhythm. Nice work.' });
           }}
         />
+      )}
+      {step.tryScale && !stepDone && (
+        // The finger for the note just played lights up; the next finger has a dashed ring.
+        <HandDiagram finger={tryFinger} next={tryNext} tuck={tryTuck} size={ctx.phone ? 64 : 104} />
       )}
       {step.tryScale && (
         // The scale: one dot per note, filled as they're played.

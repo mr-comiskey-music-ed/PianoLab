@@ -1,5 +1,5 @@
 import { Pattern, Rhythm, Texture } from '../data/pattern';
-import { Chord, KeyDef, chordName, chordPcs, diatonic, diatonicSevenths, makeKey, parseNumeral, smoothestVoicing, voicing } from './chords';
+import { Chord, KeyDef, chordName, chordPcs, diatonic, diatonicSevenths, makeKey, parseNumeral, pcName, smoothestVoicing, voicing } from './chords';
 import { pc, pcOf } from './music';
 import { MAJOR_SCALE } from './scales';
 
@@ -25,6 +25,9 @@ export interface TimedHit {
   chordPcs: number[];
   /** The bar's chord root (pitch class): oom-pah "pah" hits also accept the chord without it (3rd + 5th). */
   rootPc?: number;
+  /** A note's name when the key's own spelling would be wrong: a note outside the key leading down is a flat (E♭ into D
+   * in G major), leading up a sharp. */
+  name?: string;
 }
 
 /** A bar's chord, for the labels on the waterfall. */
@@ -225,6 +228,14 @@ function lineTimeline(p: Pattern, key: KeyDef, tempo: number): Timeline {
       hits.push({ beat, dur, notes: [note], pcs: [pc(note)], kind: 'note', bar, chordPcs: chordPcs(chord) });
     });
   }
+  // Notes outside the key: spell them by where they lead.
+  const inKey = new Set(diatonic(key).map((d) => pc(d.chord.root)));
+  hits.forEach((h, i) => {
+    const n = h.notes[0];
+    const next = hits[i + 1]?.notes[0];
+    if (inKey.has(pc(n)) || next === undefined || next === n) return;
+    h.name = pcName(n, next < n);
+  });
   return { key, hits, bars, beats: p.bars * 4, tempo };
 }
 

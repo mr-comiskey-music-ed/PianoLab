@@ -97,6 +97,10 @@ export interface Level {
   target?: number;
   /** play: an app-made groove (Jam Room style id, e.g. "pop") plays along instead of plain clicks (students can switch). */
   groove?: string;
+  /** Soft chords play low under the line (riffs), so the harmony is heard. */
+  pad?: boolean;
+  /** A heading over this level in the level list (the same sections as Learn); shown when it changes. */
+  section?: string;
   /** This level's own sound (overrides the lesson's). */
   sound?: string;
   /** play with a groove: false = the groove leaves out its bass (bass-line levels: the student is the bass player). */
@@ -150,6 +154,8 @@ export interface LearnStep {
   groove?: string;
   grooveBass?: boolean;
   sound?: string;
+  /** With `rhythm`: soft chords play low under the line (riffs). */
+  pad?: boolean;
   /** With tryProgression: show chord names (Cmaj7, Fmaj7...) instead of numerals; the chords need not be in one key. */
   tryNames?: boolean;
   /** Show-and-tell: chord strips on the Stage (key ids, e.g. ["C"] or ["C", "G"]) in place of the chord names. */

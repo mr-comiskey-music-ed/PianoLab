@@ -148,7 +148,7 @@ export const Waterfall: React.FC<{
               g.font = `600 ${size}px "Barlow Semi Condensed", sans-serif`;
               g.textAlign = 'center';
               g.fillStyle = 'rgba(30,23,16,0.85)';
-              g.fillText(pcName(n, L.timeline.key.flats), k.x * W + (k.w * W) / 2, Math.min(bottom, lineY) - 6);
+              g.fillText(h.name ?? pcName(n, L.timeline.key.flats), k.x * W + (k.w * W) / 2, Math.min(bottom, lineY) - 6);
               g.textAlign = 'left';
             }
           }

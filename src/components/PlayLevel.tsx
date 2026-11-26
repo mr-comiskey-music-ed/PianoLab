@@ -3,7 +3,7 @@ import { Level, ScreenHelp } from '../types';
 import { Timeline, beatMs, buildTimeline, chordSummary, hitAlt } from '../utils/patternEngine';
 import { HitResult, NotesCheck, TimingJudge, TimingSummary, pitchClassCheck, steadyOffset, summarize } from '../utils/timing';
 import { chordPcs, moveDistance, moveSizes, parseChord } from '../utils/chords';
-import { GROOVES, Groove } from '../audio/groove';
+import { GROOVES, Groove, padChords } from '../audio/groove';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
@@ -96,13 +96,15 @@ export function usePlayLevel(
     // Everything follows the clicks as they are HEARD (audio clock + the device's output delay), so the blocks land on
     // the line with the click and a key played with the click is on time.
     let firstHeardAt: number;
-    if (grooveStyle && withGroove) {
+    const backing = grooveStyle && withGroove ? grooveStyle : level.pad ? GROOVES.find((g) => g.id === 'click') : undefined;
+    if (backing) {
       // A groove (drums + bass on each bar's root) with its own bar of clicks to count in. It loops; Stop ends it.
       const g = Groove.get();
-      g.setLevel(grooveLevel(grooveStyle.id));
+      g.setLevel(grooveLevel(backing.id));
       const roots = timeline.bars.map((b) => parseChord(b.symbol)?.root ?? timeline.key.tonic);
-      const style = level.grooveBass === false ? { ...grooveStyle, bass: [] } : grooveStyle;
-      const beat1 = g.startGroove(style, tempo, roots, LEAD_MS / 1000, -COUNT_IN);
+      const style = level.grooveBass === false ? { ...backing, bass: [] } : backing;
+      // Riff levels: soft chords low under the line, with the groove or the clicks.
+      const beat1 = g.startGroove(style, tempo, roots, LEAD_MS / 1000, -COUNT_IN, level.pad ? padChords(timeline.bars.map((b) => b.symbol)) : undefined);
       stopClicks.current = () => g.stop();
       firstHeardAt = beat1 - COUNT_IN * bm;
     } else {

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Waterfall } from './Waterfall';
-import { GROOVES, Groove } from '../audio/groove';
+import { GROOVES, Groove, padChords } from '../audio/groove';
 import { grooveLevel } from './PlayLevel';
 import { parseChord } from '../utils/chords';
 import { Pattern } from '../data/pattern';
@@ -38,7 +38,9 @@ export const RhythmBox: React.FC<{
   /** A groove to play along with (style id) instead of clicks; `grooveBass: false` leaves its bass out. */
   groove?: string;
   grooveBass?: boolean;
-}> = ({ ctx, pattern, tryIt, onPass, onLit, groove, grooveBass }) => {
+  /** Soft chords low under the line (riffs). */
+  pad?: boolean;
+}> = ({ ctx, pattern, tryIt, onPass, onLit, groove, grooveBass, pad }) => {
   const tl: Timeline = useMemo(() => buildTimeline(pattern), [pattern]);
   const bm = beatMs(tl.tempo);
   const [phase, setPhase] = useState<'idle' | 'listen' | 'play'>('idle');
@@ -76,13 +78,14 @@ export const RhythmBox: React.FC<{
     ctx.stopMetronome();
     void ctx.engine.unlock();
     let firstHeardAt: number;
-    const style = groove ? GROOVES.find((g) => g.id === groove) : undefined;
+    // Chords under a riff ride along with the groove (or with the clicks, through the groove's click style).
+    const style = GROOVES.find((g) => g.id === (groove ?? (pad ? 'click' : '')));
     if (style) {
       // The groove counts in with its own bar of clicks, then loops under the example until it ends.
       const g = Groove.get();
       g.setLevel(grooveLevel(style.id));
       const roots = tl.bars.map((b) => parseChord(b.symbol)?.root ?? tl.key.tonic);
-      const beat1 = g.startGroove(grooveBass === false ? { ...style, bass: [] } : style, tl.tempo, roots, LEAD_MS / 1000, -COUNT_IN);
+      const beat1 = g.startGroove(grooveBass === false ? { ...style, bass: [] } : style, tl.tempo, roots, LEAD_MS / 1000, -COUNT_IN, pad ? padChords(tl.bars.map((b) => b.symbol)) : undefined);
       stopClicks.current = () => g.stop();
       firstHeardAt = beat1 - COUNT_IN * bm;
     } else {
@@ -177,7 +180,7 @@ export const RhythmBox: React.FC<{
           <div className={`relative ${ctx.phone ? 'h-6' : 'h-8'}`} data-testid="rhythm-hits">
             {tl.hits.map((h, k) => {
               const color = tl.bars[h.bar]?.color ?? '#d9a441';
-              const label = h.kind === 'chord' ? tl.bars[h.bar]?.symbol : pretty(letterOf(h.notes[0]));
+              const label = h.kind === 'chord' ? tl.bars[h.bar]?.symbol : (h.name ?? pretty(letterOf(h.notes[0])));
               return (
                 <div
                   key={k}

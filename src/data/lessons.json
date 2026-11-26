@@ -3816,7 +3816,7 @@
           "id": "lr-learn-split",
           "section": "Broken chords",
           "title": "Split hands",
-          "say": "Now spread it out: the left hand plays the root low, on the left of the keyboard.\nThe right hand plays the whole chord up high, on the right.\nC is C E G. G is played as an inversion, D G B (its 2nd inversion, from Lesson 6), so it fits on the keys and your right hand barely moves.\nThat is how a lot of piano accompaniment sounds.",
+          "say": "Now spread it out: the left hand plays the root low, the right hand plays the chord up high.\nC is C E G. G is played as D G B (its 2nd inversion, from Lesson 6), so your right hand barely moves.\nThat is how a lot of piano accompaniment sounds.",
           "need": 0,
           "rhythm": {
             "id": "lr-l-split",
@@ -3973,7 +3973,8 @@
             "startInv": 2
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "section": "Note lengths"
         },
         {
           "id": "lr-quarter",
@@ -4002,7 +4003,8 @@
             "startInv": 2
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "section": "Note lengths"
         },
         {
           "id": "lr-eighths",
@@ -4031,7 +4033,8 @@
             "startInv": 2
           },
           "screen": "blocks",
-          "groove": "rock"
+          "groove": "rock",
+          "section": "8th notes"
         },
         {
           "id": "lr-eighths-fast",
@@ -4060,7 +4063,8 @@
             "startInv": 2
           },
           "screen": "blocks",
-          "groove": "rock"
+          "groove": "rock",
+          "section": "8th notes"
         },
         {
           "id": "lr-offbeats",
@@ -4089,7 +4093,8 @@
             "startInv": 2
           },
           "screen": "blocks",
-          "groove": "reggae"
+          "groove": "reggae",
+          "section": "More rhythms"
         },
         {
           "id": "lr-tresillo",
@@ -4118,7 +4123,8 @@
             "startInv": 2
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "section": "More rhythms"
         },
         {
           "id": "lr-tresillo-fast",
@@ -4147,7 +4153,8 @@
             "startInv": 2
           },
           "screen": "blocks",
-          "groove": "funk"
+          "groove": "funk",
+          "section": "More rhythms"
         },
         {
           "id": "lr-oompah",
@@ -4176,7 +4183,8 @@
             "startInv": 2
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "section": "Broken chords"
         },
         {
           "id": "lr-split",
@@ -4204,7 +4212,8 @@
             "bars": 8
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "section": "Broken chords"
         },
         {
           "id": "lr-arp3",
@@ -4232,7 +4241,8 @@
             "bars": 8
           },
           "screen": "blocks",
-          "groove": "ballad"
+          "groove": "ballad",
+          "section": "Arpeggios"
         },
         {
           "id": "lr-arpeggio",
@@ -4260,7 +4270,8 @@
             "bars": 8
           },
           "screen": "blocks",
-          "groove": "ballad"
+          "groove": "ballad",
+          "section": "Arpeggios"
         }
       ]
     },
@@ -4271,7 +4282,7 @@
       "key": "C",
       "numerals": true,
       "sound": "bass-analog",
-      "practice": "Play just the root of each chord, low, with your left hand. Then try the styles: rock 8ths, root and 5th, octaves, off-beats, a trap 808, walking to the next chord.",
+      "practice": "Play just the root of each chord, low, with your left hand. Then try the styles: rock 8ths, root and 5th, octaves, off-beats, a trap 808, passing notes into the next chord.",
       "learn": [
         {
           "id": "lb-learn-roots",
@@ -4887,43 +4898,61 @@
         },
         {
           "id": "lb-learn-walk",
-          "section": "Walking",
-          "title": "Walk to the next chord",
-          "say": "Motown, R&B and jazz bass walk: root, 3rd, 5th, then a note a half step away from the next root.\nThat last note leads your ear into the next chord.",
+          "section": "Passing notes",
+          "title": "Passing notes",
+          "say": "A bass line doesn't have to jump from root to root.\nHold the root, then on beat 4 play one passing note that leads into the next chord.\nG to C: B is right below C.\nC to Em: D steps up to E.\nEm to D: E♭ slides down a half step into D.",
           "need": 0,
           "rhythm": {
             "id": "lb-l-walk",
-            "key": "C",
+            "key": "G",
             "mode": "major",
             "progression": [
               "I",
-              "IV"
+              "IV",
+              "vi",
+              "V"
             ],
             "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
             "tempo": 80,
-            "bars": 2,
+            "bars": 4,
             "line": [
               {
                 "b": 0,
-                "n": "R"
-              },
-              {
-                "b": 1,
-                "n": "3"
-              },
-              {
-                "b": 2,
-                "n": "5"
+                "n": "0",
+                "d": 3
               },
               {
                 "b": 3,
-                "n": "A"
+                "n": "4"
+              },
+              {
+                "b": 4,
+                "n": "5",
+                "d": 3
+              },
+              {
+                "b": 7,
+                "n": "7"
+              },
+              {
+                "b": 8,
+                "n": "9",
+                "d": 3
+              },
+              {
+                "b": 11,
+                "n": "8"
+              },
+              {
+                "b": 12,
+                "n": "7",
+                "d": 4
               }
             ],
-            "lineOf": "chord",
-            "lineBars": 1
+            "lineOf": "key",
+            "lineBars": 4
           },
           "groove": "pop",
           "grooveBass": false,
@@ -4931,44 +4960,62 @@
         },
         {
           "id": "lb-try-walk",
-          "section": "Walking",
-          "title": "Play a walking line",
-          "say": "C E G, then E leads up to F. F A C, then B leads up to C.",
+          "section": "Passing notes",
+          "title": "Play passing notes",
+          "say": "Hold each root, then the passing note on 4: G … B, C … D, E … E♭, then D.",
           "need": 1,
-          "tryText": "Walk: root, 3rd, 5th, then lead into the next root.",
+          "tryText": "Play G, C, E and D, with B, D and E♭ on beat 4 to lead into the next one.",
           "rhythm": {
             "id": "lb-t-walk",
-            "key": "C",
+            "key": "G",
             "mode": "major",
             "progression": [
               "I",
-              "IV"
+              "IV",
+              "vi",
+              "V"
             ],
             "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
             "tempo": 80,
-            "bars": 2,
+            "bars": 4,
             "line": [
               {
                 "b": 0,
-                "n": "R"
-              },
-              {
-                "b": 1,
-                "n": "3"
-              },
-              {
-                "b": 2,
-                "n": "5"
+                "n": "0",
+                "d": 3
               },
               {
                 "b": 3,
-                "n": "A"
+                "n": "4"
+              },
+              {
+                "b": 4,
+                "n": "5",
+                "d": 3
+              },
+              {
+                "b": 7,
+                "n": "7"
+              },
+              {
+                "b": 8,
+                "n": "9",
+                "d": 3
+              },
+              {
+                "b": 11,
+                "n": "8"
+              },
+              {
+                "b": 12,
+                "n": "7",
+                "d": 4
               }
             ],
-            "lineOf": "chord",
-            "lineBars": 1
+            "lineOf": "key",
+            "lineBars": 4
           },
           "groove": "pop",
           "grooveBass": false
@@ -4977,7 +5024,7 @@
           "id": "lb-learn-reggaeton",
           "section": "Latin",
           "title": "Reggaeton: the tresillo",
-          "say": "Reggaeton and lots of Latin pop put the bass on the tresillo from Lesson 7: 1, the + of 2, and 4.",
+          "say": "Reggaeton and lots of Latin pop put the bass on the tresillo from Lesson 7: 1, the + of 2, and 4.\nEach hit climbs the chord: the root, then the 5th, then the octave.",
           "need": 0,
           "rhythm": {
             "id": "lb-l-reg",
@@ -5000,12 +5047,12 @@
               },
               {
                 "b": 1.5,
-                "n": "R",
+                "n": "5",
                 "d": 1.5
               },
               {
                 "b": 3,
-                "n": "R",
+                "n": "O",
                 "d": 1
               }
             ],
@@ -5356,8 +5403,8 @@
         },
         {
           "id": "lb-walk",
-          "title": "Walking bass",
-          "blurb": "Root, 3rd, 5th, then lead into the next chord.",
+          "title": "Passing notes",
+          "blurb": "Hold the root, then a passing note on 4: G – C – Em – D.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5365,12 +5412,12 @@
           "prompts": [],
           "pattern": {
             "id": "lb-walk",
-            "key": "C",
+            "key": "G",
             "mode": "major",
             "progression": [
               "I",
-              "vi",
               "IV",
+              "vi",
               "V"
             ],
             "texture": "line",
@@ -5381,23 +5428,39 @@
             "line": [
               {
                 "b": 0,
-                "n": "R"
-              },
-              {
-                "b": 1,
-                "n": "3"
-              },
-              {
-                "b": 2,
-                "n": "5"
+                "n": "0",
+                "d": 3
               },
               {
                 "b": 3,
-                "n": "A"
+                "n": "4"
+              },
+              {
+                "b": 4,
+                "n": "5",
+                "d": 3
+              },
+              {
+                "b": 7,
+                "n": "7"
+              },
+              {
+                "b": 8,
+                "n": "9",
+                "d": 3
+              },
+              {
+                "b": 11,
+                "n": "8"
+              },
+              {
+                "b": 12,
+                "n": "7",
+                "d": 4
               }
             ],
-            "lineOf": "chord",
-            "lineBars": 1
+            "lineOf": "key",
+            "lineBars": 4
           },
           "screen": "blocks",
           "groove": "pop",
@@ -5406,7 +5469,7 @@
         {
           "id": "lb-reggaeton",
           "title": "Reggaeton bass",
-          "blurb": "The tresillo, on the roots.",
+          "blurb": "The tresillo: root, 5th, octave on each chord.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5435,12 +5498,12 @@
               },
               {
                 "b": 1.5,
-                "n": "R",
+                "n": "5",
                 "d": 1.5
               },
               {
                 "b": 3,
-                "n": "R",
+                "n": "O",
                 "d": 1
               }
             ],
@@ -5529,6 +5592,7 @@
             "lineOf": "key",
             "lineBars": 1
           },
+          "pad": true,
           "show": true
         },
         {
@@ -5570,7 +5634,8 @@
             ],
             "lineOf": "key",
             "lineBars": 1
-          }
+          },
+          "pad": true
         },
         {
           "id": "lm-learn-two",
@@ -5616,6 +5681,7 @@
             "lineOf": "key",
             "lineBars": 1
           },
+          "pad": true,
           "show": true
         },
         {
@@ -5662,7 +5728,8 @@
             ],
             "lineOf": "key",
             "lineBars": 1
-          }
+          },
+          "pad": true
         },
         {
           "id": "lm-learn-three",
@@ -5713,6 +5780,7 @@
             "lineOf": "key",
             "lineBars": 1
           },
+          "pad": true,
           "show": true
         },
         {
@@ -5764,7 +5832,8 @@
             ],
             "lineOf": "key",
             "lineBars": 1
-          }
+          },
+          "pad": true
         },
         {
           "id": "lm-learn-penta",
@@ -5822,6 +5891,7 @@
             "lineOf": "key",
             "lineBars": 2
           },
+          "pad": true,
           "show": true
         },
         {
@@ -5880,7 +5950,8 @@
             ],
             "lineOf": "key",
             "lineBars": 2
-          }
+          },
+          "pad": true
         },
         {
           "id": "lm-learn-blues",
@@ -5929,6 +6000,7 @@
             "lineOf": "key",
             "lineBars": 1
           },
+          "pad": true,
           "show": true
         },
         {
@@ -5984,6 +6056,7 @@
             "lineOf": "key",
             "lineBars": 2
           },
+          "pad": true,
           "show": true
         },
         {
@@ -6039,7 +6112,8 @@
             ],
             "lineOf": "key",
             "lineBars": 2
-          }
+          },
+          "pad": true
         },
         {
           "id": "lm-learn-land",
@@ -6091,6 +6165,7 @@
             "lineOf": "key",
             "lineBars": 2
           },
+          "pad": true,
           "show": true
         },
         {
@@ -6148,7 +6223,8 @@
             "lineBars": 1
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "pad": true
         },
         {
           "id": "lm-one-sync",
@@ -6210,7 +6286,8 @@
             "lineBars": 1
           },
           "screen": "blocks",
-          "groove": "funk"
+          "groove": "funk",
+          "pad": true
         },
         {
           "id": "lm-two",
@@ -6262,12 +6339,13 @@
             "lineBars": 1
           },
           "screen": "blocks",
-          "groove": "rock"
+          "groove": "rock",
+          "pad": true
         },
         {
           "id": "lm-three",
           "title": "Three-note riff",
-          "blurb": "A, C and D, over a reggaeton beat.",
+          "blurb": "A, C and D, locked to the reggaeton beat: play with the snare.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -6286,40 +6364,46 @@
             "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
-            "tempo": 94,
+            "tempo": 90,
             "bars": 8,
             "line": [
               {
                 "b": 0,
                 "n": "0",
-                "d": 1
+                "d": 0.75
               },
               {
-                "b": 1,
+                "b": 0.75,
                 "n": "3",
-                "d": 0.5
+                "d": 0.75
               },
               {
                 "b": 1.5,
                 "n": "5",
-                "d": 1
-              },
-              {
-                "b": 2.5,
-                "n": "3",
                 "d": 0.5
               },
               {
-                "b": 3,
+                "b": 2,
                 "n": "0",
-                "d": 1
+                "d": 0.75
+              },
+              {
+                "b": 2.75,
+                "n": "3",
+                "d": 0.75
+              },
+              {
+                "b": 3.5,
+                "n": "0",
+                "d": 0.5
               }
             ],
             "lineOf": "key",
             "lineBars": 1
           },
           "screen": "blocks",
-          "groove": "reggaeton"
+          "groove": "reggaeton",
+          "pad": true
         },
         {
           "id": "lm-penta",
@@ -6383,7 +6467,8 @@
             "lineBars": 2
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "pad": true
         },
         {
           "id": "lm-blues",
@@ -6436,7 +6521,8 @@
             "lineBars": 1
           },
           "screen": "blocks",
-          "groove": "rock"
+          "groove": "rock",
+          "pad": true
         },
         {
           "id": "lm-call",
@@ -6497,7 +6583,8 @@
             "lineBars": 2
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "pad": true
         },
         {
           "id": "lm-major",
@@ -6559,7 +6646,8 @@
             "lineBars": 1
           },
           "screen": "blocks",
-          "groove": "pop"
+          "groove": "pop",
+          "pad": true
         },
         {
           "id": "lm-echo",
