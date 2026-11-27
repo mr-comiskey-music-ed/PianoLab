@@ -6,6 +6,8 @@ export interface CustomPattern {
   s: number[];
   h: number[];
   b: number[];
+  /** Open hi-hat (added later: older codes don't have it). */
+  o?: number[];
 }
 /** Steps 0-15, each once, sorted (for patterns read back from a code or link). */
 export const cleanSteps = (x: unknown): number[] => (Array.isArray(x) ? [...new Set(x.filter((v): v is number => Number.isInteger(v) && v >= 0 && v < 16))].sort((a, b) => a - b) : []);
@@ -106,7 +108,7 @@ export function cleanBacking(x: unknown): BackingSeg[] {
         key: o.key as string,
         n: (o.n as unknown[]).filter((v): v is string => !!str(v, 8)).slice(0, 16),
         bpm: Math.max(40, Math.min(200, num(o.bpm)!)),
-        ...(cp ? { cp: { k: cleanSteps(cp.k), s: cleanSteps(cp.s), h: cleanSteps(cp.h), b: cleanSteps(cp.b) } } : {}),
+        ...(cp ? { cp: { k: cleanSteps(cp.k), s: cleanSteps(cp.s), h: cleanSteps(cp.h), b: cleanSteps(cp.b), ...(cleanSteps(cp.o).length ? { o: cleanSteps(cp.o) } : {}) } } : {}),
       });
     } else if (o.k === 't' && str(o.tr)) out.push({ k: 't', ...base, tr: o.tr as string });
     else if (o.k === 'y' && str(o.v, 11) && typeof o.vt === 'number' && Number.isFinite(o.vt)) out.push({ k: 'y', ...base, v: o.v as string, vt: Math.max(0, Math.round(o.vt * 10) / 10) });

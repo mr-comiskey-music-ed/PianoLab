@@ -489,6 +489,9 @@ About page; no composition rubric):
   the last note is as long as the line's first note and isn't drawn on the Learn grid (`gridBeats`). Lesson 11: Learn adds
   black-key tries (Dmaj7 Emaj7 Amaj7 = white-black-white-black; Bm7 F♯m7 Gm7; A7 F7); levels maj7/m7/dom7 include them;
   `l8-time-rnb` = Imaj7–iii7–vi7–ii7; new `l8-time-minor` Dm7–Am7–Em7–Fmaj7 (10 levels, fits).
+- **His round 8:** Lesson 11 maj7 / m7 levels ask 8 questions: all 6 chords once + 2 random repeats (level `count`). Custom
+  pattern grid: Open hi-hat row (`o`, optional in `CustomPattern` so old codes still read), then Hi-hat, Snare, Kick, a gap
+  with a line, and "Bass Notes" (so it doesn't read as a bass drum).
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

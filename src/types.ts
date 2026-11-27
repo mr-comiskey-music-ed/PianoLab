@@ -101,6 +101,8 @@ export interface Level {
   pad?: boolean;
   /** play: besides each hit, every bar needs more notes after beat 1 (the root, any octave, or the 5th); half the score. */
   fill?: boolean;
+  /** How many questions per try when it's more than the list: each once, then random repeats (Lesson 11 maj7/m7). */
+  count?: number;
   /** play: grooves the student picks from on the start screen (style ids); `groove` is the first pick. */
   grooves?: string[];
   /** play: each bar's chord is played on this sound (e.g. "rhodes"), mid-keyboard, while the student plays the bass. */

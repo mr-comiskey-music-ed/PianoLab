@@ -63,7 +63,7 @@ export const GROOVES: GrooveStyle[] = [
 ];
 
 /** A Custom pattern as a groove style (id "custom"). */
-export const customStyle = (p: CustomPattern, bpm = 90): GrooveStyle => ({ id: 'custom', name: 'Custom pattern', bpm, kick: p.k, snare: p.s, hat: p.h, bass: p.b.map((st) => [st, 'R'] as [number, 'R']) });
+export const customStyle = (p: CustomPattern, bpm = 90): GrooveStyle => ({ id: 'custom', name: 'Custom pattern', bpm, kick: p.k, snare: p.s, hat: p.h, open: p.o ?? [], bass: p.b.map((st) => [st, 'R'] as [number, 'R']) });
 
 
 /** A teacher's audio track (`src/data/tracks.json`). The file lives in `public/tracks/`. */

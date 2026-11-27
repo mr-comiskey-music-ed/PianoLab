@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { GROOVES, Groove, GrooveStyle, TRACKS } from '../audio/groove';
 import { Chord, Diatonic, KEYS, KeyDef, Quality, chordName, chordPcs, detectChord, diatonic, diatonicSevenths, keyById, makeKey, parseChord, parseNumeral } from '../utils/chords';
 import { KEY_COUNT, pc, pcOf } from '../utils/music';
@@ -125,26 +125,34 @@ const Meter: React.FC<{ level: number }> = ({ level }) => (
 );
 
 const ROWS: [keyof CustomPattern, string][] = [
+  ['o', 'Open hi-hat'],
   ['h', 'Hi-hat'],
   ['s', 'Snare'],
   ['k', 'Kick'],
-  ['b', 'Bass'],
+  ['b', 'Bass Notes'],
 ];
 /** Where a Custom pattern starts: the Pop groove's beat. */
 const startPattern = (): CustomPattern => {
   const pop = GROOVES[0];
-  return { k: [...pop.kick], s: [...pop.snare], h: [...pop.hat], b: pop.bass.map((x) => x[0]) };
+  return { k: [...pop.kick], s: [...pop.snare], h: [...pop.hat], o: [], b: pop.bass.map((x) => x[0]) };
 };
 
 /** The Custom pattern grid (his "doesn't have to be big"): 4 rows x 16 steps; click a square to turn it on or off. */
 const BeatGrid: React.FC<{ pattern: CustomPattern; onToggle: (row: keyof CustomPattern, step: number) => void; step: number; compact?: boolean }> = ({ pattern, onToggle, step, compact }) => (
   <div className={`flex flex-col ${compact ? 'gap-0.5' : 'gap-1'}`} data-testid="beat-grid">
     {ROWS.map(([row, label]) => (
-      <div key={row} className="flex items-center gap-1">
-        <span className={`h shrink-0 text-right ${compact ? 'w-10 text-[10px] text-wal2' : 'w-12 text-[12px] text-line2'}`}>{label}</span>
+      <Fragment key={row}>
+      {row === 'b' && (
+        // The bass row plays notes (each chord's root), not a drum: a gap and a line keep it apart from the drums.
+        <div className={`flex items-center ${compact ? 'h-3.5 pl-11' : 'h-5 pl-[68px]'}`} aria-hidden="true">
+          <div className="h-[2px] w-full rounded bg-[#8a7a66]" />
+        </div>
+      )}
+      <div className="flex items-center gap-1">
+        <span className={`h shrink-0 text-right leading-tight ${compact ? 'w-10 text-[10px] text-wal2' : 'w-16 text-[12px] text-line2'}`}>{label}</span>
         <div className="flex gap-[2px]">
           {Array.from({ length: 16 }, (_, k) => {
-            const on = pattern[row].includes(k);
+            const on = (pattern[row] ?? []).includes(k);
             return (
               <button
                 key={k}
@@ -159,6 +167,7 @@ const BeatGrid: React.FC<{ pattern: CustomPattern; onToggle: (row: keyof CustomP
           })}
         </div>
       </div>
+      </Fragment>
     ))}
   </div>
 );
@@ -174,13 +183,17 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     st.kick = beatPat.k;
     st.snare = beatPat.s;
     st.hat = beatPat.h;
+    st.open = beatPat.o ?? [];
     st.bass = beatPat.b.map((x) => [x, 'R'] as [number, 'R']);
     // A saved performance keeps the pattern as it was last heard.
     const open = segs.current.find((x) => x.until === undefined);
     if (open && open.k === 'g' && open.g === 'custom') open.cp = { ...beatPat };
   }, [beatPat]);
   const toggleStep = (row: keyof CustomPattern, step: number) =>
-    setBeatPat((p) => ({ ...p, [row]: p[row].includes(step) ? p[row].filter((x) => x !== step) : [...p[row], step].sort((a, b) => a - b) }));
+    setBeatPat((p) => {
+      const cur = p[row] ?? [];
+      return { ...p, [row]: cur.includes(step) ? cur.filter((x) => x !== step) : [...cur, step].sort((a, b) => a - b) };
+    });
   const styleName = grooveId === 'custom' ? 'Custom pattern' : `${GROOVES.find((g) => g.id === grooveId)?.name ?? 'Groove'} groove`;
   const [keyId, setKeyId] = useState('C');
   const [progId, setProgId] = useState('pop');

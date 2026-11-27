@@ -7529,32 +7529,9 @@
             {
               "text": "Play Amaj7.",
               "chord": "Amaj7"
-            },
-            {
-              "text": "Play Cmaj7.",
-              "chord": "Cmaj7"
-            },
-            {
-              "text": "Play Fmaj7.",
-              "chord": "Fmaj7"
-            },
-            {
-              "text": "Play Gmaj7.",
-              "chord": "Gmaj7"
-            },
-            {
-              "text": "Play Dmaj7.",
-              "chord": "Dmaj7"
-            },
-            {
-              "text": "Play Emaj7.",
-              "chord": "Emaj7"
-            },
-            {
-              "text": "Play Amaj7.",
-              "chord": "Amaj7"
             }
-          ]
+          ],
+          "count": 8
         },
         {
           "id": "l8-m7",
@@ -7588,32 +7565,9 @@
             {
               "text": "Play Gm7.",
               "chord": "Gm7"
-            },
-            {
-              "text": "Play Dm7.",
-              "chord": "Dm7"
-            },
-            {
-              "text": "Play Em7.",
-              "chord": "Em7"
-            },
-            {
-              "text": "Play Am7.",
-              "chord": "Am7"
-            },
-            {
-              "text": "Play Bm7.",
-              "chord": "Bm7"
-            },
-            {
-              "text": "Play F♯m7.",
-              "chord": "F#m7"
-            },
-            {
-              "text": "Play Gm7.",
-              "chord": "Gm7"
             }
-          ]
+          ],
+          "count": 8
         },
         {
           "id": "l8-dom7",
