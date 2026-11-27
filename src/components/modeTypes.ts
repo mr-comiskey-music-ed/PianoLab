@@ -57,7 +57,7 @@ export interface ModeCtx {
   /** The furthest Learn step reached in this lesson: steps before it count as done. */
   learnMax: number;
   setLearnStep: (n: number) => void;
-  goTo: (mode: 'learn' | 'practice' | 'challenge' | 'sandbox' | 'jam' | 'report') => void;
+  goTo: (mode: 'learn' | 'challenge' | 'sandbox' | 'jam' | 'report') => void;
 }
 
 /** What a mode gives back to App: a left panel, a stage, and what to light on the piano. */
@@ -68,6 +68,8 @@ export interface ModeParts {
   labels: Labels;
   /** Show the "Challenge Yourself" control. Leave out where labels aren't a choice (Learn). */
   labelControl?: { value: Labels; allowed: Labels[]; set: (l: Labels) => void; locked?: boolean; /** Heading over the buttons (default "Challenge Yourself"). */ title?: string };
+  /** Shown at the bottom of the left panel, under Note Names (the Practice Room's tips). */
+  leftBottom?: ReactNode;
   lit?: Set<number>;
   /** Show the live chord name in the readout bar (off in Challenges, where it would give answers away). */
   detector?: boolean;

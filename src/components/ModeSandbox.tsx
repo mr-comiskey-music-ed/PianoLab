@@ -7,6 +7,11 @@ import { MidiTrack, readMidiFile } from '../utils/midiImport';
 import { BackingSeg } from '../utils/performance';
 import { backingEnd, playBacking } from '../audio/backing';
 import { YouTubeBox, YTControl } from './YouTubeBox';
+import lessonsData from '../data/lessons.json';
+import { Lesson } from '../types';
+
+/** Lessons with a practice tip, in lesson order (shown in the Practice Room). */
+const TIP_LESSONS = ([...(lessonsData as { lessons: Lesson[] }).lessons] as Lesson[]).filter((l) => l.practice).sort((a, b) => a.number - b.number);
 
 /** A pause longer than this is shortened to SHORT_GAP, so stepping away doesn't fill the recording with silence. */
 const LONG_GAP = 8000;
@@ -19,6 +24,8 @@ const SHORT_GAP = 2000;
 export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const [notes, setNotes] = useState<PerfNote[]>([]);
   const [labels, setLabels] = useState<Labels>('c');
+  /** Which lesson's practice tip shows (starts on the lesson the student is in). */
+  const [tipLesson, setTipLesson] = useState(ctx.lesson.id);
   const [full, setFull] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [playLit, setPlayLit] = useState<Set<number>>(new Set());
@@ -317,7 +324,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
 
   const left = (
     <div className="flex flex-col gap-2">
-      <h2 className="h text-[22px] leading-tight text-wal3">Sandbox</h2>
+      <h2 className="h text-[22px] leading-tight text-wal3">Practice Room</h2>
       <p className="text-[14px] leading-snug text-wal1">Play anything. It records as you go. Scroll the roll to look back.</p>
       <div className="card px-2.5 py-1.5 text-[14px]" data-testid="perf-stats">
         <div className="flex items-baseline justify-between">
@@ -460,7 +467,33 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     left,
     stage,
     labels,
-    labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels, title: 'View:' },
+    labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels },
+    leftBottom: (
+      // Practice tips from each lesson (the old Practice tab's one job, his call), under Note Names.
+      <div className="mt-2 flex flex-col gap-1" data-testid="practice-tips">
+        <label className="flex items-center gap-2">
+          <span className="h text-[11px] uppercase text-muted">Tips</span>
+          <select
+            className="min-w-0 flex-1 rounded-md border border-line bg-panel px-2 py-1 text-[14px] text-wal3"
+            value={TIP_LESSONS.some((l) => l.id === tipLesson) ? tipLesson : TIP_LESSONS[0]?.id}
+            data-testid="tips-select"
+            onChange={(e) => {
+              setTipLesson(e.target.value);
+              e.currentTarget.blur(); // the typing keyboard goes back to the piano
+            }}
+          >
+            {TIP_LESSONS.map((l) => (
+              <option key={l.id} value={l.id}>
+                Lesson {l.number}: {l.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="text-[13px] leading-snug text-wal1" data-testid="tips-text">
+          {(TIP_LESSONS.find((l) => l.id === tipLesson) ?? TIP_LESSONS[0])?.practice}
+        </p>
+      </div>
+    ),
     lit: playLit.size ? playLit : undefined,
     overlay: saveOpen ? <SavePerformance notes={finished} assignment={ctx.assignment?.title} onClose={() => setSaveOpen(false)} /> : undefined,
   };

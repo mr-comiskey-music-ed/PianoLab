@@ -53,16 +53,12 @@ export const Welcome: React.FC<{ phone?: boolean; onClose: () => void }> = ({ ph
       ),
     },
     {
-      title: 'Every lesson has three parts',
+      title: 'Every lesson has two parts',
       body: (
         <>
           <p className="grid grid-cols-[96px_1fr] items-baseline gap-2">
             <Chip on>Learn</Chip>
             <span>walks you through it, one step at a time.</span>
-          </p>
-          <p className="grid grid-cols-[96px_1fr] items-baseline gap-2">
-            <Chip>Practice</Chip>
-            <span>lets you play around, with chord names and the chord strip.</span>
           </p>
           <p className="grid grid-cols-[96px_1fr] items-baseline gap-2">
             <Chip>Challenges</Chip>
@@ -88,8 +84,8 @@ export const Welcome: React.FC<{ phone?: boolean; onClose: () => void }> = ({ ph
       body: (
         <>
           <p className="grid grid-cols-[96px_1fr] items-baseline gap-2">
-            <Chip>Sandbox</Chip>
-            <span>records everything you play. Scroll back, play it back, or import a MIDI file.</span>
+            <Chip>{phone ? 'Practice' : 'Practice Room'}</Chip>
+            <span>records everything you play, with chord names, the chord strip and a practice tip for each lesson. Scroll back, play it back, or import a MIDI file.</span>
           </p>
           <p className="grid grid-cols-[96px_1fr] items-baseline gap-2">
             <Chip>{phone ? 'Jam' : 'Jam Room'}</Chip>

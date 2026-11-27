@@ -1,5 +1,5 @@
 {
-  "about": "YouTube backing tracks for the Jam Room's list (students can also paste their own link). Add a line per video: title, url (any YouTube link), key (C, G, F#, Bb...), mode (major or minor), and optionally chords (what the video shows, e.g. \"C – G – Am – F\"). Jamming along with YouTube is ungraded.",
+  "about": "YouTube backing tracks for the Jam Room's list (students can also paste their own link). Add a line per video: title, url (any YouTube link), key (C, G, F#, Bb...), mode (major or minor), optionally start (seconds in, e.g. to skip a solo at the top), and optionally chords (what the video shows, e.g. \"C – G – Am – F\"). Jamming along with YouTube is ungraded.",
   "videos": [
     {
       "title": "Acoustic Guitar Backing Track In Am - Autumn",
@@ -11,6 +11,32 @@
       "title": "Indie Rock Backing Track in Am",
       "url": "https://www.youtube.com/watch?v=brKVb6CKzFA",
       "key": "A",
+      "mode": "minor"
+    },
+    {
+      "title": "Sweet Groove Guitar Backing Track – A Minor",
+      "url": "https://www.youtube.com/watch?v=iTY-45T1hVA",
+      "key": "A",
+      "mode": "minor",
+      "start": 33
+    },
+    {
+      "title": "Deep Soul Groove Backing Track in A Minor",
+      "url": "https://www.youtube.com/watch?v=55MTcCE6ZIk",
+      "key": "A",
+      "mode": "minor"
+    },
+    {
+      "title": "D Major Backing Track (Pop Rock)",
+      "url": "https://www.youtube.com/watch?v=QwCmqS-5nqw",
+      "key": "D",
+      "mode": "major",
+      "chords": "D – A – Bm – G"
+    },
+    {
+      "title": "Rock Ballad Backing Track in E Minor",
+      "url": "https://www.youtube.com/watch?v=_pm1MF2fzrM",
+      "key": "E",
       "mode": "minor"
     }
   ]

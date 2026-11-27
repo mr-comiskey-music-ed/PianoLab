@@ -1,11 +1,11 @@
 import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { GROOVES, Groove, GrooveStyle, TRACKS } from '../audio/groove';
-import { Chord, Diatonic, KEYS, KeyDef, Quality, chordName, chordPcs, detectChord, diatonic, diatonicSevenths, keyById, makeKey, parseChord, parseNumeral } from '../utils/chords';
+import { Chord, Diatonic, KEYS, KeyDef, Quality, chordName, chordPcs, detectChord, diatonic, diatonicSevenths, keyById, makeKey, parseChord, parseNumeral, pcName } from '../utils/chords';
 import { KEY_COUNT, pc, pcOf } from '../utils/music';
 import { MAJOR_SCALE } from '../utils/scales';
 import { textOn } from './ChordStrip';
 import { PianoRoll } from './PianoRoll';
-import { YouTubeBox, YTControl, youTubeId } from './YouTubeBox';
+import { YouTubeBox, YTControl, youTubeId, youTubeStart } from './YouTubeBox';
 import { BackingSeg, CustomPattern, MAX_PERF_MS, MAX_PERF_NOTES, PerfNote, formatLength, perfLength } from '../utils/performance';
 import { SavePerformance } from './ModeSandbox';
 import { Labels, ModeCtx, ModeParts } from './modeTypes';
@@ -27,6 +27,8 @@ interface YouTubeVideo {
   key: string;
   mode?: 'major' | 'minor';
   chords?: string;
+  /** Seconds in to start (skip an intro or a solo). */
+  start?: number;
 }
 export const VIDEOS = (youtubeData as { videos: YouTubeVideo[] }).videos;
 
@@ -34,7 +36,7 @@ export const VIDEOS = (youtubeData as { videos: YouTubeVideo[] }).videos;
  * Progressions to jam over (Roman numerals, one per bar), each with a major-key and a minor-key version: in A minor the
  * Pop progression is i – VI – III – VII (Am F C G), not the major numerals read in a minor key (his bug report).
  */
-export const PROGRESSIONS: { id: string; label: string; major: string[]; minor: string[] }[] = [
+export const PROGRESSIONS: { id: string; label: string; major: string[]; minor: string[]; /** Offered only with these scales/modes (picked for you when you choose one). */ only?: string[] }[] = [
   { id: 'pop', label: 'Pop', major: ['I', 'V', 'vi', 'IV'], minor: ['i', 'VI', 'III', 'VII'] },
   { id: '50s', label: "'50s", major: ['I', 'vi', 'IV', 'V'], minor: ['i', 'VI', 'iv', 'V'] },
   { id: 'sad', label: 'Sad pop', major: ['vi', 'IV', 'I', 'V'], minor: ['i', 'VII', 'VI', 'VII'] },
@@ -46,7 +48,32 @@ export const PROGRESSIONS: { id: string; label: string; major: string[]; minor: 
     major: ['I7', 'I7', 'I7', 'I7', 'IV7', 'IV7', 'I7', 'I7', 'V7', 'IV7', 'I7', 'V7'],
     minor: ['i7', 'i7', 'i7', 'i7', 'iv7', 'iv7', 'i7', 'i7', 'v7', 'iv7', 'i7', 'v7'],
   },
+  // Modal vamps: the chords that make each mode sound like itself.
+  { id: 'dorian', label: 'Dorian vamp', major: ['i7', 'i7', 'IV7', 'IV7'], minor: ['i7', 'i7', 'IV7', 'IV7'], only: ['dorian'] },
+  { id: 'mixo', label: 'Mixolydian rock', major: ['I', '♭VII', 'IV', 'I'], minor: ['I', '♭VII', 'IV', 'I'], only: ['mixolydian'] },
+  { id: 'lydian', label: 'Lydian float', major: ['I', 'II', 'I', 'II'], minor: ['I', 'II', 'I', 'II'], only: ['lydian'] },
+  { id: 'phrygian', label: 'Phrygian', major: ['i', '♭II', 'i', '♭II'], minor: ['i', '♭II', 'i', '♭II'], only: ['phrygian'] },
+  { id: 'harmonic', label: 'Minor with a major V', major: ['i', 'iv', 'V', 'i'], minor: ['i', 'iv', 'V', 'i'], only: ['harmonic'] },
 ];
+
+/**
+ * Jam Room scales and modes (his request: a Letter menu plus a Scale/Mode menu). `family` decides the chords (major or
+ * minor key); `steps` are the notes Melody mode marks and Key lock lets through.
+ */
+export const JAM_MODES: { id: string; label: string; family: 'major' | 'minor'; steps: number[] }[] = [
+  { id: 'major', label: 'Major', family: 'major', steps: [0, 2, 4, 5, 7, 9, 11] },
+  { id: 'minor', label: 'Minor', family: 'minor', steps: [0, 2, 3, 5, 7, 8, 10] },
+  { id: 'penta-major', label: 'Major pentatonic', family: 'major', steps: [0, 2, 4, 7, 9] },
+  { id: 'penta-minor', label: 'Minor pentatonic', family: 'minor', steps: [0, 3, 5, 7, 10] },
+  { id: 'blues', label: 'Blues', family: 'minor', steps: [0, 3, 5, 6, 7, 10] },
+  { id: 'dorian', label: 'Dorian', family: 'minor', steps: [0, 2, 3, 5, 7, 9, 10] },
+  { id: 'mixolydian', label: 'Mixolydian', family: 'major', steps: [0, 2, 4, 5, 7, 9, 10] },
+  { id: 'lydian', label: 'Lydian', family: 'major', steps: [0, 2, 4, 6, 7, 9, 11] },
+  { id: 'phrygian', label: 'Phrygian', family: 'minor', steps: [0, 1, 3, 5, 7, 8, 10] },
+  { id: 'harmonic', label: 'Harmonic minor', family: 'minor', steps: [0, 2, 3, 5, 7, 8, 11] },
+];
+/** The 12 letters (black keys named both ways). */
+export const JAM_LETTERS = ['C', 'C♯ / D♭', 'D', 'E♭', 'E', 'F', 'F♯ / G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 /** A preset's numerals for a key: its minor version in a minor key. */
 export const presetNumerals = (p: (typeof PROGRESSIONS)[number], k: KeyDef) => (k.mode === 'minor' ? p.minor : p.major);
 /** "Pop: i – VI – III – VII" (the numerals for the key picked). */
@@ -54,7 +81,8 @@ const presetName = (p: (typeof PROGRESSIONS)[number], k: KeyDef) => (p.id === 'b
 /** A pause longer than this is shortened to SHORT_GAP in a saved performance (same as the Sandbox). */
 const LONG_GAP = 8000;
 const SHORT_GAP = 2000;
-export const JAM_KEYS = KEYS.filter((k) => k.mode === 'major' || ['Am', 'Em', 'Dm'].includes(k.id));
+/** All 24 keys, by letter (major before minor): the assignment builder's key list. */
+export const JAM_KEYS = [...KEYS].sort((a, b) => a.tonic - b.tonic || (a.mode === 'major' ? -1 : 1));
 
 /** The pitch classes of a key's scale (major, or natural minor). */
 /** Which notes Melody mode marks and Key lock lets through: the key's scale, its pentatonic, or the blues scale. */
@@ -195,19 +223,34 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
       return { ...p, [row]: cur.includes(step) ? cur.filter((x) => x !== step) : [...cur, step].sort((a, b) => a - b) };
     });
   const styleName = grooveId === 'custom' ? 'Custom pattern' : `${GROOVES.find((g) => g.id === grooveId)?.name ?? 'Groove'} groove`;
-  const [keyId, setKeyId] = useState('C');
+  const [letter, setLetter] = useState(0);
+  const [modeId, setModeId] = useState('major');
+  /** A key id ("Am", "F#") from a video, an assignment or a track: its letter, and Major or Minor. */
+  const setKeyId = (id: string) => {
+    const k = keyById(id);
+    setLetter(k.tonic);
+    setModeId(k.mode);
+  };
+  const jamMode = JAM_MODES.find((m) => m.id === modeId) ?? JAM_MODES[0];
+  const pickMode = (id: string) => {
+    setModeId(id);
+    // A mode with its own vamp starts on it; leaving that mode goes back to Pop.
+    const own = PROGRESSIONS.find((p) => p.only?.includes(id));
+    if (own) setProgId(own.id);
+    else if (PROGRESSIONS.find((p) => p.id === progId)?.only) setProgId(id === 'blues' ? 'blues' : 'pop');
+  };
   const [progId, setProgId] = useState('pop');
   const [custom, setCustom] = useState('I IV V I');
   const [bpm, setBpm] = useState(GROOVES[0].bpm);
   const [trackId, setTrackId] = useState(TRACKS[0]?.id ?? '');
   const [ytText, setYtText] = useState('');
   const [videoId, setVideoId] = useState<string | null>(null);
+  const [videoStart, setVideoStart] = useState(0);
   /** YouTube jams: a chord sheet the student found online (not in time, just in order). */
   const [ytChords, setYtChords] = useState('');
   const [sheetPlace, setSheetPlace] = useState(-1);
   const [melody, setMelody] = useState(false);
   const [keyLock, setKeyLock] = useState(false);
-  const [jamScale, setJamScale] = useState<JamScale>('key');
   const [backVol, setBackVol] = useState(1);
   const [pianoVol, setPianoVol] = useState(1);
   const [playing, setPlaying] = useState(false);
@@ -251,7 +294,11 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
 
   const track = TRACKS.find((t) => t.id === trackId);
   const key: KeyDef =
-    source === 'track' && track ? makeKey(pcOf(track.key) ?? 0, track.mode) : keyById(keyId);
+    source === 'track' && track ? makeKey(pcOf(track.key) ?? 0, track.mode) : makeKey(letter, jamMode.family);
+  /** "D Dorian", "A minor" (a track's own key as written). */
+  const keyLabel = source === 'track' ? key.label : `${pcName(letter, key.flats)} ${jamMode.id === 'major' || jamMode.id === 'minor' ? jamMode.id : jamMode.label}`;
+  /** The notes Melody mode marks and Key lock lets through. */
+  const scaleSteps = source === 'track' ? (key.mode === 'major' ? JAM_MODES[0].steps : JAM_MODES[1].steps) : jamMode.steps;
   const chords: Diatonic[] = useMemo(() => {
     if (source === 'youtube') return [];
     if (source === 'track') return track ? readNumerals(key, track.progression.join(' ')) : [];
@@ -370,7 +417,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
   };
 
   // Melody mode / Key lock: the key's notes on the keys in view.
-  const inKey = new Set(scalePcs(key, jamScale));
+  const inKey = new Set(scaleSteps.map((st) => pc(key.tonic + st)));
   const view = Array.from({ length: KEY_COUNT }, (_, i) => ctx.viewStart + i);
   const tint = active && melody ? new Set(view.filter((m) => inKey.has(pc(m)))) : undefined;
   const dim = active && keyLock ? new Set(view.filter((m) => !inKey.has(pc(m)))) : undefined;
@@ -412,6 +459,34 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     stop();
     fn();
   };
+  /** Key: a Letter menu and a Scale / mode menu (`playing`: changing it stops the backing). */
+  const keyPickers = (stops: boolean) => {
+    const wrap = (fn: () => void) => (stops ? changeSetting(fn) : fn());
+    return (
+      <>
+        <label className="flex items-center gap-2">
+          <span className="h w-14 shrink-0 text-wal3">Key</span>
+          <select className={sel} value={letter} data-testid="jam-key" onChange={pick((v) => wrap(() => setLetter(Number(v))))}>
+            {JAM_LETTERS.map((name, pcv) => (
+              <option key={pcv} value={pcv}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2">
+          <span className="h w-14 shrink-0 text-wal3">Scale</span>
+          <select className={sel} value={modeId} data-testid="jam-mode" onChange={pick((v) => wrap(() => pickMode(v)))}>
+            {JAM_MODES.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </>
+    );
+  };
 
   const left = (
     <div className="flex flex-col gap-1.5 text-[13px]" data-testid="jam-left">
@@ -426,7 +501,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
           <div className="h text-[15px] text-wal3">
             {source === 'groove' ? styleName : source === 'track' ? (track?.title ?? 'Track') : 'YouTube video'}
             {' · '}
-            {key.label}
+            {keyLabel}
           </div>
           {source === 'groove' && <div className="text-wal1">{chords.map((d) => d.numeral).join(' – ')}</div>}
           {source === 'youtube' && sheet.length > 0 && <div className="text-wal1">{sheet.map((c) => c.text).join(' – ')}</div>}
@@ -474,20 +549,11 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
             </select>
           </label>
           {grooveId === 'custom' && ctx.phone && <BeatGrid pattern={beatPat} onToggle={toggleStep} step={playing && beat >= 0 ? Math.floor(beat * 4) % 16 : -1} compact />}
-          <label className="flex items-center gap-2">
-            <span className="h w-14 shrink-0 text-wal3">Key</span>
-            <select className={sel} value={keyId} data-testid="jam-key" onChange={pick((v) => changeSetting(() => setKeyId(v)))}>
-              {JAM_KEYS.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {k.label}
-                </option>
-              ))}
-            </select>
-          </label>
+{keyPickers(true)}
           <label className="flex items-center gap-2">
             <span className="h w-14 shrink-0 text-wal3">Chords</span>
             <select className={sel} value={progId} data-testid="jam-prog" onChange={pick((v) => changeSetting(() => setProgId(v)))}>
-              {PROGRESSIONS.map((p) => (
+              {PROGRESSIONS.filter((p) => !p.only || p.only.includes(modeId)).map((p) => (
                 <option key={p.id} value={p.id}>
                   {presetName(p, key)}
                 </option>
@@ -532,7 +598,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
       {source === 'youtube' && (
         <>
           {VIDEOS.length > 0 && (
-            <select className={sel} value="" data-testid="jam-videos" onChange={pick((v) => { const vid = VIDEOS[Number(v)]; setVideoId(youTubeId(vid.url)); setKeyId(vid.mode === 'minor' ? `${vid.key}m` : vid.key); setYtChords(vid.chords ?? ''); })}>
+            <select className={sel} value="" data-testid="jam-videos" onChange={pick((v) => { const vid = VIDEOS[Number(v)]; setVideoId(youTubeId(vid.url)); setVideoStart(vid.start ?? youTubeStart(vid.url)); setKeyId(vid.mode === 'minor' ? `${vid.key}m` : vid.key); setYtChords(vid.chords ?? ''); })}>
               <option value="">Pick a video…</option>
               {VIDEOS.map((v, i) => (
                 <option key={i} value={i}>
@@ -543,20 +609,11 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
           )}
           <div className="flex gap-1">
             <input className={sel} value={ytText} onChange={(e) => setYtText(e.target.value)} placeholder="Paste a YouTube link" aria-label="YouTube link" data-testid="jam-yt-link" />
-            <button className="btn btn-brass shrink-0 px-2 py-1 text-[13px]" disabled={!youTubeId(ytText)} onClick={() => setVideoId(youTubeId(ytText))} data-testid="jam-yt-load">
+            <button className="btn btn-brass shrink-0 px-2 py-1 text-[13px]" disabled={!youTubeId(ytText)} onClick={() => { setVideoId(youTubeId(ytText)); setVideoStart(youTubeStart(ytText)); }} data-testid="jam-yt-load">
               Load
             </button>
           </div>
-          <label className="flex items-center gap-2">
-            <span className="h w-14 shrink-0 text-wal3">Key</span>
-            <select className={sel} value={keyId} data-testid="jam-key" onChange={pick(setKeyId)}>
-              {JAM_KEYS.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {k.label}
-                </option>
-              ))}
-            </select>
-          </label>
+{keyPickers(false)}
           <label className="flex flex-col gap-0.5">
             <span className="h text-wal3">Chords (optional)</span>
             <input className={sel} value={ytChords} onChange={(e) => setYtChords(e.target.value)} placeholder="Found them online? e.g. Am F C G" aria-label="The song's chords" data-testid="jam-yt-chords" />
@@ -578,21 +635,6 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
           Key lock
         </button>
       </div>
-      {(melody || keyLock) && (
-        <div className="flex gap-1" role="radiogroup" aria-label="Which notes" data-testid="jam-scale">
-          {(
-            [
-              ['key', key.mode === 'major' ? 'Major scale' : 'Minor scale'],
-              ['penta', 'Pentatonic'],
-              ['blues', 'Blues'],
-            ] as const
-          ).map(([id, label]) => (
-            <button key={id} role="radio" aria-checked={jamScale === id} data-testid={`jam-scale-${id}`} className={`btn flex-1 px-1 py-0.5 text-[12px] ${jamScale === id ? 'btn-brass' : ''}`} onClick={() => setJamScale(id)}>
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
       <div className="card flex flex-col gap-0.5 px-2 py-1.5" data-testid="jam-mixer">
         <div className="h text-[11px] uppercase text-muted">Mix</div>
         {(
@@ -643,6 +685,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
             <YouTubeBox
               cover={ctx.phone}
               videoId={videoId}
+              start={videoStart}
               volume={backVol}
               onPlayState={(on, seconds) => {
                 // The video playing / pausing is recorded too, with where it was, so play back can line it up.
@@ -687,7 +730,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
     ) : (
       <div className="flex h-full flex-col items-center justify-center gap-4 px-4" data-testid="jam-stage">
         <div className="h text-[13px] uppercase tracking-wider text-brass">
-          {source === 'track' ? (track?.title ?? 'No track') : styleName} · {key.label}
+          {source === 'track' ? (track?.title ?? 'No track') : styleName} · {keyLabel}
           {source === 'groove' ? ` · ${bpm} BPM` : ''}
         </div>
         {/* The chord chart: one box per bar; the bar playing now is lit, with its beats. */}

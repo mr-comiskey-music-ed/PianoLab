@@ -492,6 +492,17 @@ About page; no composition rubric):
 - **His round 8:** Lesson 11 maj7 / m7 levels ask 8 questions: all 6 chords once + 2 random repeats (level `count`). Custom
   pattern grid: Open hi-hat row (`o`, optional in `CustomPattern` so old codes still read), then Hi-hat, Snare, Kick, a gap
   with a line, and "Bass Notes" (so it doesn't read as a bass drum).
+- **His round 9:** Practice tab removed; the Sandbox tab is now **Practice Room** (mode id still `sandbox`; phones "Practice";
+  tabs Learn · Challenges · Practice Room · Jam Room · Grade Report); its left panel ends with a "Tips" dropdown showing each
+  lesson's `practice` text (`leftBottom` in ModeParts). The three note-name buttons became one **Note Names** dropdown
+  (Hide / Show / Show Cs; only the allowed ones; hidden when there's no choice, e.g. Name It levels and Learn).
+  Jam Room key = **Key** (12 letters) + **Scale** (`JAM_MODES`: Major, Minor, Major/Minor pentatonic, Blues, Dorian,
+  Mixolydian, Lydian, Phrygian, Harmonic minor): `family` (major/minor) sets the chords, `steps` set Melody mode / Key lock
+  (the old Key scale / Pentatonic / Blues toggle is gone). Modal vamps in PROGRESSIONS (`only`: picked when the mode is
+  chosen). The assignment builder offers all 24 keys (`JAM_KEYS`). YouTube list entries can carry `start` (seconds; links'
+  `t=` is read too): his picks added (Sweet Groove Am from 0:33, Deep Soul Groove Am, D major pop rock, E minor rock ballad).
+  YouTube view counts can't be read from the cloud container (YouTube shows a robot check), even with the PianoLab
+  environment allowing www.youtube.com.
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

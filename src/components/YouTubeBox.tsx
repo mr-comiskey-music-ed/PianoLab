@@ -1,6 +1,12 @@
 import React, { MutableRefObject, useEffect, useRef, useState } from 'react';
 
 /** "https://youtu.be/ID", "...watch?v=ID", "/embed/ID", "/shorts/ID" or a bare id -> the video id. */
+/** Where a link says to start ("&t=33", "?t=1m5s", "&start=33"), in seconds; 0 if it doesn't say. */
+export function youTubeStart(text: string): number {
+  const m = text.match(/[?&](?:t|start)=(?:(\d+)m)?(\d+)s?/);
+  return m ? Number(m[1] ?? 0) * 60 + Number(m[2]) : 0;
+}
+
 export function youTubeId(text: string): string | null {
   const t = text.trim();
   const m = t.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/) ?? t.match(/^([A-Za-z0-9_-]{11})$/);
@@ -57,7 +63,9 @@ export const YouTubeBox: React.FC<{
   control?: MutableRefObject<YTControl | null>;
   /** Phones: fill the whole (short, wide) Stage, cropping the top and bottom of the video, instead of a small box. */
   cover?: boolean;
-}> = ({ videoId, volume, onPlayState, control, cover }) => {
+  /** Start this many seconds in (e.g. to skip a guitar solo at the top of a backing track). */
+  start?: number;
+}> = ({ videoId, volume, onPlayState, control, cover, start }) => {
   const el = useRef<HTMLDivElement>(null);
   const player = useRef<YTPlayer | null>(null);
   const [err, setErr] = useState('');
@@ -72,7 +80,7 @@ export const YouTubeBox: React.FC<{
         player.current = new YT.Player(el.current, {
           videoId,
           host: 'https://www.youtube-nocookie.com',
-          playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
+          playerVars: { rel: 0, modestbranding: 1, playsinline: 1, ...(start ? { start: Math.round(start) } : {}) },
           events: {
             onReady: () => {
               player.current?.setVolume(Math.round(Math.min(1, volume) * 100));

@@ -18,11 +18,10 @@ import { useSandbox } from './components/ModeSandbox';
 import { RestorePrompt, SaveIndicator, SaveStatus } from './components/SaveUI';
 import { Welcome, welcomeSeen } from './components/Welcome';
 import { useLearn } from './components/ModeLearn';
-import { usePractice } from './components/ModePractice';
 import { useChallenge } from './components/ModeChallenge';
 import { useScreenKind } from './utils/screen';
 import { useJam } from './components/ModeJam';
-import { ModeCtx, NoteEvent } from './components/modeTypes';
+import { Labels, ModeCtx, NoteEvent } from './components/modeTypes';
 import { LevelResult } from './types';
 import { DEFAULT_START, KEY_COUNT, clampStart, inView, letterOf, noteName, startFor } from './utils/music';
 import { LearnProgress, WorkSnapshot, clearSaved, hasWork, loadLatency, loadSaved, writeSaved } from './utils/autosave';
@@ -39,7 +38,7 @@ const octColor = (n: number) =>
 
 const LESSONS = (lessonsData.lessons as unknown as Lesson[]);
 
-type Mode = 'learn' | 'practice' | 'challenge' | 'sandbox' | 'jam' | 'report';
+type Mode = 'learn' | 'challenge' | 'sandbox' | 'jam' | 'report';
 const engine = AudioEngine.get();
 
 export default function App() {
@@ -303,16 +302,15 @@ export default function App() {
     goTo: setMode,
   };
   const learn = useLearn(ctx);
-  const practice = usePractice(ctx);
   const challenge = useChallenge(ctx, mode === 'challenge');
   const sandbox = useSandbox(ctx, mode === 'sandbox');
   const jam = useJam(ctx, mode === 'jam');
-  const parts = mode === 'learn' ? learn : mode === 'practice' ? practice : mode === 'sandbox' ? sandbox : mode === 'jam' ? jam : challenge;
+  const parts = mode === 'learn' ? learn : mode === 'sandbox' ? sandbox : mode === 'jam' ? jam : challenge;
   silenceRef.current = parts.silence;
 
   // A lesson, step or level can want its own sound (Bass lines: Analog Bass, the 808). Switch to it when it comes up, and
   // back to the student's own sound when it's gone (if a bass sound is still on). An assignment's fixed sound always wins.
-  const wantSound = mode === 'learn' || mode === 'challenge' || mode === 'practice' ? parts.sound : undefined;
+  const wantSound = mode === 'learn' || mode === 'challenge' ? parts.sound : undefined;
   const ownSound = useRef<string | null>(null);
   useEffect(() => {
     if (assignRef.current?.sound) return;
@@ -331,7 +329,7 @@ export default function App() {
   // Lessons 2 on (in Learn it would give the answers away too).
   const detectorOn = mode !== 'challenge' && mode !== 'report';
   const detected = detectorOn ? detectChord([...pressed], stripKey) : null;
-  const showStrip = (mode === 'practice' && !!lesson.key) || mode === 'sandbox';
+  const showStrip = mode === 'sandbox';
 
   // Number keys 1-7 play the strip's chords (only while the strip is showing; never while typing in a box).
   useEffect(() => {
@@ -366,9 +364,9 @@ export default function App() {
 
   const tabs: { id: Mode | 'jam'; label: string }[] = [
     { id: 'learn', label: 'Learn' },
-    { id: 'practice', label: 'Practice' },
     { id: 'challenge', label: 'Challenges' },
-    { id: 'sandbox', label: 'Sandbox' },
+    // His call: Practice and the Sandbox merged into one "Practice Room" (the mode id stays 'sandbox').
+    { id: 'sandbox', label: 'Practice Room' },
     { id: 'jam', label: 'Jam Room' },
     { id: 'report', label: 'Grade Report' },
   ];
@@ -437,10 +435,10 @@ export default function App() {
               data-testid="open-left"
             >
               {/* Always two lines and the same width, so the tabs beside it never move. */}
-              <span className="h text-[10px] text-brass">{mode === 'jam' ? 'Jam Room' : mode === 'sandbox' ? 'Sandbox' : `Lesson ${lesson.number}`}</span>
+              <span className="h text-[10px] text-brass">{mode === 'jam' ? 'Jam Room' : mode === 'sandbox' ? 'Practice Room' : `Lesson ${lesson.number}`}</span>
               <span className="h text-[13px]">{mode === 'jam' ? 'Setup' : mode === 'sandbox' ? 'Options' : (parts.navLabel ?? 'Practice')} ▾</span>
             </button>
-            {navHint && !welcome && (mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
+            {navHint && !welcome && (mode === 'learn' || mode === 'challenge') && (
               // A first-visit hint (not saved anywhere: it shows once per visit).
               <span className="pop absolute left-0 top-full z-50 mt-2 w-max max-w-[220px] rounded-lg bg-brass px-2.5 py-1.5 text-[13px] font-semibold text-brasstext shadow-lg" data-testid="nav-hint" onClick={() => setNavHint(false)}>
                 <span className="absolute -top-1.5 left-4 h-3 w-3 rotate-45 bg-brass" />
@@ -466,7 +464,7 @@ export default function App() {
               }}
               className={`h shrink-0 rounded-md ${compact ? 'px-1.5 py-0.5 text-[13px]' : 'px-3 py-1 text-[15px]'} ${mode === t.id ? 'bg-brass text-brasstext' : 'text-panel hover:bg-white/10'}`}
             >
-              {compact && t.id === 'report' ? 'Grade' : compact && t.id === 'jam' ? 'Jam' : t.label}
+              {compact && t.id === 'report' ? 'Grade' : compact && t.id === 'jam' ? 'Jam' : compact && t.id === 'sandbox' ? 'Practice' : t.label}
             </button>
           ))}
         </nav>
@@ -505,7 +503,7 @@ export default function App() {
           {assignment.note && <span className="text-wal2" data-testid="assignment-note">{assignment.note}</span>}
           {(assignment.levels.length > 0 || !!assignment.learn?.length) && <span>Lesson{lessons.length > 1 ? 's' : ''} {lessons.map((l) => l.number).join(', ')}</span>}
           {assignment.jam && <span>Jam Room set up by your teacher</span>}
-          {openTab(assignment) === 'sandbox' && <span>Record it in the Sandbox, then Save performance and turn in the code.</span>}
+          {openTab(assignment) === 'sandbox' && <span>Record it in the Practice Room, then Save performance and turn in the code.</span>}
           {assignment.labels === 'c' && <span>Note names: Cs only</span>}
           {assignment.labels === 'off' && <span>Note names: hidden</span>}
           {assignment.tempo && <span>Timed levels: {assignment.tempo} BPM or faster</span>}
@@ -535,41 +533,36 @@ export default function App() {
               ✕ Close
             </button>
           )}
-          {(mode === 'learn' || mode === 'practice' || mode === 'challenge') && (
+          {(mode === 'learn' || mode === 'challenge') && (
             <LessonPicker lessons={lessons} current={lesson.id} learned={learned} results={results} onPick={setLessonId} />
           )}
           {parts.left}
           <div className="mt-3 border-t border-line pt-2" data-testid="left-bottom">
-            {parts.labelControl && (
-              <>
-                <div className="h text-[11px] uppercase text-muted">{parts.labelControl.title ?? 'Challenge Yourself'}</div>
-                <div className="mt-1 grid grid-cols-3 gap-1" role="radiogroup" aria-label={`${parts.labelControl.title ?? 'Challenge Yourself'} note names on the keys`}>
-                  {([['all', 'Show Note Names'], ['c', 'Show Cs'], ['off', 'Hide Note Names']] as const).map(([v, t]) => {
-                    const ok = parts.labelControl!.allowed.includes(v);
-                    return (
-                      <button
-                        key={v}
-                        role="radio"
-                        aria-checked={parts.labelControl!.value === v}
-                        disabled={!ok || parts.labelControl!.locked}
-                        data-testid={`labels-${v}`}
-                        onClick={() => parts.labelControl!.set(v)}
-                        className={`btn px-1 py-1 text-[12px] leading-tight ${parts.labelControl!.value === v ? 'btn-brass' : ''}`}
-                      >
-                        {/* One row of three (room for longer level lists): "Show / Note Names" on two short lines. */}
-                        {t.replace(/^(Show|Hide) /, '$1\n')
-                          .split('\n')
-                          .map((w, k) => (
-                            <span key={k} className="block">
-                              {w}
-                            </span>
-                          ))}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
+            {parts.labelControl && parts.labelControl.allowed.length > 1 && (
+              // Note names (his call: a dropdown instead of three buttons; left out when there's no choice).
+              <label className="flex items-center gap-2">
+                <span className="h text-[11px] uppercase text-muted">Note Names</span>
+                <select
+                  className="min-w-0 flex-1 rounded-md border border-line bg-panel px-2 py-1 text-[14px] text-wal3"
+                  value={parts.labelControl.value}
+                  disabled={parts.labelControl.locked}
+                  data-testid="labels-select"
+                  onChange={(e) => {
+                    parts.labelControl!.set(e.target.value as Labels);
+                    e.currentTarget.blur(); // the typing keyboard goes back to the piano
+                  }}
+                >
+                  {(['off', 'all', 'c'] as const)
+                    .filter((v) => parts.labelControl!.allowed.includes(v))
+                    .map((v) => (
+                      <option key={v} value={v}>
+                        {v === 'off' ? 'Hide' : v === 'all' ? 'Show' : 'Show Cs'}
+                      </option>
+                    ))}
+                </select>
+              </label>
             )}
+            {parts.leftBottom}
           </div>
         </aside>
 
