@@ -254,7 +254,10 @@ function lineTimeline(p: Pattern, key: KeyDef, tempo: number): Timeline {
     const home = diatonic(key)[0];
     const root = BASE + home.chord.root;
     bars.push({ bar: p.bars, beat: p.bars * 4, symbol: chordName(home.chord), numeral: home.numeral, color: home.color });
-    hits.push({ beat: p.bars * 4, dur: 4, notes: [root], pcs: [pc(root)], kind: 'note', bar: p.bars, chordPcs: chordPcs(home.chord) });
+    // As long as the line's first note (any length counts: only the start is judged).
+    const first = line[0];
+    const len = first ? Math.min(4, first.d ?? (line[1]?.b ?? span * 4) - first.b) : 4;
+    hits.push({ beat: p.bars * 4, dur: len, notes: [root], pcs: [pc(root)], kind: 'note', bar: p.bars, chordPcs: chordPcs(home.chord) });
   }
   return { key, hits, bars, beats: (p.bars + (p.end ? 1 : 0)) * 4, tempo };
 }

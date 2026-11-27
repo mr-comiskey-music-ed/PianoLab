@@ -7319,6 +7319,20 @@
           "tryNames": true
         },
         {
+          "id": "l8-try-maj7s-b",
+          "section": "Three kinds",
+          "title": "Major 7ths with black keys",
+          "say": "Dmaj7, Emaj7 and Amaj7 all have the same shape: white, black, white, black.\nDmaj7 = D F♯ A C♯. Emaj7 = E G♯ B D♯. Amaj7 = A C♯ E G♯.\nLearn the shape once and slide it.",
+          "need": 1,
+          "tryText": "Play Dmaj7, Emaj7 and Amaj7, one after another.",
+          "tryProgression": [
+            "Dmaj7",
+            "Emaj7",
+            "Amaj7"
+          ],
+          "tryNames": true
+        },
+        {
           "id": "l8-try-m7s",
           "section": "Three kinds",
           "title": "Play minor 7th chords",
@@ -7333,6 +7347,20 @@
           "tryNames": true
         },
         {
+          "id": "l8-try-m7s-b",
+          "section": "Three kinds",
+          "title": "Minor 7ths with black keys",
+          "say": "Same recipe, starting on other notes.\nBm7 = B D F♯ A. F♯m7 = F♯ A C♯ E. Gm7 = G B♭ D F.",
+          "need": 1,
+          "tryText": "Play Bm7, F♯m7 and Gm7, one after another.",
+          "tryProgression": [
+            "Bm7",
+            "F#m7",
+            "Gm7"
+          ],
+          "tryNames": true
+        },
+        {
           "id": "l8-try-dom7s",
           "section": "Three kinds",
           "title": "Play dominant 7th chords",
@@ -7343,6 +7371,19 @@
             "G7",
             "C7",
             "D7"
+          ],
+          "tryNames": true
+        },
+        {
+          "id": "l8-try-dom7s-b",
+          "section": "Three kinds",
+          "title": "Dominant 7ths with black keys",
+          "say": "A7 = A C♯ E G (like Amaj7, but the 7th steps down to G).\nF7 = F A C E♭ (like Fmaj7, but E becomes E♭).",
+          "need": 1,
+          "tryText": "Play A7, then F7.",
+          "tryProgression": [
+            "A7",
+            "F7"
           ],
           "tryNames": true
         },
@@ -7478,6 +7519,18 @@
               "chord": "Gmaj7"
             },
             {
+              "text": "Play Dmaj7.",
+              "chord": "Dmaj7"
+            },
+            {
+              "text": "Play Emaj7.",
+              "chord": "Emaj7"
+            },
+            {
+              "text": "Play Amaj7.",
+              "chord": "Amaj7"
+            },
+            {
               "text": "Play Cmaj7.",
               "chord": "Cmaj7"
             },
@@ -7490,16 +7543,16 @@
               "chord": "Gmaj7"
             },
             {
-              "text": "Play Cmaj7.",
-              "chord": "Cmaj7"
+              "text": "Play Dmaj7.",
+              "chord": "Dmaj7"
             },
             {
-              "text": "Play Fmaj7.",
-              "chord": "Fmaj7"
+              "text": "Play Emaj7.",
+              "chord": "Emaj7"
             },
             {
-              "text": "Play Gmaj7.",
-              "chord": "Gmaj7"
+              "text": "Play Amaj7.",
+              "chord": "Amaj7"
             }
           ]
         },
@@ -7525,6 +7578,18 @@
               "chord": "Am7"
             },
             {
+              "text": "Play Bm7.",
+              "chord": "Bm7"
+            },
+            {
+              "text": "Play F♯m7.",
+              "chord": "F#m7"
+            },
+            {
+              "text": "Play Gm7.",
+              "chord": "Gm7"
+            },
+            {
               "text": "Play Dm7.",
               "chord": "Dm7"
             },
@@ -7537,16 +7602,16 @@
               "chord": "Am7"
             },
             {
-              "text": "Play Dm7.",
-              "chord": "Dm7"
+              "text": "Play Bm7.",
+              "chord": "Bm7"
             },
             {
-              "text": "Play Em7.",
-              "chord": "Em7"
+              "text": "Play F♯m7.",
+              "chord": "F#m7"
             },
             {
-              "text": "Play Am7.",
-              "chord": "Am7"
+              "text": "Play Gm7.",
+              "chord": "Gm7"
             }
           ]
         },
@@ -7572,16 +7637,12 @@
               "chord": "D7"
             },
             {
-              "text": "Play G7.",
-              "chord": "G7"
+              "text": "Play A7.",
+              "chord": "A7"
             },
             {
-              "text": "Play C7.",
-              "chord": "C7"
-            },
-            {
-              "text": "Play D7.",
-              "chord": "D7"
+              "text": "Play F7.",
+              "chord": "F7"
             },
             {
               "text": "Play G7.",
@@ -7594,6 +7655,14 @@
             {
               "text": "Play D7.",
               "chord": "D7"
+            },
+            {
+              "text": "Play A7.",
+              "chord": "A7"
+            },
+            {
+              "text": "Play F7.",
+              "chord": "F7"
             }
           ]
         },
@@ -7792,7 +7861,7 @@
         {
           "id": "l8-time-rnb",
           "title": "R&B 7ths in C",
-          "blurb": "Fmaj7, Em7, Dm7, Cmaj7: a smooth R&B slide down, in time.",
+          "blurb": "Cmaj7, Em7, Am7, Dm7 (I – iii – vi – ii) with smooth moves, in time.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -7803,10 +7872,37 @@
             "key": "C",
             "mode": "major",
             "progression": [
-              "IVmaj7",
+              "Imaj7",
               "iii7",
+              "vi7",
+              "ii7"
+            ],
+            "texture": "block",
+            "rhythm": "whole",
+            "voicing": "smoothest",
+            "tempo": 70,
+            "bars": 8
+          },
+          "screen": "blocks"
+        },
+        {
+          "id": "l8-time-minor",
+          "title": "Dm7 – Am7 – Em7 – Fmaj7",
+          "blurb": "ii – vi – iii – IV in C with smooth moves, in time.",
+          "type": "play",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "pattern": {
+            "id": "l8-minor-c",
+            "key": "C",
+            "mode": "major",
+            "progression": [
               "ii7",
-              "Imaj7"
+              "vi7",
+              "iii7",
+              "IVmaj7"
             ],
             "texture": "block",
             "rhythm": "whole",

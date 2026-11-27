@@ -484,6 +484,11 @@ About page; no composition rubric):
   score ("More notes in 7 of 8 bars"). Major scales: Learn tries and the finger demos go up AND back down (15 dots;
   "3 over the thumb!"; `scaleSteps`/`scaleFingers`), a 2 s pause starts a scale over (Learn and Challenges, no penalty), a
   wrong note that is the starting note begins a new try; scale Challenges show the hand.
+- **His round 7:** Learn try steps have "↻ Try again" once done (also for steps finished before; `redo` in ModeLearn
+  counts only the new try; Next stays open). Scale up-and-down: the top note again at the turn is ignored. Bass endings:
+  the last note is as long as the line's first note and isn't drawn on the Learn grid (`gridBeats`). Lesson 11: Learn adds
+  black-key tries (Dmaj7 Emaj7 Amaj7 = white-black-white-black; Bm7 F♯m7 Gm7; A7 F7); levels maj7/m7/dom7 include them;
+  `l8-time-rnb` = Imaj7–iii7–vi7–ii7; new `l8-time-minor` Dm7–Am7–Em7–Fmaj7 (10 levels, fits).
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

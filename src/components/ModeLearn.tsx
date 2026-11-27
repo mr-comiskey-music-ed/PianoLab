@@ -134,7 +134,19 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   const step = steps[Math.min(i, steps.length - 1)];
   // Done: show steps, a try that was just passed, or any step before the furthest one reached (or the whole Learn is
   // finished): no redoing play-alongs when going back (his request).
-  const stepDone = !!step.show || count >= step.need || ctx.learnDone || i < ctx.learnMax;
+  // A finished try can be done again (his request): "↻ Try again" (`redo`) counts only this new try.
+  const [redo, setRedo] = useState(0);
+  const stepDone = !!step.show || count >= step.need || (!redo && (ctx.learnDone || i < ctx.learnMax));
+  const tryAgain = () => {
+    setRedo((r) => r + 1);
+    setCount(0);
+    setProgIdx(0);
+    progRef.current = 0;
+    scaleRef.current = [];
+    setScaleCount(0);
+    usedKeys.current = new Set();
+    setMsg(null);
+  };
   // Finger numbers (Major scales): tags that are all 1-5 are fingers, shown on a hand that follows the demo.
   const tagVals = Object.values(step.tags ?? {});
   const fingerTags = tagVals.length > 0 && tagVals.every((v) => /^[1-5]$/.test(v));
@@ -217,6 +229,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     const next = Math.max(0, Math.min(steps.length - 1, n));
     setI(next);
     setCount(0);
+    setRedo(0);
     setProgIdx(0);
     progRef.current = 0;
     scaleRef.current = [];
@@ -239,6 +252,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   useEffect(() => {
     setI(Math.min(ctx.learnStep, steps.length - 1));
     setCount(0);
+    setRedo(0);
     setProgIdx(0);
     progRef.current = 0;
     scaleRef.current = [];
@@ -264,6 +278,8 @@ export function useLearn(ctx: ModeCtx): ModeParts {
         const k = keyById(s.tryScale);
         if (performance.now() - scaleLast.current > SCALE_PAUSE_MS) scaleRef.current = [];
         scaleLast.current = performance.now();
+        // The top note again at the turn (played twice on the way back down) is fine: ignore it.
+        if (scaleRef.current.length === 8 && midi === scaleRef.current[7]) return;
         let played = [...scaleRef.current, midi];
         // A wrong note that is the starting note begins a new try right away.
         if (played.length > 1 && scaleStep(k.tonic, played, true) === 'wrong' && pc(midi) === pc(k.tonic)) played = [midi];
@@ -467,7 +483,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
           Back
         </button>
         {!last && (
-          <button className="btn btn-brass flex-1" disabled={!stepDone && !ctx.learnDone} onClick={() => goStep(i + 1, true)}>
+          <button className="btn btn-brass flex-1" disabled={!stepDone && !ctx.learnDone && i >= ctx.learnMax} onClick={() => goStep(i + 1, true)}>
             Next step
           </button>
         )}
@@ -583,6 +599,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       )}
       {step.rhythm && (
         <RhythmBox
+          key={`${step.id}-${redo}`}
           ctx={ctx}
           pattern={step.rhythm}
           groove={step.groove}
@@ -623,7 +640,12 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       </Col>
       <Col phone={ctx.phone}>
       {stepDone ? (
-        nextBtn
+        <>
+          {nextBtn}
+          <button className="btn btn-dark text-[15px]" onClick={tryAgain} data-testid="try-again">
+            ↻ Try again
+          </button>
+        </>
       ) : step.demo?.length ? (
         // A demo that teaches something before you try (Start / Restart no longer sit above the piano).
         <button className="btn btn-dark text-[15px]" onClick={() => void showMe()} disabled={demoing} data-testid="show-me">

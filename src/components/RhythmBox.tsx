@@ -152,10 +152,12 @@ export const RhythmBox: React.FC<{
 
   // The grid: every bar of the pattern, 8 counts each. Counts, lines and blocks are all placed by the same percentages,
   // so each count sits exactly where its beat starts (a half note on 3 starts right under the 3).
-  const slots = (tl.beats / 4) * 8;
+  // A bass line's ending note (on 1 of an extra bar) plays but isn't drawn: it made the grid unclear (his call).
+  const gridBeats = pattern.end ? pattern.bars * 4 : tl.beats;
+  const slots = (gridBeats / 4) * 8;
   const counting = phase !== 'idle' && pos < 0 && pos >= -COUNT_IN ? Math.floor(pos + COUNT_IN) + 1 : 0;
   const slotNow = phase !== 'idle' && pos >= 0 ? Math.floor(pos * 2) : -1;
-  const at = (beat: number) => `${(beat / tl.beats) * 100}%`;
+  const at = (beat: number) => `${(beat / gridBeats) * 100}%`;
   const showFall = fall && phase !== 'idle';
   const stageEl = typeof document !== 'undefined' ? document.querySelector('[data-testid=stage]') : null;
   return (
@@ -177,21 +179,21 @@ export const RhythmBox: React.FC<{
             })}
           </div>
           <div className={`relative ${ctx.phone ? 'h-6' : 'h-8'}`} data-testid="rhythm-hits">
-            {tl.hits.map((h, k) => {
+            {tl.hits.filter((h) => h.beat < gridBeats).map((h, k) => {
               const color = tl.bars[h.bar]?.color ?? '#d9a441';
               const label = h.kind === 'chord' ? tl.bars[h.bar]?.symbol : (h.name ?? pretty(letterOf(h.notes[0])));
               return (
                 <div
                   key={k}
                   className="absolute top-0 flex h-full items-center overflow-hidden rounded-r-md pl-1.5 text-[13px] font-semibold"
-                  style={{ left: at(h.beat), width: `calc(${(h.dur / tl.beats) * 100}% - 2px)`, background: color, color: textOn(color), opacity: h.kind === 'chord' ? 1 : 0.85 }}
+                  style={{ left: at(h.beat), width: `calc(${(h.dur / gridBeats) * 100}% - 2px)`, background: color, color: textOn(color), opacity: h.kind === 'chord' ? 1 : 0.85 }}
                 >
                   {label}
                 </div>
               );
             })}
           </div>
-          {phase !== 'idle' && pos >= 0 && <div className="absolute bottom-0 top-0 w-0.5 bg-panel" style={{ left: at(Math.min(tl.beats, pos)) }} />}
+          {phase !== 'idle' && pos >= 0 && <div className="absolute bottom-0 top-0 w-0.5 bg-panel" style={{ left: at(Math.min(gridBeats, pos)) }} />}
           {counting > 0 && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#2a2118]/70">
               <span className="h text-[32px] text-brass" data-testid="rhythm-count">
