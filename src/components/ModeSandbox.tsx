@@ -325,7 +325,7 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
   const left = (
     <div className="flex flex-col gap-2">
       <h2 className="h text-[22px] leading-tight text-wal3">Practice Room</h2>
-      <p className="text-[14px] leading-snug text-wal1">Play anything. It records as you go. Scroll the roll to look back.</p>
+      <p className="text-[14px] leading-snug text-wal1">Play anything. It records as you go.</p>
       <div className="card px-2.5 py-1.5 text-[14px]" data-testid="perf-stats">
         <div className="flex items-baseline justify-between">
           <span className="h text-[11px] uppercase text-muted">Your performance</span>
@@ -341,11 +341,11 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
         <div className="flex items-center gap-1 text-[13px]" data-testid="perf-speed">
           <span className="h w-12 shrink-0 text-wal3">Speed</span>
           {[0.5, 0.75, 1].map((v) => (
-            <button key={v} disabled={backing.length > 0 && v !== 1} title={backing.length ? 'A performance with a backing plays at 100%' : undefined} className={`btn flex-1 px-1 py-0.5 text-[13px] ${(backing.length ? 1 : speed) === v ? 'btn-brass' : ''}`} aria-pressed={speed === v} data-testid={`perf-speed-${v * 100}`} onClick={() => { if (playRef.current) pause(); setSpeed(v); }}>
+            <button key={v} disabled={backing.length > 0 && v !== 1} title={backing.length ? 'A performance with a backing plays at 100%' : undefined} className={`btn min-w-0 flex-1 px-1 py-0.5 text-[13px] ${(backing.length ? 1 : speed) === v ? 'btn-brass' : ''}`} aria-pressed={speed === v} data-testid={`perf-speed-${v * 100}`} onClick={() => { if (playRef.current) pause(); setSpeed(v); }}>
               {v * 100}%
             </button>
           ))}
-          <button className={`btn px-1.5 py-0.5 text-[13px] ${mute ? 'btn-brass' : ''}`} aria-pressed={mute} data-testid="perf-mute" title="Mute the play back and play the part yourself" onClick={() => setMute((m) => !m)}>
+          <button className={`btn shrink-0 px-1.5 py-0.5 text-[13px] ${mute ? 'btn-brass' : ''}`} aria-pressed={mute} data-testid="perf-mute" title="Mute the play back and play the part yourself" onClick={() => setMute((m) => !m)}>
             {mute ? 'Muted' : 'Mute'}
           </button>
         </div>
@@ -403,14 +403,18 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
             </button>
           </span>
         </div>
-      ) : (
-        <button className="btn py-1.5" onClick={() => setAsking({ kind: 'clear' })} disabled={!notes.length} data-testid="perf-clear">
-          Clear
+      ) : null}
+      {/* Clear and Import side by side, to leave room for the Practice tips below. */}
+      <span className="flex gap-1.5">
+        {!asking && (
+          <button className="btn flex-1 py-1.5" onClick={() => setAsking({ kind: 'clear' })} disabled={!notes.length} data-testid="perf-clear">
+            Clear
+          </button>
+        )}
+        <button className="btn flex-1 py-1.5" onClick={() => fileInput.current?.click()} data-testid="perf-import" title="Open a .mid file from GarageBand, Soundtrap, BandLab, MuseScore…">
+          Import MIDI…
         </button>
-      )}
-      <button className="btn py-1.5" onClick={() => fileInput.current?.click()} data-testid="perf-import" title="Open a .mid file from GarageBand, Soundtrap, BandLab, MuseScore…">
-        Import MIDI…
-      </button>
+      </span>
       <input
         ref={fileInput}
         type="file"
@@ -470,27 +474,27 @@ export function useSandbox(ctx: ModeCtx, active: boolean): ModeParts {
     labelControl: { value: labels, allowed: LABEL_ORDER, set: setLabels },
     leftBottom: (
       // Practice tips from each lesson (the old Practice tab's one job, his call), under Note Names.
-      <div className="mt-2 flex flex-col gap-1" data-testid="practice-tips">
-        <label className="flex items-center gap-2">
-          <span className="h text-[11px] uppercase text-muted">Tips</span>
-          <select
-            className="min-w-0 flex-1 rounded-md border border-line bg-panel px-2 py-1 text-[14px] text-wal3"
-            value={TIP_LESSONS.some((l) => l.id === tipLesson) ? tipLesson : TIP_LESSONS[0]?.id}
-            data-testid="tips-select"
-            onChange={(e) => {
-              setTipLesson(e.target.value);
-              e.currentTarget.blur(); // the typing keyboard goes back to the piano
-            }}
-          >
-            {TIP_LESSONS.map((l) => (
-              <option key={l.id} value={l.id}>
-                Lesson {l.number}: {l.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <p className="text-[13px] leading-snug text-wal1" data-testid="tips-text">
-          {(TIP_LESSONS.find((l) => l.id === tipLesson) ?? TIP_LESSONS[0])?.practice}
+      <div className="mt-3 flex flex-col gap-2 rounded-lg border-2 border-brass bg-[#fbeecb] p-2.5 shadow-sm" data-testid="practice-tips">
+        <div className="h text-[18px] leading-none text-wal3">Practice tips</div>
+        <select
+          className="w-full rounded-md border border-brass2 bg-panel px-2 py-1 text-[15px] font-semibold text-wal3"
+          value={TIP_LESSONS.some((l) => l.id === tipLesson) ? tipLesson : TIP_LESSONS[0]?.id}
+          data-testid="tips-select"
+          aria-label="Practice tips for a lesson"
+          onChange={(e) => {
+            setTipLesson(e.target.value);
+            e.currentTarget.blur(); // the typing keyboard goes back to the piano
+          }}
+        >
+          {TIP_LESSONS.map((l) => (
+            <option key={l.id} value={l.id}>
+              Lesson {l.number}: {l.title}
+            </option>
+          ))}
+        </select>
+        {/* One sentence per line, big and dark, so it reads at a glance. */}
+        <p className="whitespace-pre-line text-[16px] leading-snug text-wal3" data-testid="tips-text">
+          {(TIP_LESSONS.find((l) => l.id === tipLesson) ?? TIP_LESSONS[0])?.practice?.replace(/([.!?]) +/g, '$1\n')}
         </p>
       </div>
     ),

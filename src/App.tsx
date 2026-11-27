@@ -556,7 +556,7 @@ export default function App() {
                     .filter((v) => parts.labelControl!.allowed.includes(v))
                     .map((v) => (
                       <option key={v} value={v}>
-                        {v === 'off' ? 'Hide' : v === 'all' ? 'Show' : 'Show Cs'}
+                        {v === 'off' ? 'Hide' : v === 'all' ? 'Show All' : 'Show Cs'}
                       </option>
                     ))}
                 </select>

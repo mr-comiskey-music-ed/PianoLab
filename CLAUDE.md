@@ -503,6 +503,11 @@ About page; no composition rubric):
   `t=` is read too): his picks added (Sweet Groove Am from 0:33, Deep Soul Groove Am, D major pop rock, E minor rock ballad).
   YouTube view counts can't be read from the cloud container (YouTube shows a robot check), even with the PianoLab
   environment allowing www.youtube.com.
+- **His round 10:** Practice tips are a brass card under Note Names (big dark text, one sentence per line; Clear and
+  Import MIDI share a row so it fits). Note Names options: Hide / Show All / Show Cs. YouTube: the player's own keyboard
+  shortcuts are off (`disablekb`; "F" went full screen), and a click on the video hands the keyboard back to the piano
+  ~150 ms later (window blur -> blur the iframe). In the Jam Room the Space bar plays / pauses the video and the left /
+  right arrows jump 5 s (`YouTubeBox keys`). `e73`, `e74` (stand-in player).
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

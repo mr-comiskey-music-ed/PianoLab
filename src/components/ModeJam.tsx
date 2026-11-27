@@ -684,6 +684,7 @@ export function useJam(ctx: ModeCtx, active: boolean): ModeParts {
           <div className={ctx.phone ? 'absolute inset-0 opacity-50' : 'h-full max-h-full opacity-50'} data-testid="youtube-wrap">
             <YouTubeBox
               cover={ctx.phone}
+              keys
               videoId={videoId}
               start={videoStart}
               volume={backVol}

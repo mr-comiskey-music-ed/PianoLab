@@ -28,6 +28,7 @@ interface YTPlayer {
   seekTo(s: number, allowSeekAhead: boolean): void;
   playVideo(): void;
   pauseVideo(): void;
+  getPlayerState(): number;
 }
 type YTNamespace = { Player: new (el: HTMLElement, opts: object) => YTPlayer };
 let ytReady: Promise<YTNamespace> | null = null;
@@ -65,8 +66,11 @@ export const YouTubeBox: React.FC<{
   cover?: boolean;
   /** Start this many seconds in (e.g. to skip a guitar solo at the top of a backing track). */
   start?: number;
-}> = ({ videoId, volume, onPlayState, control, cover, start }) => {
+  /** Space bar plays / pauses the video, left / right arrows jump 5 s (Jam Room; the Practice Room's play back keeps its own Space bar). */
+  keys?: boolean;
+}> = ({ videoId, volume, onPlayState, control, cover, start, keys }) => {
   const el = useRef<HTMLDivElement>(null);
+  const wrap = useRef<HTMLDivElement>(null);
   const player = useRef<YTPlayer | null>(null);
   const [err, setErr] = useState('');
   const onState = useRef(onPlayState);
@@ -80,7 +84,7 @@ export const YouTubeBox: React.FC<{
         player.current = new YT.Player(el.current, {
           videoId,
           host: 'https://www.youtube-nocookie.com',
-          playerVars: { rel: 0, modestbranding: 1, playsinline: 1, ...(start ? { start: Math.round(start) } : {}) },
+          playerVars: { rel: 0, modestbranding: 1, playsinline: 1, disablekb: 1, fs: 1, ...(start ? { start: Math.round(start) } : {}) },
           events: {
             onReady: () => {
               player.current?.setVolume(Math.round(Math.min(1, volume) * 100));
@@ -112,8 +116,46 @@ export const YouTubeBox: React.FC<{
       /* not ready yet */
     }
   }, [volume]);
+  // The typing keyboard always belongs to the piano: clicking the video (play, pause, the time bar) moves the keyboard
+  // into YouTube's player, where letters are its shortcuts ("F" = full screen). Shortly after a click, take it back.
+  useEffect(() => {
+    const onBlur = () =>
+      window.setTimeout(() => {
+        const a = document.activeElement;
+        if (a && a.tagName === 'IFRAME' && wrap.current?.contains(a)) {
+          (a as HTMLElement).blur();
+          window.focus();
+        }
+      }, 150);
+    window.addEventListener('blur', onBlur);
+    return () => window.removeEventListener('blur', onBlur);
+  }, []);
+  // Space = play / pause, arrows = back / forward 5 s (never while typing in a box).
+  useEffect(() => {
+    if (!keys) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.code !== 'Space' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable || (t.tagName === 'INPUT' && !['range', 'checkbox', 'radio', 'button'].includes((t as HTMLInputElement).type)))) return;
+      const pl = player.current;
+      if (!pl) return;
+      e.preventDefault();
+      if (e.repeat && e.code === 'Space') return;
+      try {
+        if (e.code === 'Space') {
+          if (pl.getPlayerState() === PLAYING) pl.pauseVideo();
+          else pl.playVideo();
+        } else pl.seekTo(Math.max(0, pl.getCurrentTime() + (e.key === 'ArrowLeft' ? -5 : 5)), true);
+      } catch {
+        /* not ready yet */
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [keys]);
   const box = (
-    <div className={cover ? 'yt-cover' : 'relative aspect-video h-full max-h-full max-w-full'} data-testid="youtube">
+    <div ref={wrap} className={cover ? 'yt-cover' : 'relative aspect-video h-full max-h-full max-w-full'} data-testid="youtube">
       {err ? <div className="flex h-full items-center justify-center px-6 text-center text-[16px] text-line2">{err}</div> : <div ref={el} className="h-full w-full" />}
     </div>
   );
