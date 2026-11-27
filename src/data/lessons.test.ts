@@ -62,11 +62,13 @@ describe('lesson content', () => {
       for (const p of pats) {
         expect(validatePattern(p), p.id).toEqual([]);
         const tl = buildTimeline(p);
-        for (const h of tl.hits) for (const n of h.notes) expect(n >= 48 && n <= 72, `${p.id}: note ${n} at beat ${h.beat}`).toBe(true);
+        // (bass lines with `octave: -1` sit an octave lower: C2-C4, students press Oct −)
+        const lo = 48 + 12 * (p.octave ?? 0);
+        for (const h of tl.hits) for (const n of h.notes) expect(n >= lo && n <= lo + 24, `${p.id}: note ${n} at beat ${h.beat}`).toBe(true);
         if (p.texture === 'line') {
           const perSpan = p.line!.length;
           const spans = Math.ceil(p.bars / (p.lineBars ?? 1));
-          expect(tl.hits.length, `${p.id}: every line note resolves`).toBe(perSpan * spans);
+          expect(tl.hits.length, `${p.id}: every line note resolves`).toBe(perSpan * spans + (p.end ? 1 : 0));
         }
       }
     }
@@ -79,8 +81,9 @@ describe('lesson content', () => {
           expect(validatePattern(v.pattern!), v.id).toEqual([]);
           const t = buildTimeline(v.pattern!);
           // every bar's numeral is in the key, and every note fits on the 25 keys (C3-C5)
-          expect(t.bars.length, v.id).toBe(v.pattern!.bars);
-          for (const h of t.hits) for (const n of h.notes) expect(n >= 48 && n <= 72, `${v.id} note ${n}`).toBe(true);
+          expect(t.bars.length, v.id).toBe(v.pattern!.bars + (v.pattern!.end ? 1 : 0));
+          const lo = 48 + 12 * (v.pattern!.octave ?? 0);
+          for (const h of t.hits) for (const n of h.notes) expect(n >= lo && n <= lo + 24, `${v.id} note ${n}`).toBe(true);
         }
         if (v.type === 'speed') {
           expect(v.seconds, v.id).toBeGreaterThan(0);

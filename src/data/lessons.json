@@ -4322,7 +4322,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "pop",
           "grooveBass": false,
@@ -4367,7 +4369,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "pop",
           "grooveBass": false
@@ -4426,7 +4430,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "rock",
           "grooveBass": false,
@@ -4487,7 +4493,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "rock",
           "grooveBass": false
@@ -4524,7 +4532,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "pop",
           "grooveBass": false,
@@ -4563,7 +4573,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "pop",
           "grooveBass": false
@@ -4622,7 +4634,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "disco",
           "grooveBass": false,
@@ -4683,7 +4697,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "disco",
           "grooveBass": false
@@ -4691,8 +4707,8 @@
         {
           "id": "lb-learn-octave5",
           "section": "Dance music",
-          "title": "Octaves with a 5th",
-          "say": "Same bounce, but the last 8th of the bar is the 5th.\nIt adds a little lift that leads into the next chord.",
+          "title": "Root, octave, 5th",
+          "say": "Now space it out: the root on 1, the octave on the + of 2, then the 5th on 4.\nThe 5th adds a little lift that leads into the next chord.",
           "need": 0,
           "rhythm": {
             "id": "lb-l-oct5",
@@ -4709,40 +4725,25 @@
             "bars": 2,
             "line": [
               {
-                "b": 0.0,
-                "n": "R"
-              },
-              {
-                "b": 0.5,
-                "n": "O"
-              },
-              {
-                "b": 1.0,
-                "n": "R"
+                "b": 0,
+                "n": "R",
+                "d": 1.5
               },
               {
                 "b": 1.5,
-                "n": "O"
+                "n": "O",
+                "d": 1.5
               },
               {
-                "b": 2.0,
-                "n": "R"
-              },
-              {
-                "b": 2.5,
-                "n": "O"
-              },
-              {
-                "b": 3.0,
-                "n": "R"
-              },
-              {
-                "b": 3.5,
-                "n": "5"
+                "b": 3,
+                "n": "5",
+                "d": 1
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "house",
           "grooveBass": false,
@@ -4751,10 +4752,10 @@
         {
           "id": "lb-try-octave5",
           "section": "Dance music",
-          "title": "Play octaves with a 5th",
-          "say": "Root, octave, root, octave, root, octave, root, 5th.",
+          "title": "Play root, octave, 5th",
+          "say": "Root on 1, the octave on the + of 2, the 5th on 4.",
           "need": 1,
-          "tryText": "Play the octave bounce with the 5th on the last 8th.",
+          "tryText": "Play root, octave, 5th: C, then F.",
           "rhythm": {
             "id": "lb-t-oct5",
             "key": "C",
@@ -4770,40 +4771,25 @@
             "bars": 2,
             "line": [
               {
-                "b": 0.0,
-                "n": "R"
-              },
-              {
-                "b": 0.5,
-                "n": "O"
-              },
-              {
-                "b": 1.0,
-                "n": "R"
+                "b": 0,
+                "n": "R",
+                "d": 1.5
               },
               {
                 "b": 1.5,
-                "n": "O"
+                "n": "O",
+                "d": 1.5
               },
               {
-                "b": 2.0,
-                "n": "R"
-              },
-              {
-                "b": 2.5,
-                "n": "O"
-              },
-              {
-                "b": 3.0,
-                "n": "R"
-              },
-              {
-                "b": 3.5,
-                "n": "5"
+                "b": 3,
+                "n": "5",
+                "d": 1
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "house",
           "grooveBass": false
@@ -4847,7 +4833,8 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 2
+            "lineBars": 2,
+            "end": true
           },
           "groove": "trap",
           "grooveBass": false,
@@ -4894,7 +4881,8 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 2
+            "lineBars": 2,
+            "end": true
           },
           "groove": "trap",
           "grooveBass": false,
@@ -4952,11 +4940,17 @@
               {
                 "b": 12,
                 "n": "7",
-                "d": 4
+                "d": 3
+              },
+              {
+                "b": 15,
+                "n": "-1"
               }
             ],
             "lineOf": "key",
-            "lineBars": 4
+            "lineBars": 4,
+            "end": true,
+            "octave": -1
           },
           "groove": "pop",
           "grooveBass": false,
@@ -5015,11 +5009,17 @@
               {
                 "b": 12,
                 "n": "7",
-                "d": 4
+                "d": 3
+              },
+              {
+                "b": 15,
+                "n": "-1"
               }
             ],
             "lineOf": "key",
-            "lineBars": 4
+            "lineBars": 4,
+            "end": true,
+            "octave": -1
           },
           "groove": "pop",
           "grooveBass": false
@@ -5061,7 +5061,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "groove": "reggaeton",
           "grooveBass": false,
@@ -5112,7 +5114,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "screen": "blocks",
           "groove": "pop",
@@ -5177,7 +5181,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "screen": "blocks",
           "groove": "rock",
@@ -5220,7 +5226,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "screen": "blocks",
           "groove": "pop",
@@ -5285,7 +5293,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "screen": "blocks",
           "groove": "disco",
@@ -5333,7 +5343,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "screen": "blocks",
           "groove": "house",
@@ -5385,7 +5397,8 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 2
+            "lineBars": 2,
+            "end": true
           },
           "screen": "blocks",
           "groove": "trap",
@@ -5447,11 +5460,17 @@
               {
                 "b": 12,
                 "n": "7",
-                "d": 4
+                "d": 3
+              },
+              {
+                "b": 15,
+                "n": "-1"
               }
             ],
             "lineOf": "key",
-            "lineBars": 4
+            "lineBars": 4,
+            "end": true,
+            "octave": -1
           },
           "screen": "blocks",
           "groove": "pop",
@@ -5499,7 +5518,9 @@
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "screen": "blocks",
           "groove": "reggaeton",
@@ -5508,7 +5529,7 @@
         {
           "id": "lb-both",
           "title": "Your own bass line",
-          "blurb": "You're the bass: the root or the 5th on 1 and 3, anything you like in between.",
+          "blurb": "The root on 1, then more notes in every bar: the root (any octave) or the 5th.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5533,22 +5554,13 @@
               {
                 "b": 0,
                 "n": "R",
-                "d": 2,
-                "or": [
-                  "5"
-                ]
-              },
-              {
-                "b": 2,
-                "n": "R",
-                "d": 2,
-                "or": [
-                  "5"
-                ]
+                "d": 4
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 1,
+            "end": true,
+            "octave": -1
           },
           "screen": "blocks",
           "groove": "pop",
@@ -5561,7 +5573,8 @@
             "reggaeton",
             "ballad"
           ],
-          "keys": "rhodes"
+          "keys": "rhodes",
+          "fill": true
         }
       ]
     },
@@ -6787,7 +6800,7 @@
           "id": "l7-finger-c",
           "section": "Major scales",
           "title": "Fingers",
-          "say": "Number your right-hand fingers: thumb = 1, pinky = 5. Play C D E with fingers 1 2 3. Then tuck your thumb under to play F with 1. Finish G A B C with 2 3 4 5.",
+          "say": "Number your right-hand fingers: thumb = 1, pinky = 5.\nUp: C D E with 1 2 3, thumb under to F, then G A B C with 2 3 4 5.\nDown: the same fingers, and finger 3 crosses over the thumb to E.",
           "need": 0,
           "demo": [
             "C4",
@@ -6797,7 +6810,14 @@
             "G4",
             "A4",
             "B4",
-            "C5"
+            "C5",
+            "B4",
+            "A4",
+            "G4",
+            "F4",
+            "E4",
+            "D4",
+            "C4"
           ],
           "tags": {
             "C4": "1",
@@ -6816,9 +6836,9 @@
           "id": "l7-try-c",
           "section": "Major scales",
           "title": "Play C major",
-          "say": "Use the fingering: 1 2 3, thumb under, 1 2 3 4 5.",
+          "say": "Up: 1 2 3, thumb under, 1 2 3 4 5.\nDown: 5 4 3 2 1, 3 over the thumb, 2 1.",
           "need": 1,
-          "tryText": "Play the C major scale up, from C to C.",
+          "tryText": "Play the C major scale up and back down: C to C, then down to C.",
           "tryScale": "C",
           "hint": "C D E F G A B C, all white keys."
         },
@@ -6826,7 +6846,7 @@
           "id": "l7-g",
           "section": "Sharps: G and D",
           "title": "G major: one sharp",
-          "say": "Start a scale on G and keep the same pattern of whole and half steps. To make the last step a half step, F has to become F♯. So G major has one sharp: F♯. The fingering is the same as C major.",
+          "say": "Start a scale on G and keep the same pattern of whole and half steps. To make the last step a half step, F has to become F♯. So G major has one sharp: F♯. The fingering is the same as C major, up and down.",
           "need": 0,
           "demo": [
             "G3",
@@ -6836,7 +6856,14 @@
             "D4",
             "E4",
             "F#4",
-            "G4"
+            "G4",
+            "F#4",
+            "E4",
+            "D4",
+            "C4",
+            "B3",
+            "A3",
+            "G3"
           ],
           "tags": {
             "G3": "1",
@@ -6857,7 +6884,7 @@
           "title": "Play G major",
           "say": "Remember the F♯.",
           "need": 1,
-          "tryText": "Play the G major scale up, from G to G.",
+          "tryText": "Play the G major scale up and back down.",
           "tryScale": "G",
           "hint": "G A B C D E F♯ G."
         },
@@ -6865,7 +6892,7 @@
           "id": "l7-d",
           "section": "Sharps: G and D",
           "title": "D major: two sharps",
-          "say": "Start on D and keep the same pattern. This time two notes have to move up: F becomes F♯ and C becomes C♯. So D major has two sharps. Fingering: 1 2 3, thumb under, 1 2 3 4 5.",
+          "say": "Start on D and keep the same pattern. This time two notes have to move up: F becomes F♯ and C becomes C♯. So D major has two sharps. Fingering: 1 2 3, thumb under, 1 2 3 4 5, and the same coming down.",
           "need": 0,
           "demo": [
             "D3",
@@ -6875,7 +6902,14 @@
             "A3",
             "B3",
             "C#4",
-            "D4"
+            "D4",
+            "C#4",
+            "B3",
+            "A3",
+            "G3",
+            "F#3",
+            "E3",
+            "D3"
           ],
           "tags": {
             "D3": "1",
@@ -6896,7 +6930,7 @@
           "title": "Play D major",
           "say": "Two black keys this time.",
           "need": 1,
-          "tryText": "Play the D major scale up, from D to D.",
+          "tryText": "Play the D major scale up and back down.",
           "tryScale": "D",
           "hint": "D E F♯ G A B C♯ D."
         },
@@ -6904,7 +6938,7 @@
           "id": "l7-f",
           "section": "Flats: F",
           "title": "F major: one flat",
-          "say": "Some scales use flats instead of sharps: F, B♭, E♭, A♭ and more. It is the same idea: a note moves to keep the pattern of whole and half steps. In F major the 4th note has to be a half step above A, so B becomes B♭. (It is called B♭, not A♯, because each letter is used once.) The fingering is different: 1 2 3 4 on F G A B♭, then tuck your thumb under to C.",
+          "say": "Some scales use flats instead: F, B♭, E♭, A♭ and more.\nIn F major the 4th note must be a half step above A, so B becomes B♭ (each letter is used once, so not A♯).\nFingers: 1 2 3 4 on F G A B♭, thumb under to C; coming down, 4 crosses over the thumb.",
           "need": 0,
           "demo": [
             "F3",
@@ -6914,7 +6948,14 @@
             "C4",
             "D4",
             "E4",
-            "F4"
+            "F4",
+            "E4",
+            "D4",
+            "C4",
+            "Bb3",
+            "A3",
+            "G3",
+            "F3"
           ],
           "tags": {
             "F3": "1",
@@ -6935,7 +6976,7 @@
           "title": "Play F major",
           "say": "Remember the B♭.",
           "need": 1,
-          "tryText": "Play the F major scale up, from F to F.",
+          "tryText": "Play the F major scale up and back down.",
           "tryScale": "F",
           "hint": "F G A B♭ C D E F."
         }

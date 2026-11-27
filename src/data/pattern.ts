@@ -45,6 +45,10 @@ export interface Pattern {
   line?: LineNote[];
   lineOf?: 'chord' | 'key';
   lineBars?: number;
+  /** Bass lines: play everything this many octaves lower (-1: low bass, students press Oct −). */
+  octave?: number;
+  /** texture `line`: finish with one more bar, the home chord's root on beat 1 (I or i), instead of just stopping. */
+  end?: boolean;
 }
 
 const TEXTURES: Texture[] = ['bass', 'block', 'bassChord', 'broken', 'brokenSplit', 'arpeggio', 'arp3', 'scale', 'line'];

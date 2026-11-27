@@ -319,10 +319,10 @@ export default function App() {
     if (wantSound) {
       if (ownSound.current === null) ownSound.current = soundId;
       if (soundId !== wantSound) void pickSound(wantSound);
-    } else if (ownSound.current !== null) {
-      const back = ownSound.current;
+    } else {
+      // Leaving the bass lessons: a bass sound makes no sense for chords, so switch to the Electric Piano (his call).
       ownSound.current = null;
-      if (SOUNDS.some((x) => x.id === soundId && x.category === 'Bass')) void pickSound(back);
+      if (SOUNDS.some((x) => x.id === soundId && x.category === 'Bass')) void pickSound('rhodes');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantSound]);
@@ -381,10 +381,25 @@ export default function App() {
   }, [midiStatus]);
 
   // Octave buttons: in the bar above the keys, or (phones) in the top bar.
+  // Low bass parts: once per visit (nothing saved), a bubble by Oct − says to press it for the low bass sound.
+  const lowNow = !!parts.low && (mode === 'learn' || mode === 'challenge') && viewStart >= DEFAULT_START;
+  const [lowHint, setLowHint] = useState<'never' | 'showing' | 'done'>('never');
+  useEffect(() => {
+    if (lowNow && lowHint === 'never' && !welcome) setLowHint('showing');
+    if (!lowNow && lowHint === 'showing') setLowHint('done');
+  }, [lowNow, lowHint, welcome]);
   const octDown = (
+    <span className="relative">
     <button className={`btn btn-dark ${phone ? 'px-1.5 py-0.5 text-[13px]' : 'px-2'} ${octColor(octShift < 0 ? -octShift : 0)} ${offBelow ? 'oct-alert' : ''}`} onClick={() => octave(-1)} disabled={viewStart <= 24} data-testid="oct-down" title="Octave down (Z)">
       Oct −
     </button>
+    {lowHint === 'showing' && (
+      <span className={`pop absolute ${phone ? 'right-0 top-full mt-2' : 'bottom-full left-0 mb-2'} z-50 w-max max-w-[260px] rounded-lg bg-brass px-2.5 py-1.5 text-left text-[13px] font-semibold leading-snug text-brasstext shadow-lg`} data-testid="low-hint" onClick={() => setLowHint('done')}>
+        <span className={`absolute ${phone ? '-top-1.5 right-4' : '-bottom-1.5 left-4'} h-3 w-3 rotate-45 bg-brass`} />
+        Bass sits low: press Oct − (or your keyboard&apos;s octave − button) for a deeper sound. ✕
+      </span>
+    )}
+    </span>
   );
   const octUp = (
     <button className={`btn btn-dark ${phone ? 'px-1.5 py-0.5 text-[13px]' : 'px-2'} ${octColor(octShift > 0 ? octShift : 0)} ${offAbove ? 'oct-alert' : ''}`} onClick={() => octave(1)} disabled={viewStart >= 84} data-testid="oct-up" title="Octave up (X)">

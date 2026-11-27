@@ -45,10 +45,19 @@ export const fifthDown = (keyId: string) => keyById(pcName(pc(keyById(keyId).ton
  * Judge one more note of "play the scale up" (Learn and Challenges). `played` = the notes so far (MIDI). Returns
  * 'next' (right, keep going), 'done' (all 8), or a reason it's wrong (start again).
  */
-export function scaleStep(tonicPc: number, played: number[]): 'next' | 'done' | 'wrong-start' | 'wrong' {
+export function scaleStep(tonicPc: number, played: number[], down = false): 'next' | 'done' | 'wrong-start' | 'wrong' {
+  const steps = scaleSteps(down);
   const first = played[0];
   if (pc(first) !== tonicPc) return 'wrong-start';
   const i = played.length - 1;
-  if (played[i] !== first + MAJOR_SCALE[i]) return 'wrong';
-  return played.length === MAJOR_SCALE.length ? 'done' : 'next';
+  if (played[i] !== first + steps[i]) return 'wrong';
+  return played.length === steps.length ? 'done' : 'next';
 }
+
+/** Half steps from the start: up one octave, or (Learn, his request) up and back down (15 notes). */
+export const scaleSteps = (down = false) => (down ? [...MAJOR_SCALE, ...MAJOR_SCALE.slice(0, 7).reverse()] : MAJOR_SCALE);
+/** The right-hand fingers for each of those notes (the same note keeps its finger on the way down). */
+export const scaleFingers = (keyId: string, down = false) => {
+  const f = fingering(keyId);
+  return down ? [...f, ...f.slice(0, 7).reverse()] : f;
+};

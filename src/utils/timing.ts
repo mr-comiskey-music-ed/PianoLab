@@ -74,6 +74,8 @@ export interface TimingSummary {
   /** Set when nearly every press was early (-) or late (+) by about the same amount (ms): a sign the latency setting
    *  may be wrong. See `steadyOffset`. */
   offset?: number;
+  /** "Your own bass line" (level `fill`): bars with more notes after beat 1, out of how many. */
+  fill?: [number, number];
 }
 
 const timingCredit = (r: HitResult) =>

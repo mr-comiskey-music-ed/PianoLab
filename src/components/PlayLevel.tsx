@@ -66,6 +66,8 @@ export function usePlayLevel(
   const judge = useRef<TimingJudge | null>(null);
   const stopClicks = useRef<() => void>(() => {});
   const timers = useRef<number[]>([]);
+  /** Every key pressed in a run, for `fill` levels. */
+  const fillPresses = useRef<{ t: number; midi: number }[]>([]);
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
@@ -134,6 +136,7 @@ export function usePlayLevel(
     }
     setStartAt(t0);
     setResults(timeline.hits.map(() => undefined));
+    fillPresses.current = [];
     setPop(null);
     setPhase(listenOnly ? 'listen' : 'count');
     // Count-in numbers on the Stage: 1, 2, 3, 4 with the clicks, like counting a band in.
@@ -215,6 +218,20 @@ export function usePlayLevel(
           const off = steadyOffset(j.presses, timeline.hits.map((h) => t0 + h.beat * bm), bm / 2);
           if (off !== null) s.offset = off;
         }
+        if (s && level.fill) {
+          // Your own bass line: each bar also needs the root (any octave) or the 5th after beat 1. Half the score.
+          const bars = timeline.bars.filter((b) => !pattern?.end || b.bar < pattern.bars);
+          const filled = bars.filter((b) => {
+            const c = parseChord(b.symbol);
+            if (!c) return false;
+            const ok = [c.root, (c.root + 7) % 12];
+            const from = t0 + (b.beat + 0.4) * bm;
+            const to = t0 + (b.beat + 3.9) * bm;
+            return fillPresses.current.some((x) => x.t >= from && x.t < to && ok.includes(((x.midi % 12) + 12) % 12));
+          }).length;
+          s.fill = [filled, bars.length];
+          s.raw = Math.round(s.raw / 2 + (50 * filled) / Math.max(1, bars.length));
+        }
         const settings = { tempo, screen, shapes };
         stop();
         if (s && !listenOnly) opts.onFinish(s.raw, s, settings);
@@ -226,6 +243,7 @@ export function usePlayLevel(
   useNoteListener(ctx.subscribe, (midi) => {
     if (phaseRef.current !== 'run' && phaseRef.current !== 'count') return;
     judge.current?.press(performance.now(), midi);
+    fillPresses.current.push({ t: performance.now() - ctx.latency, midi });
   });
 
   // While it runs: hits that went by unplayed become misses; with blocks showing, the keys of the current hit light up.

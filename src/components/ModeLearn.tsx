@@ -7,7 +7,8 @@ import { ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
 import { Col, StageBox } from './StageRow';
 import { RhythmBox } from './RhythmBox';
-import { MAJOR_SCALE, fingering, scaleStep } from '../utils/scales';
+import { scaleFingers, scaleStep, scaleSteps } from '../utils/scales';
+import { crossing } from './HandDiagram';
 import { HandDiagram } from './HandDiagram';
 
 /** Position of a white key counting only white keys (C0 = 0, D0 = 1 ...). Black keys: null. */
@@ -17,6 +18,10 @@ const whiteIndex = (m: number) => {
   return w === null ? null : Math.floor(m / 12) * 7 + w;
 };
 /** Three white keys, each two white keys above the last (root, skip one, 3rd, skip one, 5th). `held` is sorted low to high. */
+/** Major scales: a pause this long in the middle starts the scale over. Up and back down is 15 notes. */
+const SCALE_PAUSE_MS = 2000;
+const SCALE_DOWN_LEN = 15;
+
 export function isWhiteTriad(held: number[]): boolean {
   if (held.length !== 3) return false;
   const w = held.map(whiteIndex);
@@ -119,6 +124,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   const progRef = useRef(0);
   /** Scale tries (Lesson 7): the notes played so far. */
   const scaleRef = useRef<number[]>([]);
+  const scaleLast = useRef(0);
   const [scaleCount, setScaleCount] = useState(0);
   const [msg, setMsg] = useState<{ kind: 'good' | 'hint'; text: string } | null>(null);
   /** The keys the demo is playing right now, and which demo entry that is. */
@@ -134,11 +140,11 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   const fingerTags = tagVals.length > 0 && tagVals.every((v) => /^[1-5]$/.test(v));
   const fingerAt = (k: number) => (k >= 0 && step.demo?.[k] && step.tags?.[step.demo[k]] ? Number(step.tags[step.demo[k]]) : null);
   const demoFinger = fingerTags ? fingerAt(demoIdx) : null;
-  const demoTuck = demoFinger === 1 && (fingerAt(demoIdx - 1) ?? 0) > 2;
-  const scaleFingers = step.tryScale ? fingering(step.tryScale) : [];
-  const tryFinger = scaleCount > 0 ? (scaleFingers[scaleCount - 1] ?? null) : null;
-  const tryNext = scaleFingers[scaleCount] ?? null;
-  const tryTuck = tryFinger === 1 && (scaleFingers[scaleCount - 2] ?? 0) > 2;
+  const demoTuck = crossing(fingerAt(demoIdx - 1), demoFinger);
+  const fingersNow = step.tryScale ? scaleFingers(step.tryScale, true) : [];
+  const tryFinger = scaleCount > 0 ? (fingersNow[scaleCount - 1] ?? null) : null;
+  const tryNext = fingersNow[scaleCount] ?? null;
+  const tryTuck = crossing(fingersNow[scaleCount - 2], tryFinger);
   const last = i === steps.length - 1;
   const stepRef = useRef(step);
   stepRef.current = step;
@@ -253,23 +259,28 @@ export function useLearn(ctx: ModeCtx): ModeParts {
   useNoteListener(ctx.subscribe, (midi) => {
       const s = stepRef.current;
       if (!doneRef.current && !s.show && s.tryScale) {
-        // Lesson 7: the scale up, one note at a time. A wrong note starts it over.
+        // Major scales: up and back down (his request), one note at a time. A wrong note starts it over, and so does a
+        // pause of 2 s (they're probably lost).
         const k = keyById(s.tryScale);
-        const played = [...scaleRef.current, midi];
-        const res = scaleStep(k.tonic, played);
+        if (performance.now() - scaleLast.current > SCALE_PAUSE_MS) scaleRef.current = [];
+        scaleLast.current = performance.now();
+        let played = [...scaleRef.current, midi];
+        // A wrong note that is the starting note begins a new try right away.
+        if (played.length > 1 && scaleStep(k.tonic, played, true) === 'wrong' && pc(midi) === pc(k.tonic)) played = [midi];
+        const res = scaleStep(k.tonic, played, true);
         const tonic = pcName(k.tonic, k.flats);
         if (res === 'wrong-start') {
           scaleRef.current = [];
           setScaleCount(0);
           setMsg({ kind: 'hint', text: `Start on ${tonic}. ${s.hint ?? ''}` });
         } else if (res === 'wrong') {
-          const want = played[0] + MAJOR_SCALE[played.length - 1];
+          const want = played[0] + scaleSteps(true)[played.length - 1];
           scaleRef.current = [];
           setScaleCount(0);
           setMsg({ kind: 'hint', text: `That is ${pcName(midi, k.flats)}. The next note is ${pcName(want, k.flats)}. Start again from ${tonic}.` });
         } else if (res === 'done') {
           scaleRef.current = [];
-          setScaleCount(MAJOR_SCALE.length);
+          setScaleCount(SCALE_DOWN_LEN);
           setCount(s.need);
           setMsg({ kind: 'good', text: `Yes! That's the ${k.label} scale.` });
         } else {
@@ -591,9 +602,10 @@ export function useLearn(ctx: ModeCtx): ModeParts {
       )}
       {step.tryScale && (
         // The scale: one dot per note, filled as they're played.
-        <div className="flex gap-1.5" data-testid="scale-dots" aria-label={`${stepDone ? 8 : scaleCount} of 8 notes`}>
-          {MAJOR_SCALE.map((_, k) => (
-            <span key={k} className={`h-3.5 w-3.5 rounded-full border border-brass2 ${k < (stepDone ? 8 : scaleCount) ? 'bg-brass' : 'bg-transparent'}`} />
+        // Up and back down: 15 notes, a small gap at the top.
+        <div className="flex gap-1.5" data-testid="scale-dots" aria-label={`${stepDone ? SCALE_DOWN_LEN : scaleCount} of ${SCALE_DOWN_LEN} notes`}>
+          {scaleSteps(true).map((_, k) => (
+            <span key={k} className={`h-3.5 w-3.5 rounded-full border border-brass2 ${k === 8 ? 'ml-2' : ''} ${k < (stepDone ? SCALE_DOWN_LEN : scaleCount) ? 'bg-brass' : 'bg-transparent'}`} />
           ))}
         </div>
       )}
@@ -627,6 +639,7 @@ export function useLearn(ctx: ModeCtx): ModeParts {
     left,
     stage,
     sound: step.sound ?? ctx.lesson.sound,
+    low: (step.rhythm?.octave ?? 0) < 0,
     navLabel: `Step ${i + 1}`,
     // Nothing is lit or labelled while the student is working it out. Only the note the app is playing shows.
     // Show-and-tell steps put the names on every key (step.labels).

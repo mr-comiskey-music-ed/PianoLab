@@ -109,7 +109,11 @@ export function buildTimeline(p: Pattern, tempo = p.tempo): Timeline {
   const tonic = pcOf(p.key) ?? 0;
   const key = makeKey(tonic, p.mode);
   if (p.texture === 'scale') return scaleTimeline(p, key, tempo);
-  if (p.texture === 'line') return lineTimeline(p, key, tempo);
+  if (p.texture === 'line') {
+    const tl = lineTimeline(p, key, tempo);
+    if (p.octave) tl.hits.forEach((h) => (h.notes = h.notes.map((n) => n + 12 * p.octave!)));
+    return tl;
+  }
   const hitsInBar = rhythmBeats(p.rhythm);
   const lens = rhythmLengths(p.rhythm);
   const hits: TimedHit[] = [];
@@ -245,7 +249,14 @@ function lineTimeline(p: Pattern, key: KeyDef, tempo: number): Timeline {
     if (inKey.has(pc(n)) || next === undefined || next === n) return;
     h.name = pcName(n, next < n);
   });
-  return { key, hits, bars, beats: p.bars * 4, tempo };
+  if (p.end) {
+    // A last bar on the home chord (I or i): its root on beat 1, held (his "end on the 1, don't just cut off").
+    const home = diatonic(key)[0];
+    const root = BASE + home.chord.root;
+    bars.push({ bar: p.bars, beat: p.bars * 4, symbol: chordName(home.chord), numeral: home.numeral, color: home.color });
+    hits.push({ beat: p.bars * 4, dur: 4, notes: [root], pcs: [pc(root)], kind: 'note', bar: p.bars, chordPcs: chordPcs(home.chord) });
+  }
+  return { key, hits, bars, beats: (p.bars + (p.end ? 1 : 0)) * 4, tempo };
 }
 
 /** What one hit plays, for each texture (SPEC section 6). `i` is the hit's place in its bar. */

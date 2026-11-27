@@ -12,6 +12,7 @@ import { useChordWatcher, useNoteListener } from './chordInput';
 import { usePlayLevel } from './PlayLevel';
 import { Col, StageBox } from './StageRow';
 import { MAJOR_SCALE, fingering, scaleStep } from '../utils/scales';
+import { HandDiagram, crossing } from './HandDiagram';
 import { ALL_LESSONS } from '../utils/batch';
 
 const ALL_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -94,6 +95,9 @@ function litChord(start: number, c: Chord, inv: number, idx: number): number[] {
 /** Echo: a pause this long between notes starts the answer over. */
 const ECHO_RESET_MS = 3000;
 
+/** Scale levels: a pause this long in the middle starts the scale over. */
+const SCALE_PAUSE_MS = 2000;
+
 export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
   // A teacher's assignment can give a lesson's Learn only (no levels): the hooks below still need levels to point at.
   const none = ctx.lesson.levels.length === 0;
@@ -129,6 +133,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
   const echoTimers = useRef<number[]>([]);
   // Scale levels (Lesson 7): the notes played so far in this try.
   const scaleBuf = useRef<number[]>([]);
+  const scaleLast = useRef(0);
   const [scaleGot, setScaleGot] = useState(0);
   // Speed Round: a clock that ticks the display.
   const [, setTick] = useState(0);
@@ -391,6 +396,9 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
         // Lesson 7: the scale up one octave, one note at a time. A wrong note starts it over (and counts as a miss).
         if (busy.current) return;
         const k = keyById(p.scale ?? 'C');
+        // A pause of 2 s in the middle starts the scale over (they're probably lost), with no penalty.
+        if (performance.now() - scaleLast.current > SCALE_PAUSE_MS) scaleBuf.current = [];
+        scaleLast.current = performance.now();
         const played = [...scaleBuf.current, midi];
         const res = scaleStep(k.tonic, played);
         const tonic = pcName(k.tonic, k.flats);
@@ -600,7 +608,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
               <span className="text-[#cfe3b4]">Perfect {finished.timing.perfect}</span> · <span className="text-[#f6e3b8]">Good {finished.timing.good}</span> · <span className="text-[#efd6a8]">Early/Late {finished.timing.off}</span> · <span className="text-[#f0c4bf]">Miss {finished.timing.miss}</span>
             </div>
             <div>
-              Timing {finished.timing.timing}% · Right notes {finished.timing.notes}% · {finished.tempo} BPM
+              Timing {finished.timing.timing}% · Right notes {finished.timing.notes}%{finished.timing.fill ? ` · More notes in ${finished.timing.fill[0]} of ${finished.timing.fill[1]} bars` : ''} · {finished.tempo} BPM
             </div>
           </div>
         )}
@@ -697,6 +705,12 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
         )}
         {run.level.type === 'scale' && (
           <div className="flex flex-col items-center gap-1.5">
+            {(() => {
+              // The hand (as in Learn): the finger just played lights up, the next one has a dashed ring.
+              const f = fingering(prompt.scale ?? 'C');
+              const now = scaleGot > 0 ? f[scaleGot - 1] : null;
+              return <HandDiagram finger={now} next={f[scaleGot] ?? null} tuck={crossing(f[scaleGot - 2], now)} size={ctx.phone ? 64 : 96} />;
+            })()}
             <div className="flex gap-1.5" data-testid="scale-dots">
               {MAJOR_SCALE.map((_, k) => (
                 <span key={k} className={`h-3.5 w-3.5 rounded-full border border-brass2 ${k < scaleGot ? 'bg-brass' : 'bg-transparent'}`} />
@@ -835,6 +849,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
     left,
     stage,
     sound: selLevel.sound ?? ctx.lesson.sound,
+    low: (selLevel.pattern?.octave ?? 0) < 0,
     navLabel: `Level ${Math.max(0, levels.findIndex((l) => l.id === selLevel.id)) + 1}`,
     lit,
     marks,

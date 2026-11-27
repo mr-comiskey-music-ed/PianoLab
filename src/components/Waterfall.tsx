@@ -129,7 +129,11 @@ export const Waterfall: React.FC<{
           const r = L.results[i];
           const alpha = r ? (r.status === 'miss' && !r.notesRight ? 0.25 : 0.95) : 0.85;
           for (const n of h.notes) {
-            const k = keyBox(n, L.viewStart);
+            // A note off the keys on screen (a low bass line before Oct −) is drawn on the same letter in view.
+            let m = n;
+            while (m < L.viewStart) m += 12;
+            while (m >= L.viewStart + KEY_COUNT) m -= 12;
+            const k = keyBox(m, L.viewStart);
             if (!k) continue;
             g.fillStyle = withAlpha(color, alpha);
             g.beginPath();

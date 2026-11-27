@@ -15,7 +15,12 @@ const FINGERS = [
 ];
 const rad = (d: number) => (d * Math.PI) / 180;
 
-export const HandDiagram: React.FC<{ finger: number | null; next?: number | null; tuck?: boolean; size?: number }> = ({ finger, next, tuck, size = 120 }) => (
+/** A finger crossing between two notes of a scale: the thumb tucking under (going up) or a finger crossing over the
+ *  thumb (coming down). Says which, for the label under the hand. */
+export const crossing = (from: number | null | undefined, to: number | null | undefined): 'under' | 'over' | undefined =>
+  from && to ? (to === 1 && from > 2 ? 'under' : from === 1 && to > 2 ? 'over' : undefined) : undefined;
+
+export const HandDiagram: React.FC<{ finger: number | null; next?: number | null; tuck?: 'under' | 'over' | boolean; size?: number }> = ({ finger, next, tuck, size = 120 }) => (
   <div className="flex flex-col items-center gap-0.5" data-testid="hand" data-finger={finger ?? ''}>
     <svg viewBox="0 0 150 160" width={size * 0.94} height={size} aria-label={finger ? `Finger ${finger}` : 'Right hand fingers'}>
       <defs>
@@ -52,6 +57,6 @@ export const HandDiagram: React.FC<{ finger: number | null; next?: number | null
         );
       })}
     </svg>
-    <span className="h text-[12px] leading-none text-muted">{tuck ? 'Thumb under!' : 'Right hand'}</span>
+    <span className="h text-[12px] leading-none text-muted">{tuck === 'over' ? `${finger} over the thumb!` : tuck ? 'Thumb under!' : 'Right hand'}</span>
   </div>
 );

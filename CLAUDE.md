@@ -475,6 +475,15 @@ About page; no composition rubric):
   too; the Trap groove's kick follows the line (`kickFollows`). `lb-both` = "Your own bass line": the Electric Piano plays
   the chords (`keys: 'rhodes'`, `noteOnWith`), root or 5th on 1 and 3 (line note `or`), extra notes free, groove picked on
   the start screen (`grooves`). Test hook `window.__trace` (note/kick audio times).
+- **His round 6:** Bass lines (not the 808 parts) sit an octave lower (pattern `octave: -1`, notes C2-C4; lessons.test
+  allows it) and every bass line ends on the home chord's root on beat 1 (`end`, an extra bar). A low part shows a brass
+  bubble by Oct − once per visit (`low` in ModeParts, nothing saved); until Oct − is pressed the waterfall draws low notes
+  on the same letter in view. Passing notes: D … F♯ on 4 of the last bar, then home to G. Learn 9-10 = Root, octave, 5th.
+  Leaving the bass lessons with a Bass sound switches to the Electric Piano (not back to the old sound). "Your own bass
+  line" (`fill`): the root on 1 is the hit; each bar also needs the root (any octave) or the 5th after beat 1; half the
+  score ("More notes in 7 of 8 bars"). Major scales: Learn tries and the finger demos go up AND back down (15 dots;
+  "3 over the thumb!"; `scaleSteps`/`scaleFingers`), a 2 s pause starts a scale over (Learn and Challenges, no penalty), a
+  wrong note that is the starting note begins a new try; scale Challenges show the hand.
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

@@ -99,6 +99,8 @@ export interface Level {
   groove?: string;
   /** Soft chords play low under the line (riffs), so the harmony is heard. */
   pad?: boolean;
+  /** play: besides each hit, every bar needs more notes after beat 1 (the root, any octave, or the 5th); half the score. */
+  fill?: boolean;
   /** play: grooves the student picks from on the start screen (style ids); `groove` is the first pick. */
   grooves?: string[];
   /** play: each bar's chord is played on this sound (e.g. "rhodes"), mid-keyboard, while the student plays the bass. */

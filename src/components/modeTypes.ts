@@ -84,6 +84,8 @@ export interface ModeParts {
   overlay?: ReactNode;
   /** A sound this screen wants (a Bass lines step or level); App switches to it, and back when it's gone. */
   sound?: string;
+  /** This screen's part sits an octave low (bass lines): App asks once per visit to press Oct −. */
+  low?: boolean;
   /** Phones: where you are, for the lesson-menu button ("Step 2", "Level 3"). */
   navLabel?: string;
   /** Jam Room Melody mode: keys to mark with a brass dot (the key's notes). */
