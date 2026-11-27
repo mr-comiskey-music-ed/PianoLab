@@ -4519,7 +4519,7 @@
               },
               {
                 "b": 3,
-                "n": "5",
+                "n": "5n",
                 "d": 1
               }
             ],
@@ -4558,7 +4558,7 @@
               },
               {
                 "b": 3,
-                "n": "5",
+                "n": "5n",
                 "d": 1
               }
             ],
@@ -4624,7 +4624,7 @@
             "lineOf": "chord",
             "lineBars": 1
           },
-          "groove": "funk",
+          "groove": "disco",
           "grooveBass": false,
           "show": true
         },
@@ -4685,7 +4685,7 @@
             "lineOf": "chord",
             "lineBars": 1
           },
-          "groove": "funk",
+          "groove": "disco",
           "grooveBass": false
         },
         {
@@ -4812,7 +4812,7 @@
           "id": "lb-learn-trap",
           "section": "Hip hop",
           "title": "Trap: the 808",
-          "say": "Trap bass is the 808: a long, low, booming note.\nFew notes, held long and placed off the beat. The jump to the octave adds bounce.\nThe hi-hats do the fast stuff, so the bass doesn't have to.",
+          "say": "Trap bass is the 808: a long, low, booming note, and the kick drum hits with every one.\nThe beat is fast (140), but each chord lasts two bars: few notes, held long, off the beat. The jump to the octave adds bounce.\nThe hi-hats do the fast stuff, so the bass doesn't have to.",
           "need": 0,
           "rhythm": {
             "id": "lb-l-trap",
@@ -4820,32 +4820,34 @@
             "mode": "major",
             "progression": [
               "I",
+              "I",
+              "IV",
               "IV"
             ],
             "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
-            "tempo": 80,
-            "bars": 2,
+            "tempo": 140,
+            "bars": 4,
             "line": [
               {
                 "b": 0,
                 "n": "R",
-                "d": 1.5
+                "d": 3
               },
               {
-                "b": 1.5,
+                "b": 3,
                 "n": "R",
-                "d": 1
+                "d": 2
               },
               {
-                "b": 2.5,
+                "b": 5,
                 "n": "O",
-                "d": 1.5
+                "d": 3
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 2
           },
           "groove": "trap",
           "grooveBass": false,
@@ -4856,41 +4858,43 @@
           "id": "lb-try-trap",
           "section": "Hip hop",
           "title": "Play an 808 line",
-          "say": "Long, long, then the octave. Hold each note for its whole length.",
+          "say": "Root on 1, root on 4, then the octave on 2 of the next bar. Hold each note for its whole length.",
           "need": 1,
-          "tryText": "Play the 808 line: root, root, octave.",
+          "tryText": "Play the 808 line: root, root, octave, two bars for each chord.",
           "rhythm": {
             "id": "lb-t-trap",
             "key": "C",
             "mode": "major",
             "progression": [
               "I",
+              "I",
+              "IV",
               "IV"
             ],
             "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
-            "tempo": 80,
-            "bars": 2,
+            "tempo": 140,
+            "bars": 4,
             "line": [
               {
                 "b": 0,
                 "n": "R",
-                "d": 1.5
+                "d": 3
               },
               {
-                "b": 1.5,
+                "b": 3,
                 "n": "R",
-                "d": 1
+                "d": 2
               },
               {
-                "b": 2.5,
+                "b": 5,
                 "n": "O",
-                "d": 1.5
+                "d": 3
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 2
           },
           "groove": "trap",
           "grooveBass": false,
@@ -5211,7 +5215,7 @@
               },
               {
                 "b": 3,
-                "n": "5",
+                "n": "5n",
                 "d": 1
               }
             ],
@@ -5225,7 +5229,7 @@
         {
           "id": "lb-octave",
           "title": "Disco octaves",
-          "blurb": "Root, octave, root, octave in 8th notes.",
+          "blurb": "Root, octave, root, octave in 8th notes, over four on the floor.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5244,7 +5248,7 @@
             "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
-            "tempo": 100,
+            "tempo": 112,
             "bars": 8,
             "line": [
               {
@@ -5284,13 +5288,13 @@
             "lineBars": 1
           },
           "screen": "blocks",
-          "groove": "funk",
+          "groove": "disco",
           "grooveBass": false
         },
         {
           "id": "lb-edm",
-          "title": "Octaves with a 5th",
-          "blurb": "The octave bounce, with the 5th on the last 8th.",
+          "title": "Root, octave, 5th",
+          "blurb": "Root on 1, the octave on the + of 2, the 5th on 4.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5313,36 +5317,19 @@
             "bars": 8,
             "line": [
               {
-                "b": 0.0,
-                "n": "R"
-              },
-              {
-                "b": 0.5,
-                "n": "O"
-              },
-              {
-                "b": 1.0,
-                "n": "R"
+                "b": 0,
+                "n": "R",
+                "d": 1.5
               },
               {
                 "b": 1.5,
-                "n": "O"
+                "n": "O",
+                "d": 1.5
               },
               {
-                "b": 2.0,
-                "n": "R"
-              },
-              {
-                "b": 2.5,
-                "n": "O"
-              },
-              {
-                "b": 3.0,
-                "n": "R"
-              },
-              {
-                "b": 3.5,
-                "n": "5"
+                "b": 3,
+                "n": "5",
+                "d": 1
               }
             ],
             "lineOf": "chord",
@@ -5355,7 +5342,7 @@
         {
           "id": "lb-trap",
           "title": "Trap 808",
-          "blurb": "Long 808 notes with an octave bounce.",
+          "blurb": "Two bars per chord: long 808 notes with an octave bounce, the kick with every one.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5367,34 +5354,38 @@
             "mode": "major",
             "progression": [
               "vi",
+              "vi",
+              "IV",
               "IV",
               "I",
+              "I",
+              "V",
               "V"
             ],
             "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
             "tempo": 140,
-            "bars": 8,
+            "bars": 16,
             "line": [
               {
                 "b": 0,
                 "n": "R",
-                "d": 1.5
+                "d": 3
               },
               {
-                "b": 1.5,
+                "b": 3,
                 "n": "R",
-                "d": 1
+                "d": 2
               },
               {
-                "b": 2.5,
+                "b": 5,
                 "n": "O",
-                "d": 1.5
+                "d": 3
               }
             ],
             "lineOf": "chord",
-            "lineBars": 1
+            "lineBars": 2
           },
           "screen": "blocks",
           "groove": "trap",
@@ -5516,8 +5507,8 @@
         },
         {
           "id": "lb-both",
-          "title": "Bass and chords",
-          "blurb": "Left hand: the root on 1. Right hand: the chord on 2, 3 and 4.",
+          "title": "Your own bass line",
+          "blurb": "You're the bass: the root or the 5th on 1 and 3, anything you like in between.",
           "type": "play",
           "octave": "any",
           "pass": 80,
@@ -5533,15 +5524,44 @@
               "vi",
               "IV"
             ],
-            "texture": "bassChord",
+            "texture": "line",
             "rhythm": "quarter",
             "voicing": "root",
             "tempo": 90,
-            "bars": 8
+            "bars": 8,
+            "line": [
+              {
+                "b": 0,
+                "n": "R",
+                "d": 2,
+                "or": [
+                  "5"
+                ]
+              },
+              {
+                "b": 2,
+                "n": "R",
+                "d": 2,
+                "or": [
+                  "5"
+                ]
+              }
+            ],
+            "lineOf": "chord",
+            "lineBars": 1
           },
           "screen": "blocks",
           "groove": "pop",
-          "grooveBass": false
+          "grooveBass": false,
+          "grooves": [
+            "pop",
+            "rock",
+            "funk",
+            "disco",
+            "reggaeton",
+            "ballad"
+          ],
+          "keys": "rhodes"
         }
       ]
     },

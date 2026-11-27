@@ -466,6 +466,15 @@ About page; no composition rubric):
   the finger just played lights and the next has a dashed ring; "Thumb under!" when the thumb tucks. Riffs and melodies:
   soft chords low (root F2–E3) under every riff step and level (`pad`; a PolySynth in `groove.ts`, the click style carries
   it when there's no groove). `lm-three` follows the dembow (3+3+2 16ths with the snare: A C D | A C A).
+- **His round 5 (bass + echo):** "Listen first" / RhythmBox Listen schedule notes on the audio clock 150 ms ahead
+  (`engine.noteOn(m, v, at)`, `perfToAudio`, `SCHED_MS`; every Voice and the SynthLab engine take an optional `at`): a
+  plain timer ran late on a busy Chromebook ("late on every note"). Echo: a 3 s pause starts the answer over (dots empty).
+  Bass: Root and 5th uses `5n` (the 5th above or below, nearer the next root: G's D is D3 before C). New **Disco** groove
+  (four on the floor, open hat on the off-beats, `open`), used by the octave steps and `lb-octave`. `lb-edm` = "Root,
+  octave, 5th" (1, + of 2, 4). Trap = half-time harmony (each chord two bars, hits 1, 4, 2 of bar 2; `TRAP2`), Learn at 140
+  too; the Trap groove's kick follows the line (`kickFollows`). `lb-both` = "Your own bass line": the Electric Piano plays
+  the chords (`keys: 'rhodes'`, `noteOnWith`), root or 5th on 1 and 3 (line note `or`), extra notes free, groove picked on
+  the start screen (`grooves`). Test hook `window.__trace` (note/kick audio times).
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 

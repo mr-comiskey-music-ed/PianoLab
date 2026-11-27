@@ -91,6 +91,9 @@ function litChord(start: number, c: Chord, inv: number, idx: number): number[] {
  * Note labels: each level has an easiest setting (the starting one). Students can go harder, never easier.
  * The chord detector is OFF here (it would give answers away).
  */
+/** Echo: a pause this long between notes starts the answer over. */
+const ECHO_RESET_MS = 3000;
+
 export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
   // A teacher's assignment can give a lesson's Learn only (no levels): the hooks below still need levels to point at.
   const none = ctx.lesson.levels.length === 0;
@@ -120,6 +123,8 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
   const [echoPlaying, setEchoPlaying] = useState(false);
   const [echoGot, setEchoGot] = useState<number[]>([]);
   const echoBuf = useRef<number[]>([]);
+  const echoLast = useRef(0);
+  const echoClear = useRef(0);
   const [replays, setReplays] = useState(0);
   const echoTimers = useRef<number[]>([]);
   // Scale levels (Lesson 7): the notes played so far in this try.
@@ -362,8 +367,17 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
         // Play it back: the same notes in the same order (any octave). Judged once you've played as many notes.
         if (busy.current) return;
         const want = (p.notes ?? []).map((n) => pc(parseNote(n) ?? 0));
+        // A pause of 3 s or more starts the answer over (his report: restarting from the top counted as note 2).
+        if (performance.now() - echoLast.current > ECHO_RESET_MS) echoBuf.current = [];
+        echoLast.current = performance.now();
         echoBuf.current = [...echoBuf.current, pc(midi)];
         setEchoGot(echoBuf.current);
+        // The dots empty too, so it's clear the next note starts over.
+        window.clearTimeout(echoClear.current);
+        echoClear.current = window.setTimeout(() => {
+          echoBuf.current = [];
+          setEchoGot([]);
+        }, ECHO_RESET_MS);
         if (echoBuf.current.length < want.length) return;
         const got = echoBuf.current;
         echoBuf.current = [];

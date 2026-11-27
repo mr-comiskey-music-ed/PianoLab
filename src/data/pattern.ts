@@ -11,13 +11,15 @@ export type Texture = 'bass' | 'block' | 'bassChord' | 'broken' | 'brokenSplit' 
 /**
  * One note of a line. `b` = beat inside the line (0 = beat 1 of its first bar), `d` = length in beats (default: until
  * the next note). `n`: with `lineOf: 'chord'` (bass lines) a note of the bar's chord: R root, 3 its 3rd, 5 its 5th, b7,
- * O the octave, L5 the 5th below, A a half step below the next bar's root (leading into it), A+ a half step above it;
+ * O the octave, L5 the 5th below, 5n the 5th above or below (nearer the next root), A a half step below the next bar's root (leading into it), A+ a half step above it;
  * with `lineOf: 'key'` (riffs) half steps up from the key's home note ("0", "3", "7", "12").
  */
 export interface LineNote {
   b: number;
   n: string;
   d?: number;
+  /** Other notes that also count here, same tokens as `n` ("5": the root or its 5th). */
+  or?: string[];
 }
 export type Rhythm = 'whole' | 'half' | 'quarter' | 'eighths' | `sync:${string}`;
 /** `close`: each chord moves as little as it can (inversions), like `smoothest`, but smoothness isn't graded; arpeggios

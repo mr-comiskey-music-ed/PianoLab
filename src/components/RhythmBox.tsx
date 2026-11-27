@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Waterfall } from './Waterfall';
-import { GROOVES, Groove, padChords } from '../audio/groove';
-import { grooveLevel } from './PlayLevel';
+import { GROOVES, Groove, kickFollows, padChords } from '../audio/groove';
+import { SCHED_MS, grooveLevel } from './PlayLevel';
 import { parseChord } from '../utils/chords';
 import { Pattern } from '../data/pattern';
 import { Timeline, beatMs, buildTimeline, hitAlt } from '../utils/patternEngine';
@@ -85,7 +85,7 @@ export const RhythmBox: React.FC<{
       const g = Groove.get();
       g.setLevel(grooveLevel(style.id));
       const roots = tl.bars.map((b) => parseChord(b.symbol)?.root ?? tl.key.tonic);
-      const beat1 = g.startGroove(grooveBass === false ? { ...style, bass: [] } : style, tl.tempo, roots, LEAD_MS / 1000, -COUNT_IN, pad ? padChords(tl.bars.map((b) => b.symbol)) : undefined);
+      const beat1 = g.startGroove(grooveBass === false ? { ...style, bass: [] } : style, tl.tempo, roots, LEAD_MS / 1000, -COUNT_IN, pad ? padChords(tl.bars.map((b) => b.symbol)) : undefined, kickFollows(style.id, pattern));
       stopClicks.current = () => g.stop();
       firstHeardAt = beat1 - COUNT_IN * bm;
     } else {
@@ -97,16 +97,15 @@ export const RhythmBox: React.FC<{
     setStartAt(t0);
     setHitResults([]);
     setPhase(listen ? 'listen' : 'play');
-    const out = ctx.engine.outputDelayMs();
     for (const h of tl.hits) {
-      const at = t0 - performance.now() + h.beat * bm;
-      timers.current.push(
-        window.setTimeout(() => {
-          if (listen) h.notes.forEach((n) => ctx.engine.noteOn(n, 0.7));
-          onLit(new Set(h.notes));
-        }, at - (listen ? out : 60)),
-      );
-      if (listen) timers.current.push(window.setTimeout(() => h.notes.forEach((n) => ctx.engine.noteOff(n)), at + h.dur * 0.9 * bm - out));
+      const on = t0 + h.beat * bm;
+      const off = t0 + (h.beat + h.dur * 0.9) * bm;
+      // Listen: notes go to the audio clock a little ahead, so they land exactly with the groove/clicks.
+      if (listen) {
+        timers.current.push(window.setTimeout(() => h.notes.forEach((n) => ctx.engine.noteOn(n, 0.7, ctx.engine.perfToAudio(on))), on - performance.now() - SCHED_MS));
+        timers.current.push(window.setTimeout(() => h.notes.forEach((n) => ctx.engine.noteOff(n, ctx.engine.perfToAudio(off))), off - performance.now() - SCHED_MS));
+      }
+      timers.current.push(window.setTimeout(() => onLit(new Set(h.notes)), on - performance.now() - (listen ? 0 : 60)));
     }
     if (!listen) {
       const results: (HitResult | undefined)[] = tl.hits.map(() => undefined);

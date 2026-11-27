@@ -311,13 +311,20 @@ class Voice {
    * Oscillator pitches plus key tracking (the filter follows the keyboard).
    * ramp: 0 = jump straight there; otherwise slide over that many seconds (glide).
    */
-  setPitch(freq: number, ramp: number) {
+  setPitch(freq: number, ramp: number, at?: number) {
     const p = this.engine.getParams();
     this.freq = freq;
     const f1 = freq * Math.pow(2, (p.vco1Octave * 12 + p.vco1Semi + p.vco1Fine / 100) / 12);
     const f2 = freq * Math.pow(2, (p.vco2Octave * 12 + p.vco2Semi + p.vco2Fine / 100) / 12);
     const cutoff = clampHz(p.filterCutoff * Math.pow(freq / 261.63, p.filterKeyTracking));
-    if (ramp <= 0) {
+    if (ramp <= 0 && at !== undefined) {
+      // A scheduled note: change pitch when it starts, not now.
+      this.osc1?.frequency.setValueAtTime(f1, at);
+      this.osc2?.frequency.setValueAtTime(f2, at);
+      this.sub.frequency.setValueAtTime(f1 / 2, at);
+      this.sine.frequency.setValueAtTime(f1, at);
+      this.filter.frequency.setValueAtTime(cutoff, at);
+    } else if (ramp <= 0) {
       if (this.osc1) this.osc1.frequency.value = f1;
       if (this.osc2) this.osc2.frequency.value = f2;
       this.sub.frequency.value = f1 / 2;
@@ -336,7 +343,7 @@ class Voice {
    * Start a note. With glide > 0 the pitch slides in: from this voice's last pitch (mono mode), or from
    * `from` when given (polyphonic glide).
    */
-  attack(note: string, freq: number, velocity: number, glide = 0, from?: number) {
+  attack(note: string, freq: number, velocity: number, glide = 0, from?: number, at?: number) {
     if (this.idleTimer) {
       clearTimeout(this.idleTimer);
       this.idleTimer = null;
@@ -348,7 +355,7 @@ class Voice {
       this.setPitch(from, 0);
       this.setPitch(freq, glide);
     } else {
-      this.setPitch(freq, glide > 0 && this.running ? glide : 0);
+      this.setPitch(freq, glide > 0 && this.running ? glide : 0, at);
     }
     if (!this.running) {
       this.osc1?.start();
@@ -364,7 +371,8 @@ class Voice {
       this.sineRunning = true;
     }
     // Tone.immediate(), not Tone.now(): a played key sounds right away, without Tone's 100 ms look-ahead (PianoLab change).
-    const now = Tone.immediate();
+    // (`at`: a scheduled note, PianoLab change for playing a part in time.)
+    const now = at ?? Tone.immediate();
     // Dial the LFO in over a few tens of ms rather than letting it hit mid-wave
     // (or over the LFO delay time, when the Soundtrap guide sets one).
     const delay = Math.max(0, this.engine.getExtras().lfoDelay ?? 0);
@@ -392,10 +400,10 @@ class Voice {
     this.setPitch(freq, glide > 0 ? glide : 0.005);
   }
 
-  release() {
+  release(at?: number) {
     if (!this.held) return;
     this.held = false;
-    const now = Tone.immediate(); // PianoLab change: see triggerAttack
+    const now = at ?? Tone.immediate(); // PianoLab change: see triggerAttack
     this.ampEnv.triggerRelease(now);
     this.filterEnv.triggerRelease(now);
     // Stop the oscillators once the note has faded, so idle voices cost nothing.
@@ -416,7 +424,7 @@ class Voice {
       }
       this.running = false;
       this.note = null;
-    }, (fade * 1.2 + 0.3) * 1000);
+    }, (fade * 1.2 + 0.3 + Math.max(0, now - Tone.immediate())) * 1000);
   }
 
   /** True while the voice is held or still ringing out. */
@@ -690,14 +698,14 @@ export class SubtractiveEngine {
     return this.currentParams.voiceMode === 'mono';
   }
 
-  private startVoice(note: string, velocity: number) {
+  private startVoice(note: string, velocity: number, at?: number) {
     const freq = Tone.Frequency(note).toFrequency();
     if (this.isMono) {
       const v = this.voices[0];
       const glide = Math.max(0, this.currentParams.glide);
       // Legato: a key is already held, so slide to the new note without restarting it.
       if (v.held) v.slideTo(note, freq, glide);
-      else v.attack(note, freq, velocity, glide);
+      else v.attack(note, freq, velocity, glide, undefined, at);
       return;
     }
     const glide = Math.max(0, this.extras.polyGlide ?? 0);
@@ -711,15 +719,15 @@ export class SubtractiveEngine {
       return;
     }
     this.lastFreq = freq;
-    this.pickVoice(note).attack(note, freq, velocity);
+    this.pickVoice(note).attack(note, freq, velocity, 0, undefined, at);
   }
   /** Polyphonic glide: the last note played, and where the current chord slides in from. */
   private lastFreq: number | null = null;
   private lastNoteAt = 0;
   private glideFrom: number | null = null;
 
-  private releaseVoice(note: string) {
-    for (const v of this.voices) if (v.note === note && v.held) v.release();
+  private releaseVoice(note: string, at?: number) {
+    for (const v of this.voices) if (v.note === note && v.held) v.release(at);
   }
 
   /** Mono key release: go back to the last key still held, or stop if none. */
@@ -732,7 +740,7 @@ export class SubtractiveEngine {
     else v.release();
   }
 
-  public noteOn(note: string, velocity: number = 1.0) {
+  public noteOn(note: string, velocity: number = 1.0, at?: number) {
     if (!this.isStarted) {
       Tone.start();
       this.isStarted = true;
@@ -749,11 +757,11 @@ export class SubtractiveEngine {
     }
 
     if (this.isMono) this.monoStack = [...this.monoStack.filter((n) => n !== note), note];
-    this.startVoice(note, velocity);
+    this.startVoice(note, velocity, at);
     this.notifyEnvelope(true);
   }
 
-  public noteOff(note: string) {
+  public noteOff(note: string, at?: number) {
     const wasHeld = this.activeNotes.delete(note);
     this.notifyActiveNotes();
 
@@ -767,7 +775,7 @@ export class SubtractiveEngine {
     }
 
     if (this.isMono) this.monoNoteOff(note);
-    else this.releaseVoice(note);
+    else this.releaseVoice(note, at);
     if (wasHeld && this.activeNotes.size === 0) this.notifyEnvelope(false);
   }
 

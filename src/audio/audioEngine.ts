@@ -86,8 +86,9 @@ function makeHissBuffer(sampleRate: number): Tone.ToneAudioBuffer {
 }
 
 interface Voice {
-  on(midi: number, velocity: number): void;
-  off(midi: number): void;
+  /** `at`: an audio-clock time to start/stop at (scheduled playback); left out = right now (a played key). */
+  on(midi: number, velocity: number, at?: number): void;
+  off(midi: number, at?: number): void;
   allOff(): void;
   dispose(): void;
 }
@@ -255,14 +256,14 @@ export class AudioEngine {
     const samplers = await Promise.all(layers.map(make));
     const used = new Map<number, Tone.Sampler>();
     return {
-      on: (midi, vel) => {
+      on: (midi, vel, at) => {
         // Split the 0-1 velocity range evenly across the layers.
         const s = samplers[Math.min(samplers.length - 1, Math.floor(Math.max(0, vel) * samplers.length))];
         used.set(midi, s);
-        s.triggerAttack(noteName(midi), Tone.immediate(), vel);
+        s.triggerAttack(noteName(midi), at ?? Tone.immediate(), vel);
       },
-      off: (midi) => {
-        used.get(midi)?.triggerRelease(noteName(midi), Tone.immediate());
+      off: (midi, at) => {
+        used.get(midi)?.triggerRelease(noteName(midi), at ?? Tone.immediate());
         used.delete(midi);
       },
       allOff: () => {
@@ -286,8 +287,8 @@ export class AudioEngine {
     });
     s.volume.value = -4;
     return {
-      on: (midi, vel) => s.triggerAttack(noteName(midi - 24), Tone.immediate(), Math.max(0.4, vel)),
-      off: (midi) => s.triggerRelease(noteName(midi - 24), Tone.immediate()),
+      on: (midi, vel, at) => s.triggerAttack(noteName(midi - 24), at ?? Tone.immediate(), Math.max(0.4, vel)),
+      off: (midi, at) => s.triggerRelease(noteName(midi - 24), at ?? Tone.immediate()),
       allOff: () => s.releaseAll(),
       dispose: () => s.dispose(),
     };
@@ -325,16 +326,16 @@ export class AudioEngine {
     let fadeTimer: number | null = null;
     const piano = await this.buildLayered(ACCURATE_URL, ACCURATE_ROOTS, [7], 1.4, lp);
     return {
-      on: (midi, vel) => {
+      on: (midi, vel, at) => {
         if (hiss.state !== 'started') hiss.start();
         if (fadeTimer !== null) window.clearTimeout(fadeTimer);
         fadeTimer = null;
         hissGain.gain.rampTo(HISS_LEVEL, 0.4);
         held++;
-        piano.on(midi, vel);
+        piano.on(midi, vel, at);
       },
-      off: (midi) => {
-        piano.off(midi);
+      off: (midi, at) => {
+        piano.off(midi, at);
         held = Math.max(0, held - 1);
         if (held === 0) {
           if (fadeTimer !== null) window.clearTimeout(fadeTimer);
@@ -359,8 +360,8 @@ export class AudioEngine {
     eng.applyParams(params);
     this.appliedSynth = null; // the next note applies the right patch
     return {
-      on: (midi, vel) => eng.noteOn(noteName(midi), vel),
-      off: (midi) => eng.noteOff(noteName(midi)),
+      on: (midi, vel, at) => eng.noteOn(noteName(midi), vel, at),
+      off: (midi, at) => eng.noteOff(noteName(midi), at),
       allOff: () => eng.allNotesOff(),
       dispose: () => {},
     };
@@ -396,20 +397,43 @@ export class AudioEngine {
     else if (kind === 'synthBass') this.synthEngine.applyParams(SYNTH_BASS);
   }
 
-  noteOn(midi: number, velocity = 0.8) {
+  /** `at` (audio clock): schedule it exactly (the app playing a part in time with a groove); left out = now. */
+  noteOn(midi: number, velocity = 0.8, at?: number) {
     const v = this.voices.get(this.currentId);
     if (!v) return;
     this.prepareSynth();
     // Same key again while it still sounds: let the old one go first.
-    this.noteVoice.get(midi)?.off(midi);
-    v.on(midi, velocity);
+    this.noteVoice.get(midi)?.off(midi, at);
+    v.on(midi, velocity, at);
     this.noteVoice.set(midi, v);
+    // Browser tests: when each note starts on the audio clock (no student data).
+    (window as unknown as { __trace?: { note: number[] } }).__trace?.note.push(at ?? Tone.immediate());
   }
 
-  noteOff(midi: number) {
+  noteOff(midi: number, at?: number) {
     const v = this.noteVoice.get(midi) ?? this.voices.get(this.currentId);
     this.noteVoice.delete(midi);
-    v?.off(midi);
+    v?.off(midi, at);
+  }
+
+  /** Load a sound without switching to it (a level's backing chords on the Electric Piano). */
+  preload(id: string): Promise<void> {
+    const def = SOUNDS.find((s) => s.id === id);
+    return def ? this.load(def).catch(() => {}) : Promise.resolve();
+  }
+  /** Play a note on another loaded sound (backing chords under the student's bass); silent until it has loaded. */
+  noteOnWith(id: string, midi: number, velocity: number, at?: number) {
+    this.voices.get(id)?.on(midi, velocity, at);
+  }
+  noteOffWith(id: string, midi: number, at?: number) {
+    this.voices.get(id)?.off(midi, at);
+  }
+
+  /** The audio-clock time at which a sound must start to be HEARD at `perf` (performance.now() ms). */
+  perfToAudio(perf: number): number {
+    const raw = Tone.getContext().rawContext as unknown as { currentTime: number; baseLatency?: number; outputLatency?: number };
+    const out = (raw.outputLatency || raw.baseLatency || 0) * 1000;
+    return Math.max(raw.currentTime, raw.currentTime + (perf - performance.now() - out) / 1000);
   }
 
   allOff() {
@@ -616,8 +640,8 @@ export class AudioEngine {
 
 function samplerVoice(s: Tone.Sampler): Voice {
   return {
-    on: (midi, vel) => s.triggerAttack(noteName(midi), Tone.immediate(), vel),
-    off: (midi) => s.triggerRelease(noteName(midi), Tone.immediate()),
+    on: (midi, vel, at) => s.triggerAttack(noteName(midi), at ?? Tone.immediate(), vel),
+    off: (midi, at) => s.triggerRelease(noteName(midi), at ?? Tone.immediate()),
     allOff: () => s.releaseAll(),
     dispose: () => s.dispose(),
   };

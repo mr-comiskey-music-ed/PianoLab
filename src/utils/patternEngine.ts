@@ -25,6 +25,8 @@ export interface TimedHit {
   chordPcs: number[];
   /** The bar's chord root (pitch class): oom-pah "pah" hits also accept the chord without it (3rd + 5th). */
   rootPc?: number;
+  /** Other notes that also count for a single-note hit (pitch classes): a line note's `or`. */
+  alt?: number[];
   /** A note's name when the key's own spelling would be wrong: a note outside the key leading down is a flat (E♭ into D
    * in G major), leading up a sharp. */
   name?: string;
@@ -191,6 +193,12 @@ export function lineNote(token: string, chord: Chord, next: Chord, tonic: number
       return root + 12;
     case 'L5':
       return root - 5 >= BASE ? root - 5 : root + 7;
+    case '5n': {
+      // The 5th above or below the root, whichever is nearer the next root (G's D drops to D3 to lead into C).
+      const up = root + tones[2];
+      const down = up - 12;
+      return down >= BASE && Math.abs(down - nextRoot) < Math.abs(up - nextRoot) ? down : up;
+    }
     case 'A':
       return nextRoot - 1 >= BASE ? nextRoot - 1 : nextRoot + 1;
     case 'A+':
@@ -225,7 +233,8 @@ function lineTimeline(p: Pattern, key: KeyDef, tempo: number): Timeline {
       if (note === null) return;
       const until = line[i + 1]?.b ?? span * 4;
       const dur = Math.min(ln.d ?? until - ln.b, p.bars * 4 - beat);
-      hits.push({ beat, dur, notes: [note], pcs: [pc(note)], kind: 'note', bar, chordPcs: chordPcs(chord) });
+      const alt = (ln.or ?? []).map((t) => lineNote(t, chord, next, key.tonic, of)).filter((m): m is number => m !== null).map(pc);
+      hits.push({ beat, dur, notes: [note], pcs: [pc(note)], kind: 'note', bar, chordPcs: chordPcs(chord), ...(alt.length ? { alt } : {}) });
     });
   }
   // Notes outside the key: spell them by where they lead.
@@ -273,6 +282,7 @@ function textureHit(t: Texture, chord: number[], root: number, i: number): numbe
  * its root, the 3rd and 5th only (his call).
  */
 export function hitAlt(t: Texture, h: TimedHit): number[] | undefined {
+  if (h.alt) return h.alt;
   const rootThenChord = t === 'bassChord' || t === 'broken' || t === 'brokenSplit';
   if (rootThenChord && h.kind === 'note') return h.chordPcs;
   if ((t === 'broken' || t === 'brokenSplit') && h.kind === 'chord' && h.rootPc !== undefined) return h.chordPcs.filter((x) => x !== h.rootPc);

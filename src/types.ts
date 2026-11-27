@@ -99,6 +99,10 @@ export interface Level {
   groove?: string;
   /** Soft chords play low under the line (riffs), so the harmony is heard. */
   pad?: boolean;
+  /** play: grooves the student picks from on the start screen (style ids); `groove` is the first pick. */
+  grooves?: string[];
+  /** play: each bar's chord is played on this sound (e.g. "rhodes"), mid-keyboard, while the student plays the bass. */
+  keys?: string;
   /** A heading over this level in the level list (the same sections as Learn); shown when it changes. */
   section?: string;
   /** This level's own sound (overrides the lesson's). */

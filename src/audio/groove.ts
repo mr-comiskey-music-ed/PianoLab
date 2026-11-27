@@ -4,6 +4,7 @@ import type { CustomPattern } from '../utils/performance';
 export type { CustomPattern };
 import tracksData from '../data/tracks.json';
 import { chordPcs, parseChord } from '../utils/chords';
+import type { Pattern } from '../data/pattern';
 
 /**
  * Jam Room backing (SPEC section 10): grooves the app makes from the chosen progression (drums + bass, no downloads,
@@ -21,9 +22,15 @@ export interface GrooveStyle {
   hat: number[];
   /** [16th, which note, length in 16ths (default 1.6; long for an 808)]. */
   bass: [number, 'R' | '5' | 'O', number?][];
+  /** Open hi-hat hits (disco's off-beat "tss"). */
+  open?: number[];
   /** Push every second 8th note late (0 = straight, 0.33 = a lazy lo-fi swing), in parts of a 16th. */
   swing?: number;
 }
+
+/** Trap with a bass line to play: the kick follows the line's notes (kick and 808 always together, his rule). */
+export const kickFollows = (styleId: string, p: Pattern) =>
+  styleId === 'trap' && p.texture === 'line' && p.line?.length ? { span: Math.max(1, p.lineBars ?? 1), steps: p.line.map((n) => Math.round(n.b * 4)) } : undefined;
 
 /** Each bar's chord as soft pad notes, low (root between F2 and E3, root position), under a riff. */
 export const padChords = (symbols: string[]): number[][] =>
@@ -48,6 +55,9 @@ export const GROOVES: GrooveStyle[] = [
   { id: 'bossa', name: 'Bossa nova', bpm: 120, kick: [0, 3, 4, 7, 8, 11, 12, 15], snare: [0, 3, 6, 10, 13], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [[0, 'R', 3], [3, '5'], [4, '5', 3], [8, 'R', 3], [11, '5'], [12, '5', 3]] },
   // Reggae one drop (his request for the off-beat chords): no kick on 1, kick and rim together on 3, a laid-back bass.
   { id: 'reggae', name: 'Reggae', bpm: 76, kick: [8], snare: [8], hat: [2, 6, 10, 14], bass: [[0, 'R', 3], [3, '5', 1], [6, 'O', 2], [10, 'R', 2], [14, '5', 2]] },
+  // Disco (his note: the octaves level needs a real disco beat): four on the floor, snare on 2 and 4, closed 16th hats
+  // with the open hat on every off-beat, octave bass.
+  { id: 'disco', name: 'Disco', bpm: 116, kick: [0, 4, 8, 12], snare: [4, 12], hat: [0, 1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15], open: [2, 6, 10, 14], bass: [[0, 'R'], [2, 'O'], [4, 'R'], [6, 'O'], [8, 'R'], [10, 'O'], [12, 'R'], [14, 'O']] },
   { id: 'house', name: 'House / EDM', bpm: 124, kick: [0, 4, 8, 12], snare: [4, 12], hat: [2, 6, 10, 14], bass: [[2, 'R'], [6, 'R'], [10, 'R'], [14, 'R']] },
   { id: 'click', name: 'Just the beat (clicks)', bpm: 80, kick: [], snare: [], hat: [], bass: [] },
 ];
@@ -91,6 +101,8 @@ export class Groove {
   private snareFilter = new Tone.Filter(1400, 'highpass');
   private hat = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.035, sustain: 0 } });
   private hatFilter = new Tone.Filter(8000, 'highpass');
+  private openHat = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.002, decay: 0.22, sustain: 0 } });
+  private openFilter = new Tone.Filter(7000, 'highpass');
   private bass = new Tone.MonoSynth({
     oscillator: { type: 'sawtooth' },
     filter: { Q: 1, type: 'lowpass' },
@@ -118,6 +130,8 @@ export class Groove {
     this.kick.connect(this.out);
     this.snare.chain(this.snareFilter, this.out);
     this.hat.chain(this.hatFilter, this.out);
+    this.openHat.volume.value = -22;
+    this.openHat.chain(this.openFilter, this.out);
     this.bass.connect(this.out);
     this.out.connect(this.meter);
     this.out.toDestination();
@@ -147,7 +161,11 @@ export class Groove {
    * Start an app-made groove: `roots` = each bar's chord root (pitch class), repeating. Starts `lead` seconds from now
    * (a 1-bar count-in of clicks first). Returns when beat 1 of bar 1 will be heard (performance.now() ms).
    */
-  startGroove(style: GrooveStyle, bpm: number, roots: number[], lead = 0.3, fromBeat = -4, chords?: number[][]): number {
+  /**
+   * `chords`: soft pad chords per bar (riffs). `kickLine`: the kick follows a bass line instead of the style's own kick
+   * (Trap: his rule that the kick and the 808 always hit together), as 16th-note steps over `span` bars.
+   */
+  startGroove(style: GrooveStyle, bpm: number, roots: number[], lead = 0.3, fromBeat = -4, chords?: number[][], kickLine?: { span: number; steps: number[] }): number {
     this.stop();
     if (chords?.length && !this.pad) {
       this.pad = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.4, sustain: 0.55, release: 0.8 } });
@@ -183,8 +201,12 @@ export class Groove {
               const c = chords[bar % chords.length];
               this.pad.triggerAttackRelease(c.map((m) => Tone.Frequency(m, 'midi').toFrequency()), this.spb * 3.85, t, 0.6);
             }
-            if (style.kick.includes(s)) this.kick.triggerAttackRelease('C1', '8n', t, 0.9);
+            if (kickLine ? kickLine.steps.includes(step % (kickLine.span * 16)) : style.kick.includes(s)) {
+              this.kick.triggerAttackRelease('C1', '8n', t, 0.9);
+              (window as unknown as { __trace?: { kick: number[] } }).__trace?.kick.push(t);
+            }
             if (style.snare.includes(s)) this.snare.triggerAttackRelease('16n', t, 0.8);
+            if (style.open?.includes(s)) this.openHat.triggerAttackRelease('8n', t, 0.7);
             if (style.hat.includes(s)) this.hat.triggerAttackRelease('32n', t, s % 4 === 0 ? 0.7 : 0.45);
             const b = style.bass.find(([at]) => at === s);
             if (b) {

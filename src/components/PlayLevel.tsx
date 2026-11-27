@@ -3,7 +3,7 @@ import { Level, ScreenHelp } from '../types';
 import { Timeline, beatMs, buildTimeline, chordSummary, hitAlt } from '../utils/patternEngine';
 import { HitResult, NotesCheck, TimingJudge, TimingSummary, pitchClassCheck, steadyOffset, summarize } from '../utils/timing';
 import { chordPcs, moveDistance, moveSizes, parseChord } from '../utils/chords';
-import { GROOVES, Groove, padChords } from '../audio/groove';
+import { GROOVES, Groove, kickFollows, padChords } from '../audio/groove';
 import { pc } from '../utils/music';
 import { ModeCtx } from './modeTypes';
 import { Waterfall } from './Waterfall';
@@ -18,6 +18,8 @@ const SCREEN_LABEL: Record<ScreenHelp, string> = { blocks: 'Falling Note Blocks'
 const COUNT_IN = 4;
 const LEAD_MS = 350;
 /** The groove's level in timed levels and Learn: Pop 25% louder (his call), the rest as made. */
+/** Playing a part for the student: notes are handed to the audio clock this long before they sound. */
+export const SCHED_MS = 150;
 export const grooveLevel = (id: string) => (id === 'pop' ? Math.sqrt(1.25) : 1);
 /** The fastest a student may push a level's tempo. */
 const MAX_TEMPO_UP = 60;
@@ -58,7 +60,9 @@ export function usePlayLevel(
   const [barNow, setBarNow] = useState(-1);
   /** Levels with a groove: play along with drums and bass (the default), or just the clicks. */
   const [withGroove, setWithGroove] = useState(true);
-  const grooveStyle = level.groove ? GROOVES.find((g) => g.id === level.groove) : undefined;
+  /** Levels that let the student pick the groove (`grooves`): the pick, starting on the level's own. */
+  const [groovePick, setGroovePick] = useState(level.groove);
+  const grooveStyle = groovePick ? GROOVES.find((g) => g.id === groovePick) : undefined;
   const judge = useRef<TimingJudge | null>(null);
   const stopClicks = useRef<() => void>(() => {});
   const timers = useRef<number[]>([]);
@@ -69,6 +73,9 @@ export function usePlayLevel(
   useEffect(() => {
     setTempo(floorTempo);
     setScreen(level.screen ?? 'blocks');
+    setGroovePick(level.groove);
+    // Backing chords on another sound (the Electric Piano under the bass): load it now, while the start screen shows.
+    if (level.keys) void ctx.engine.preload(level.keys);
     stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level.id, floorTempo]);
@@ -104,7 +111,7 @@ export function usePlayLevel(
       const roots = timeline.bars.map((b) => parseChord(b.symbol)?.root ?? timeline.key.tonic);
       const style = level.grooveBass === false ? { ...backing, bass: [] } : backing;
       // Riff levels: soft chords low under the line, with the groove or the clicks.
-      const beat1 = g.startGroove(style, tempo, roots, LEAD_MS / 1000, -COUNT_IN, level.pad ? padChords(timeline.bars.map((b) => b.symbol)) : undefined);
+      const beat1 = g.startGroove(style, tempo, roots, LEAD_MS / 1000, -COUNT_IN, level.pad ? padChords(timeline.bars.map((b) => b.symbol)) : undefined, pattern ? kickFollows(backing.id, pattern) : undefined);
       stopClicks.current = () => g.stop();
       firstHeardAt = beat1 - COUNT_IN * bm;
     } else {
@@ -114,6 +121,17 @@ export function usePlayLevel(
     }
     const heard = firstHeardAt - performance.now();
     const t0 = firstHeardAt + COUNT_IN * bm;
+    if (level.keys) {
+      // Backing chords on their own sound (the Electric Piano), one per bar, on the audio clock.
+      const id = level.keys;
+      padChords(timeline.bars.map((b) => b.symbol)).forEach((c, bar) => {
+        const notes = c.map((m) => m + 12);
+        const on = t0 + bar * 4 * bm;
+        const off = on + 3.9 * bm;
+        timers.current.push(window.setTimeout(() => notes.forEach((m) => ctx.engine.noteOnWith(id, m, 0.45, ctx.engine.perfToAudio(on))), on - performance.now() - SCHED_MS));
+        timers.current.push(window.setTimeout(() => notes.forEach((m) => ctx.engine.noteOffWith(id, m, ctx.engine.perfToAudio(off))), off - performance.now() - SCHED_MS));
+      });
+    }
     setStartAt(t0);
     setResults(timeline.hits.map(() => undefined));
     setPop(null);
@@ -122,16 +140,15 @@ export function usePlayLevel(
     for (let i = 0; i < COUNT_IN; i++) timers.current.push(window.setTimeout(() => setCount(i + 1), heard + i * bm));
     timers.current.push(window.setTimeout(() => setPhase((p) => (p === 'count' ? 'run' : p)), heard + COUNT_IN * bm - 120));
     if (listenOnly) {
-      // The app plays it, keys lit, nothing graded. Notes start early by the output delay, so they're heard with the click.
-      const out = ctx.engine.outputDelayMs();
+      // The app plays it, keys lit, nothing graded. Each note is scheduled on the audio clock a little ahead
+      // (SCHED_MS), so it lands exactly with the groove/clicks even when the Chromebook is busy drawing (a plain
+      // timer fired late: his "listen first is late on every note").
       for (const h of timeline.hits) {
-        timers.current.push(window.setTimeout(() => {
-          h.notes.forEach((n) => ctx.engine.noteOn(n, 0.7));
-          setLitNow(new Set(h.notes));
-        }, t0 - performance.now() + h.beat * bm - out));
-        timers.current.push(window.setTimeout(() => {
-          h.notes.forEach((n) => ctx.engine.noteOff(n));
-        }, t0 - performance.now() + (h.beat + h.dur * 0.92) * bm - out));
+        const on = t0 + h.beat * bm;
+        const off = t0 + (h.beat + h.dur * 0.92) * bm;
+        timers.current.push(window.setTimeout(() => h.notes.forEach((n) => ctx.engine.noteOn(n, 0.7, ctx.engine.perfToAudio(on))), on - performance.now() - SCHED_MS));
+        timers.current.push(window.setTimeout(() => setLitNow(new Set(h.notes)), on - performance.now()));
+        timers.current.push(window.setTimeout(() => h.notes.forEach((n) => ctx.engine.noteOff(n, ctx.engine.perfToAudio(off))), off - performance.now() - SCHED_MS));
       }
     } else {
       // Root-only hits in a chord pattern (root, then chord) also accept the whole chord in any inversion: with Chord
@@ -256,7 +273,16 @@ export function usePlayLevel(
           +
         </button>
       </span>
-      {grooveStyle && (
+      {level.grooves?.length ? (
+        <span className="flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label="Groove">
+          <span className="h text-[12px] uppercase tracking-wider text-brass">Groove</span>
+          {level.grooves.map((id) => (
+            <button key={id} role="radio" aria-checked={groovePick === id} data-testid={`groove-${id}`} className={`btn px-2 py-0.5 text-[13px] ${groovePick === id ? 'btn-brass' : 'btn-dark'}`} onClick={() => setGroovePick(id)}>
+              {GROOVES.find((g) => g.id === id)?.name ?? id}
+            </button>
+          ))}
+        </span>
+      ) : grooveStyle && (
         <span className="flex items-center gap-1.5" role="radiogroup" aria-label="Backing">
           <span className="h text-[12px] uppercase tracking-wider text-brass">Backing</span>
           {([true, false] as const).map((on) => (
