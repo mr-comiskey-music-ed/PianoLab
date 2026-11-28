@@ -449,7 +449,7 @@ export default function App() {
         ) : (
           // (On a phone's Grade tab the logo takes the menu button's place and width, so the tabs stay put.)
           <div className={`h flex shrink-0 items-center gap-2 tracking-wide ${compact ? 'h-9 w-[92px] text-[16px]' : 'text-[22px]'}`}>
-            <img src="/favicon.svg" alt="" className={compact ? 'h-6 w-6' : 'h-7 w-7'} />
+            <img src="/favicon.svg?v=2" alt="" className={compact ? 'h-6 w-6' : 'h-7 w-7'} />
             {!compact && 'PianoLab'}
           </div>
         )}

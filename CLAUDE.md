@@ -508,6 +508,8 @@ About page; no composition rubric):
   shortcuts are off (`disablekb`; "F" went full screen), and a click on the video hands the keyboard back to the piano
   ~150 ms later (window blur -> blur the iframe). In the Jam Room the Space bar plays / pauses the video and the left /
   right arrows jump 5 s (`YouTubeBox keys`). `e73`, `e74` (stand-in player).
+- **Logo / favicon** (`public/favicon.svg`, his pick): "PL" made of two piano white keys, each with its black key in
+  the notch: a gold key flipped top-to-bottom = P, a cream key = L (the C key is L-shaped from above).
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
