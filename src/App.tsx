@@ -8,6 +8,7 @@ import { SYNTH_KEYS_WARM } from './data/defaults';
 import { loadCurrentPatch } from './utils/synthPresets';
 import { SynthParams } from './types';
 import { AssignModal, BatchModal, LatencyModal } from './components/Modals';
+import { ChartSongModal } from './components/ChartSong';
 import { Assignment, applyAssignment, decodeAssignment, openTab } from './utils/assignment';
 import { ALL_LEVELS } from './utils/batch';
 import { GradeReport } from './components/GradeReport';
@@ -141,7 +142,7 @@ export default function App() {
       window.removeEventListener('pointerdown', off);
     };
   }, [phone, navHint, welcome]);
-  const [modal, setModal] = useState<null | 'latency' | 'batch' | 'assign'>(null);
+  const [modal, setModal] = useState<null | 'latency' | 'batch' | 'assign' | 'chart'>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [customParams, setCustomParams] = useState<SynthParams>(() => {
     const p = loadCurrentPatch() ?? SYNTH_KEYS_WARM;
@@ -514,7 +515,7 @@ export default function App() {
       )}
       {mode === 'report' ? (
         <main className="min-h-0 flex-1 overflow-auto">
-          <GradeReport results={results} learned={learned} assignment={assignment} onTeacher={() => setModal('batch')} onAssign={() => setModal('assign')} />
+          <GradeReport results={results} learned={learned} assignment={assignment} onTeacher={() => setModal('batch')} onAssign={() => setModal('assign')} onChart={() => setModal('chart')} />
         </main>
       ) : (
       <div className={`grid min-h-0 flex-1 grid-cols-1 ${phone ? '' : 'lg:grid-cols-[260px_minmax(0,1fr)_250px]'}`}>
@@ -697,6 +698,7 @@ export default function App() {
       {modal === 'latency' && <LatencyModal engine={engine} subscribe={subscribe} onDone={setLatency} onClose={() => setModal(null)} pauseMetro={() => onMetro({ ...metro, on: false })} />}
       {modal === 'batch' && <BatchModal engine={engine} onClose={() => setModal(null)} />}
       {modal === 'assign' && <AssignModal lessons={LESSONS} onClose={() => setModal(null)} />}
+      {modal === 'chart' && <ChartSongModal engine={engine} onClose={() => setModal(null)} />}
     </div>
   );
 }

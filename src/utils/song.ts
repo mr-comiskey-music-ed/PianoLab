@@ -164,3 +164,32 @@ export function songScore(part: SongPart, units: SongUnit[], tallies: UnitTally[
 
 /** Did a melody unit pass (for the ✓ marks during the run)? */
 export const melodyOk = (t: UnitTally) => t.notes > 0 && t.inKey / t.notes >= MELODY_IN_KEY;
+
+/**
+ * The teacher's tap-along (Chart a song): taps on the beat, as video times in seconds, the first one on bar 1's beat 1.
+ * A missed beat is fine (each tap is placed on its nearest beat) and a double tap is dropped. The tempo and bar 1 come
+ * from a straight-line fit through all the taps, so more taps = more exact. Null with fewer than 4 taps.
+ */
+export function fitTaps(taps: number[]): { bpm: number; beat1: number; spreadMs: number; beats: number } | null {
+  if (taps.length < 4) return null;
+  const gaps = taps.slice(1).map((t, i) => t - taps[i]).filter((g) => g > 0.15).sort((a, b) => a - b);
+  if (!gaps.length) return null;
+  let period = gaps[Math.floor(gaps.length / 2)];
+  const pts: { i: number; t: number }[] = [];
+  for (const t of taps) {
+    const i = Math.round((t - taps[0]) / period);
+    if (pts.length && i === pts[pts.length - 1].i) continue; // a double tap
+    pts.push({ i, t });
+  }
+  if (pts.length < 4) return null;
+  // Least squares: t = beat1 + i * period.
+  const n = pts.length;
+  const mi = pts.reduce((s, p) => s + p.i, 0) / n;
+  const mt = pts.reduce((s, p) => s + p.t, 0) / n;
+  const cov = pts.reduce((s, p) => s + (p.i - mi) * (p.t - mt), 0);
+  const vi = pts.reduce((s, p) => s + (p.i - mi) ** 2, 0);
+  period = cov / vi;
+  const beat1 = mt - period * mi;
+  const errs = pts.map((p) => Math.abs(p.t - (beat1 + p.i * period)) * 1000).sort((a, b) => a - b);
+  return { bpm: 60 / period, beat1, spreadMs: Math.round(errs[Math.floor(errs.length * 0.9)] ?? 0), beats: pts[pts.length - 1].i + 1 };
+}

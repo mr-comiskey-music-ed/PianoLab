@@ -520,6 +520,13 @@ About page; no composition rubric):
   run; "Clicks along" option (to check a chart lines up). He sets each song's numbers ahead of time; `ls-sample-d` has
   PLACEHOLDER timing (beat1 0, 100 BPM) until he sends real ones. Lessons now come from `tools/lessons.py` with `LS`.
   `song.test.ts`, `e75` (stand-in player with a 3x clock).
+- **Chart a song** (teacher tool, `ChartSong.tsx`; his "tap along" pick, YouTube scrubbing isn't precise enough): paste
+  a link, play the video, tap the space bar (or Tap) on every beat from bar 1's beat 1; `fitTaps` (utils/song.ts) fits a
+  straight line through the taps (missed beats placed on their nearest beat, double taps dropped) -> tempo, bar 1's
+  time, steadiness. Check with clicks along (accent on beat 1) / "Play from just before bar 1"; then name, key, part,
+  chords -> a plain-text chart to copy and send in (nothing saved). `e76`.
+- **Teacher tools** are folded behind one "Teacher tools" button on the Grade Report (his call): Batch grade codes, Make an
+  assignment link, Chart a song. Not a lock (no logins in this app); open for this visit only.
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
 ## Open items (last updated end of Phase 1 testing)

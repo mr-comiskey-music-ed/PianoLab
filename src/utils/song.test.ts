@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chartSummary, chordOk, emptyTally, parseChart, songScore, unitAt } from './song';
+import { chartSummary, chordOk, emptyTally, fitTaps, parseChart, songScore, unitAt } from './song';
 import { parseChord } from './chords';
 
 describe('song charts', () => {
@@ -34,5 +34,18 @@ describe('song charts', () => {
     t[0].ok = true;
     expect(songScore('chords', u, t)).toEqual({ raw: 75, right: 2, total: 3 });
     expect(songScore('melody', u, [{ ok: false, notes: 4, inKey: 3 }, emptyTally(), { ok: false, notes: 2, inKey: 1 }])).toEqual({ raw: 50, right: 1, total: 3 });
+  });
+});
+
+describe('tap-along', () => {
+  it('finds tempo and bar 1 from wobbly taps, with a missed beat and a double tap', () => {
+    const beat = 60 / 96;
+    const taps = [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 11].map((i, k) => 12.3 + i * beat + (k % 2 ? 0.015 : -0.012));
+    taps.splice(3, 0, taps[3] + 0.05);
+    const f = fitTaps(taps)!;
+    expect(f.bpm).toBeCloseTo(96, 0);
+    expect(Math.abs(f.beat1 - 12.3)).toBeLessThan(0.02);
+    expect(f.spreadMs).toBeLessThan(25);
+    expect(f.beats).toBe(12);
   });
 });

@@ -16,7 +16,7 @@ import { STEADY_MS, tapSpread } from '../utils/timing';
 import { cleanBacking, downloadMidi, formatLength, perfLength, perfLink, unpackPerf } from '../utils/performance';
 import { backingEnd, playBacking } from '../audio/backing';
 
-const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }> = ({ title, onClose, wide, children }) => (
+export const Shell: React.FC<{ title: string; onClose: () => void; wide?: boolean; children: React.ReactNode }> = ({ title, onClose, wide, children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4" role="dialog" aria-modal="true" aria-label={title}>
     <div className={`card flex max-h-[92vh] w-full flex-col shadow-xl ${wide ? 'max-w-3xl' : 'max-w-md'}`}>
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
