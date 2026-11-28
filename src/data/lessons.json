@@ -7867,6 +7867,45 @@
           "screen": "blocks"
         }
       ]
+    },
+    {
+      "id": "lesson-songs",
+      "number": 12,
+      "title": "Songs",
+      "key": "C",
+      "numerals": true,
+      "blackKeys": true,
+      "practice": "Pick a song in Challenges and play along with the video. Start with Clicks along turned on, then try it without.",
+      "learn": [
+        {
+          "id": "ls-learn-how",
+          "section": "Songs",
+          "title": "Playing with a song",
+          "say": "Each song is a real track on YouTube.\nThe app follows the video and shows the chord for each bar, plus the next ones coming.\nA bar counts if you play the right thing somewhere in it, in any rhythm you like.\nSome songs want the chords, some the bass, some a melody in the key: the start screen says which.",
+          "need": 0,
+          "show": true
+        }
+      ],
+      "levels": [
+        {
+          "id": "ls-sample-d",
+          "title": "D major pop rock",
+          "blurb": "Play the chords with the band.",
+          "type": "song",
+          "octave": "any",
+          "pass": 80,
+          "labels": "c",
+          "prompts": [],
+          "song": {
+            "video": "QwCmqS-5nqw",
+            "beat1": 0,
+            "bpm": 100,
+            "key": "D",
+            "part": "chords",
+            "chart": "(D A Bm G)x8"
+          }
+        }
+      ]
     }
   ]
 }

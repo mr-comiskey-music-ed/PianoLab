@@ -510,7 +510,16 @@ About page; no composition rubric):
   right arrows jump 5 s (`YouTubeBox keys`). `e73`, `e74` (stand-in player).
 - **Logo / favicon** (`public/favicon.svg`, his pick): "PL" made of two piano white keys, each with its black key in
   the notch: both cream white keys: one turned 180° = P, one = L (the C key is L-shaped from above).
-- **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
+- **Songs lesson** (Lesson 12, id `lesson-songs`; graded YouTube play-along, his answers): levels of type `song`
+  (`SongLevel.tsx`, `utils/song.ts`). The app can't hear the video, so each level carries his chart (`song`: video,
+  `beat1` = seconds where bar 1 lands, `bpm`, `beats`, `start`, `key`, `part` = chords / bass / melody, `chart` =
+  "(D A Bm G)x8", "C*2", "G,D" two in a bar, "%", "N.C.", optional `scale` for melodies). Graded BAR BY BAR (his pick):
+  chords = the bar's chord held at some moment in it (any inversion; a 7th chord also takes its triad), bass = its root
+  played, melody = played in the bar with 3 of 4 notes in the scale; a quarter beat early counts (`EARLY_BEATS`); score =
+  share of graded beats. The video's clock (smoothed `getCurrentTime`) drives it; latency is taken off; seeking stops the
+  run; "Clicks along" option (to check a chart lines up). He sets each song's numbers ahead of time; `ls-sample-d` has
+  PLACEHOLDER timing (beat1 0, 100 BPM) until he sends real ones. Lessons now come from `tools/lessons.py` with `LS`.
+  `song.test.ts`, `e75` (stand-in player with a 3x clock).
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
 ## Open items (last updated end of Phase 1 testing)
@@ -520,7 +529,7 @@ About page; no composition rubric):
   before anything reached students (he doesn't care about the octave). Old saves drop results for removed levels.
 - Teacher button should eventually assign anything (SPEC section 8, "Everything is assignable"). Today it only batch grades.
 - Not built yet: About screen with full credits (credits are in a small right-panel list); class-record backend (skipped,
-  his call); graded YouTube play-along (ungraded for now).
+  his call); graded YouTube play-along: built as the Songs lesson.
 - Phase 4 to try on the Chromebook: Lessons 7-8, the Jam Room (does YouTube load on the school network?), Sandbox import
   speed/track/mute. He will supply backing tracks (and YouTube links) for the lists.
 - Phase 3 to try on the Chromebook: timing feel with the real MIDI keyboard (run the latency check first), Echo,

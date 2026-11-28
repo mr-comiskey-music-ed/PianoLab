@@ -10,6 +10,7 @@ import { KeyMark } from './Piano';
 import { LABEL_ORDER, Labels, ModeCtx, ModeParts } from './modeTypes';
 import { useChordWatcher, useNoteListener } from './chordInput';
 import { usePlayLevel } from './PlayLevel';
+import { SongDone, useSongLevel } from './SongLevel';
 import { Col, StageBox } from './StageRow';
 import { MAJOR_SCALE, fingering, scaleStep } from '../utils/scales';
 import { HandDiagram, crossing } from './HandDiagram';
@@ -51,6 +52,8 @@ interface Finished {
   /** Smooth Mover: half steps moved, and the fewest possible. */
   moved?: number;
   bestMoves?: number;
+  /** Songs: bars right out of bars graded. */
+  song?: SongDone;
 }
 
 /** The keys in view, low to high. */
@@ -521,8 +524,12 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
     onFinish: (raw, s, set) => recordResult(selLevel, raw, { timing: s, tempo: set.tempo }, set.shapes),
   });
   const isPlay = selLevel.type === 'play';
+  // Songs: a graded play-along with a YouTube video (SongLevel.tsx).
+  const songRun = useSongLevel(ctx, selLevel, { onFinish: (raw, done) => recordResult(selLevel, raw, { song: done }) });
+  const isSong = selLevel.type === 'song';
   // Leaving Challenges stops a timed level (its clicks or groove would play on, and the run would still be graded).
   useEffect(() => {
+    if (!active && songRun.running) songRun.stop();
     if (!active && play.running) play.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
@@ -634,6 +641,11 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
             </button>
           </div>
         )}
+        {finished.song && (
+          <div className="text-[15px] text-line2" data-testid="song-total">
+            {finished.song.part === 'chords' ? 'Right chord in' : finished.song.part === 'bass' ? 'Right root in' : 'In the key in'} {finished.song.right} of {finished.song.total} bars
+          </div>
+        )}
         {finished.speedCount !== undefined && (
           <div className="text-[15px] text-line2" data-testid="speed-total">
             {finished.speedCount} right in {finished.level.seconds ?? 60} seconds (the goal: {finished.level.target ?? 12})
@@ -643,7 +655,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
         </Col>
         <Col phone={ctx.phone}>
         <div className={`mt-1 flex gap-2 ${ctx.phone ? 'flex-col' : ''}`}>
-          <button className="btn btn-brass" onClick={() => (finished.level.type === 'play' ? setFinished(null) : start(finished.level.id))} data-testid="try-again">
+          <button className="btn btn-brass" onClick={() => (finished.level.type === 'play' || finished.level.type === 'song' ? setFinished(null) : start(finished.level.id))} data-testid="try-again">
             Try again
           </button>
           {li < levels.length - 1 && (
@@ -791,6 +803,8 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
         </Col>
       </StageBox>
     );
+  } else if (isSong) {
+    stage = songRun.stage;
   } else if (isPlay) {
     stage = play.stage;
   } else {
@@ -864,7 +878,7 @@ export function useChallenge(ctx: ModeCtx, active = true): ModeParts {
       value: effective(selLevel),
       allowed: LABEL_ORDER.filter((l) => LABEL_ORDER.indexOf(l) >= LABEL_ORDER.indexOf(selLevel.labels)),
       set: (l) => setLabelPick((p) => ({ ...p, [selLevel.id]: l })),
-      locked: !!run || play.running,
+      locked: !!run || play.running || songRun.running,
     },
     start: { label: 'Start', onClick: () => start(selected), disabled: !!run },
     restart: { label: 'Restart', onClick: () => start(selected), disabled: !run },

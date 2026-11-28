@@ -1,4 +1,5 @@
 import { Pattern } from './data/pattern';
+import type { SongChart } from './utils/song';
 // Synth types are copied from SynthLab (src/types.ts) so SynthLab patch codes load here unchanged.
 export type WaveformType = 'sine' | 'triangle' | 'sawtooth' | 'square' | 'noise';
 export type VoiceMode = 'poly' | 'mono';
@@ -41,7 +42,9 @@ export type AssessmentType =
   /** Lesson 7: play a major scale up, one octave, note by note (prompt `scale` = the key). */
   | 'scale'
   /** A question with answer buttons and nothing lit (Lesson 7: sharps and flats, the circle of 5ths). */
-  | 'quiz';
+  | 'quiz'
+  /** Songs lesson: a graded play-along with a YouTube video, bar by bar (`song` = the chart). */
+  | 'song';
 
 /** Progression Play: what scrolls down the waterfall. Falling blocks is easiest; nothing is hardest. */
 export type ScreenHelp = 'blocks' | 'names';
@@ -115,6 +118,8 @@ export interface Level {
   grooveBass?: boolean;
   /** nameChord: also play the chord out loud (with "Hear it again"). */
   playChord?: boolean;
+  /** song: the video and its chart (where bar 1 is, tempo, chords bar by bar, what the student plays). */
+  song?: SongChart;
   /** smooth: the first chord's keys, e.g. ["C4","E4","G4"]. */
   start?: string[];
   prompts: Prompt[];
