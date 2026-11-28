@@ -509,7 +509,7 @@ About page; no composition rubric):
   ~150 ms later (window blur -> blur the iframe). In the Jam Room the Space bar plays / pauses the video and the left /
   right arrows jump 5 s (`YouTubeBox keys`). `e73`, `e74` (stand-in player).
 - **Logo / favicon** (`public/favicon.svg`, his pick): "PL" made of two piano white keys, each with its black key in
-  the notch: a cream key turned 180° = P, a gold key = L (the C key is L-shaped from above).
+  the notch: both cream white keys: one turned 180° = P, one = L (the C key is L-shaped from above).
 - **Remind him later**: graded YouTube play-along (his "leave it for now, remind me").
 - Shuffle test allows 30 s (it timed out at 5 s on a slow run).
 
@@ -527,6 +527,7 @@ About page; no composition rubric):
   Speed Round, an assignment link end to end.
 - Phase 2 to try on the Chromebook: every lesson's Learn, the chord levels with the MIDI keyboard, Smooth Mover, the strip.
 - Assignment link: core built (Phase 3). Later: assign Learn-only lessons, due dates, more settings (SPEC section 8).
+- Third merge to `main` on 2026-11-28 (his say-so, a Saturday): rounds 4-10 and the PL logo.
 - Second merge to `main` on 2026-11-25 (his say-so, after the debug pass; a fast-forward): Chord rhythms lesson, everything
   assignable, welcome walkthrough, YouTube chord sheet, phone fixes.
 - Phases 1-4 merged to `main` on 2026-11-24 (his say-so; a fast-forward, main had only his uploaded files). Keep working
